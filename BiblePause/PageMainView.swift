@@ -7,43 +7,22 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct PageMainView: View {
     
-    @State var showMenu: Bool = false
-    
-    @State var animatePath: Bool = false
-    @State var animateBG: Bool = false
+    @Binding var showMenu: Bool
+    @Binding var animatePath: Bool
+    @Binding var animateBG: Bool
+    @Binding var menuItem: MenuItem
     
     var body: some View {
         
         ZStack {
             VStack(spacing: 20) {
-                // button menu
-                HStack {
-                    Button {
-                        
-                        withAnimation{
-                            animateBG.toggle()
-                        }
-                        
-                        withAnimation(.spring()){
-                            showMenu.toggle()
-                        }
-                        
-                        // Animating Path with little Delay...
-                        withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.3, blendDuration: 0.3).delay(0.2)){
-                            animatePath.toggle()
-                        }
-                        
-                    } label: {
-                        Image("Menu")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 32, height: 32)
-                    }
-                    
-                    Spacer()
-                }
+                MenuButtonView(
+                    showMenu: $showMenu,
+                    animatePath: $animatePath,
+                    animateBG: $animateBG,
+                    menuItem: $menuItem)
                 .padding(.bottom, 50)
                 
                 // заголовок
@@ -80,13 +59,31 @@ struct ContentView: View {
             )
             
             // слой меню
-            MenuView(showMenu: $showMenu,animatePath: $animatePath,animateBG: $animateBG)
+            MenuView(showMenu: $showMenu,
+                     animatePath: $animatePath,
+                     animateBG: $animateBG,
+                     menuItem: $menuItem
+            )
                 .offset(x: showMenu ? 0 : -getRect().width)
         }
     }
 }
 
+struct TestPageMainView: View {
+    
+    @State var showMenu: Bool = false
+    @State var animatePath: Bool = false
+    @State var animateBG: Bool = false
+    @State var menuItem: MenuItem = .main
+    
+    var body: some View {
+        PageMainView(showMenu: $showMenu,
+                     animatePath: $animatePath,
+                     animateBG: $animateBG,
+                     menuItem: $menuItem)
+    }
+}
 
 #Preview {
-    ContentView()
+    TestPageMainView()
 }

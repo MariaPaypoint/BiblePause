@@ -11,7 +11,7 @@ import SwiftUI
 struct BiblePauseApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SkeletonView()
         }
     }
 }
