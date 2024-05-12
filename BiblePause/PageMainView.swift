@@ -18,13 +18,15 @@ struct PageMainView: View {
         
         ZStack {
             VStack(spacing: 20) {
-                MenuButtonView(
-                    showMenu: $showMenu,
-                    animatePath: $animatePath,
-                    animateBG: $animateBG,
-                    menuItem: $menuItem)
-                .padding(.bottom, 50)
-                
+                HStack {
+                    MenuButtonView(
+                        showMenu: $showMenu,
+                        animatePath: $animatePath,
+                        animateBG: $animateBG,
+                        menuItem: $menuItem)
+                    .padding(.bottom, 50)
+                    Spacer()
+                }
                 // заголовок
                 Image("TitleRus")
                 

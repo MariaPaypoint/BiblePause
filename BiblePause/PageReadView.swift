@@ -17,15 +17,31 @@ struct PageReadView: View {
     var body: some View {
         
         ZStack {
-            VStack(spacing: 20) {
-                MenuButtonView(
-                    showMenu: $showMenu,
-                    animatePath: $animatePath,
-                    animateBG: $animateBG,
-                    menuItem: $menuItem)
-                .padding(.bottom, 50)
+            VStack(spacing: 0) {
                 
-                Text("Read")
+                // шапка
+                HStack {
+                    MenuButtonView(
+                        showMenu: $showMenu,
+                        animatePath: $animatePath,
+                        animateBG: $animateBG,
+                        menuItem: $menuItem)
+                    
+                    Spacer()
+                    
+                    Text("Название книги")
+                        .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "textformat.size")
+                        .font(.title2)
+                }
+                .foregroundColor(.white)
+                
+                Text("Глава X")
+                    .foregroundColor(Color("3rd"))
+                    .font(.title3)
                 
                 // и все толкнем наверх
                 Spacer()
@@ -42,7 +58,7 @@ struct PageReadView: View {
                      animateBG: $animateBG,
                      menuItem: $menuItem
             )
-                .offset(x: showMenu ? 0 : -getRect().width)
+            .offset(x: showMenu ? 0 : -getRect().width)
         }
     }
 }

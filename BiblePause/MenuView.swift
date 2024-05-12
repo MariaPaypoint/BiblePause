@@ -197,7 +197,7 @@ struct MenuButtonView: View {
     @Binding var menuItem: MenuItem
     
     var body: some View {
-        HStack {
+        //HStack {
             Button {
                 
                 withAnimation{
@@ -218,16 +218,17 @@ struct MenuButtonView: View {
                 Image(systemName: "line.3.horizontal")
                     .foregroundColor(.white)
                     .font(.largeTitle)
+                    .fontWeight(.light)
                 */
                 Image("Menu")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 32, height: 32)
-                 
+                
             }
             
-            Spacer()
-        }
+            //Spacer()
+        //}
     }
 }
 
