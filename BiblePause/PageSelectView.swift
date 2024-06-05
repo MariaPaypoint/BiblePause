@@ -12,8 +12,6 @@ import SwiftUI
 struct PageSelectView: View {
     
     @Binding var showMenu: Bool
-    @Binding var animatePath: Bool
-    @Binding var animateBG: Bool
     @Binding var menuItem: MenuItem
     
     var body: some View {
@@ -22,8 +20,6 @@ struct PageSelectView: View {
             VStack(spacing: 20) {
                 MenuButtonView(
                     showMenu: $showMenu,
-                    animatePath: $animatePath,
-                    animateBG: $animateBG,
                     menuItem: $menuItem)
                 .padding(.bottom, 50)
                 
@@ -35,13 +31,11 @@ struct PageSelectView: View {
             .padding(20)
             // подложка
             .background(
-                Color("2nd")
+                Color("ForestGreen")
             )
             
             // слой меню
             MenuView(showMenu: $showMenu,
-                     animatePath: $animatePath,
-                     animateBG: $animateBG,
                      menuItem: $menuItem
             )
                 .offset(x: showMenu ? 0 : -getRect().width)
@@ -52,14 +46,10 @@ struct PageSelectView: View {
 struct TestPageSelectView: View {
     
     @State var showMenu: Bool = false
-    @State var animatePath: Bool = false
-    @State var animateBG: Bool = false
     @State var menuItem: MenuItem = .read
     
     var body: some View {
         PageSelectView(showMenu: $showMenu,
-                     animatePath: $animatePath,
-                     animateBG: $animateBG,
                      menuItem: $menuItem)
     }
 }

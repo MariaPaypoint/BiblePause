@@ -10,8 +10,6 @@ import SwiftUI
 struct PageMainView: View {
     
     @Binding var showMenu: Bool
-    @Binding var animatePath: Bool
-    @Binding var animateBG: Bool
     @Binding var menuItem: MenuItem
     
     var body: some View {
@@ -21,8 +19,6 @@ struct PageMainView: View {
                 HStack {
                     MenuButtonView(
                         showMenu: $showMenu,
-                        animatePath: $animatePath,
-                        animateBG: $animateBG,
                         menuItem: $menuItem)
                     .padding(.bottom, 50)
                     Spacer()
@@ -36,11 +32,11 @@ struct PageMainView: View {
                 } label: {
                     VStack {
                         Text("Продолжить чтение")
-                            .foregroundColor(Color("2nd"))
+                            .foregroundColor(Color("ForestGreen"))
                             .frame(maxWidth: .infinity)
                             .font(.system(.body, weight: .heavy))
                         Text("Евангелие от Иоанна, Глава 1")
-                            .foregroundColor(Color("clBrownAdv"))
+                            .foregroundColor(Color("Chocolate"))
                             .font(.system(.subheadline))
                     }
                 }
@@ -62,8 +58,6 @@ struct PageMainView: View {
             
             // слой меню
             MenuView(showMenu: $showMenu,
-                     animatePath: $animatePath,
-                     animateBG: $animateBG,
                      menuItem: $menuItem
             )
                 .offset(x: showMenu ? 0 : -getRect().width)
@@ -74,14 +68,10 @@ struct PageMainView: View {
 struct TestPageMainView: View {
     
     @State var showMenu: Bool = false
-    @State var animatePath: Bool = false
-    @State var animateBG: Bool = false
     @State var menuItem: MenuItem = .main
     
     var body: some View {
         PageMainView(showMenu: $showMenu,
-                     animatePath: $animatePath,
-                     animateBG: $animateBG,
                      menuItem: $menuItem)
     }
 }

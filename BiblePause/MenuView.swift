@@ -15,12 +15,9 @@ enum MenuItem {
     case contacts
 }
 
-// Menu View...
 struct MenuView: View{
     
     @Binding var showMenu: Bool
-    @Binding var animatePath: Bool
-    @Binding var animateBG: Bool
     @Binding var menuItem: MenuItem
     
     var body: some View{
@@ -31,25 +28,16 @@ struct MenuView: View{
             BlurView(style: .systemUltraThinMaterialDark)
             
             // Blending With Color..
-            Color("1st")
+            Color("DarkGreen")
                 .opacity(0.2)
                 .blur(radius: 15)
             
             // Content...
             VStack(alignment: .leading, spacing: UIScreen.main.bounds.height < 750 ? 20 : 25) {
                 
-                // Close...
+                // MARK: Close Button
                 Button {
-                    // Animating Path with little Delay...
-                    withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.3, blendDuration: 0.3)){
-                        animatePath.toggle()
-                    }
-                    withAnimation{
-                        animateBG.toggle()
-                    }
-                    withAnimation(.spring().delay(0.1)){
-                        showMenu.toggle()
-                    }
+                    toggleWithAnimation()
                 } label: {
                     Image(systemName: "xmark")
                         .font(.title)
@@ -58,15 +46,16 @@ struct MenuView: View{
                 .foregroundColor(Color.white.opacity(0.5))
                 .padding(.bottom, 15)
 
-                // Menu Buttons...
-                Button { changeSelected(selected: .main)     } label: { MenuTitle(title: "Главное окно", selected: (menuItem == .main)) }
-                Button { changeSelected(selected: .read)     } label: { MenuTitle(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (menuItem == .read)) }
-                Button { changeSelected(selected: .select)   } label: { MenuTitle(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (menuItem == .select)) }
-                Button { changeSelected(selected: .setup)    } label: { MenuTitle(title: "Настройки", selected: (menuItem == .setup)) }
-                Button { changeSelected(selected: .contacts) } label: { MenuTitle(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (menuItem == .contacts)) }
+                // MARK: Menu Buttons
+                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (menuItem == .main)) }
+                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (menuItem == .read)) }
+                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (menuItem == .select)) }
+                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (menuItem == .setup)) }
+                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (menuItem == .contacts)) }
                 
                 Spacer(minLength: 10)
                 
+                // MARK: Version
                 Text("Версия 1.0.2")
                     .foregroundColor(Color.white.opacity(0.5))
             }
@@ -76,50 +65,48 @@ struct MenuView: View{
             .padding(.bottom,getSafeArea().bottom)
             .frame(maxWidth: .infinity,maxHeight: .infinity,alignment: .topLeading)
         }
-        .clipShape(MenuShape(value: animatePath ? 150 : 0))
+        .clipShape(
+            MenuShape(value: 0)
+        )
         .background(
-        
-            MenuShape(value: animatePath ? 150 : 0)
+            MenuShape(value: 0)
+            
                 .stroke(
-                
                     .linearGradient(.init(colors: [
                     
-                        Color("2nd"),
-                        Color("3rd")
+                        Color("ForestGreen"),
+                        Color("Mustard")
                             .opacity(0.7),
-                        Color("4th")
+                        Color("Marigold")
                             .opacity(0.7),
-                        Color.clear,
+                        //Color.clear,
                         
                     ]), startPoint: .top, endPoint: .bottom),
-                    lineWidth: animatePath ? 7 : 0
+                    lineWidth: 1 // 2 for line
                 )
+             
                 .padding(.leading,-50)
+             
         )
         // Custom Shape....
         .ignoresSafeArea()
     }
     
-    func changeSelected(selected: MenuItem) {
-        
-        // Animating Path with little Delay...
-        withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.3, blendDuration: 0.3)){
-            animatePath.toggle()
-        }
-        withAnimation{
-            animateBG.toggle()
-        }
+    func toggleWithAnimation() {
         withAnimation(.spring().delay(0.1)){
             showMenu.toggle()
         }
-        
-        //withAnimation{menuItem = selected}
+    }
+    
+    // MARK: Закрытие меню по выбору пункта
+    func changeSelected(selected: MenuItem) {
+        toggleWithAnimation()
         menuItem = selected
         
     }
     
     @ViewBuilder
-    func MenuTitle(title: String, subTitle: String="", selected: Bool = false) -> some View {
+    func MenuItem(title: String, subTitle: String="", selected: Bool = false) -> some View {
         
         //let isSmall = UIScreen.main.bounds.height < 750
         
@@ -128,15 +115,16 @@ struct MenuView: View{
             Text(title)
                 .font(.system(.headline))
                 .fontWeight(.bold)
-                .foregroundColor(selected ? Color("4th").opacity(0.9) : Color.white.opacity(0.9))
+                .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
             
             Text(subTitle)
                 .font(.system(size: 14))
-                .foregroundColor(selected ? Color("4th").opacity(0.9) : Color.white.opacity(0.9))
+                .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
         }
     }
 }
 
+// MARK: Изгиб
 struct MenuShape: Shape{
     
     var value: CGFloat
@@ -163,10 +151,40 @@ struct MenuShape: Shape{
             // Curve...
             path.move(to: CGPoint(x: width, y: 0))
             
-            path.addCurve(to: CGPoint(x: width, y: height + 100), control1: CGPoint(x: width + value, y: height / 3), control2: CGPoint(x: width - value, y: height / 2))
+            path.addCurve(to: CGPoint(x: width, y: height),
+                          control1: CGPoint(x: width + value, y: height / 3),
+                          control2: CGPoint(x: width - value, y: height / 2))
         }
     }
 }
+
+// MARK: Кнопка меню др.окон
+struct MenuButtonView: View {
+    
+    @Binding var showMenu: Bool
+    @Binding var menuItem: MenuItem
+    
+    var body: some View {
+        Button {
+            withAnimation(.spring()){
+                showMenu.toggle()
+            }
+        } label: {
+            /*
+             Image(systemName: "line.3.horizontal")
+             .foregroundColor(.white)
+             .font(.largeTitle)
+             .fontWeight(.light)
+             */
+            Image("Menu")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 32, height: 32)
+        }
+    }
+}
+
+// MARK: Extensions
 
 // Extedning View to get SafeArea...
 extension View{
@@ -189,50 +207,6 @@ extension View{
     }
 }
 
-struct MenuButtonView: View {
-    
-    @Binding var showMenu: Bool
-    @Binding var animatePath: Bool
-    @Binding var animateBG: Bool
-    @Binding var menuItem: MenuItem
-    
-    var body: some View {
-        //HStack {
-            Button {
-                
-                withAnimation{
-                    animateBG.toggle()
-                }
-                
-                withAnimation(.spring()){
-                    showMenu.toggle()
-                }
-                
-                // Animating Path with little Delay...
-                withAnimation(.interactiveSpring(response: 0.4, dampingFraction: 0.3, blendDuration: 0.3).delay(0.2)){
-                    animatePath.toggle()
-                }
-                
-            } label: {
-                /*
-                Image(systemName: "line.3.horizontal")
-                    .foregroundColor(.white)
-                    .font(.largeTitle)
-                    .fontWeight(.light)
-                */
-                Image("Menu")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 32)
-                
-            }
-            
-            //Spacer()
-        //}
-    }
-}
-
-
 // Since App Supports iOS 14...
 struct BlurView: UIViewRepresentable {
     
@@ -251,21 +225,16 @@ struct BlurView: UIViewRepresentable {
 }
 
 
-
+// MARK: Preview
 struct TestView: View {
     
     @State var showMenu: Bool = true
-    @State var animatePath: Bool = true
-    @State var animateBG: Bool = true
     @State var menuItem: MenuItem = .contacts
     
     var body: some View {
         
         ZStack{
-            
             MenuView(showMenu: $showMenu,
-                     animatePath: $animatePath,
-                     animateBG: $animateBG,
                      menuItem: $menuItem)
                 .offset(x: showMenu ? 0 : -getRect().width)
         }
@@ -279,7 +248,6 @@ struct TestView: View {
     }
     
 }
-
 
 #Preview {
     TestView()
