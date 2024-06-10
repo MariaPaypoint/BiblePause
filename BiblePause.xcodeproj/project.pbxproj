@@ -10,10 +10,20 @@
 		047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC42BEEB626009DEC11 /* SkeletonView.swift */; };
 		047B3BC72BEEBADD009DEC11 /* PageReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC62BEEBADD009DEC11 /* PageReadView.swift */; };
 		047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */; };
-		4C10A3AE2C026CE9008CB5C0 /* modelBooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C10A3AD2C026CE9008CB5C0 /* modelBooks.swift */; };
-		4C10A3B02C026EF1008CB5C0 /* syno-mf.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C10A3AF2C026EF1008CB5C0 /* syno-mf.json */; };
-		4C10A3B22C026F05008CB5C0 /* nrt-mf.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C10A3B12C026F05008CB5C0 /* nrt-mf.json */; };
 		4C141A042BED275000412C60 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C141A032BED275000412C60 /* MenuView.swift */; };
+		4C3F9EA92C14874B00EA807C /* bti-prozorovsky.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */; };
+		4C3F9EAA2C14874B00EA807C /* syn-bondarenko-nopause.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */; };
+		4C3F9EAB2C14874B00EA807C /* syn-bondarenko-pause.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9B2C14874B00EA807C /* syn-bondarenko-pause.json */; };
+		4C3F9EAC2C14874B00EA807C /* syn-bondarenko.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9C2C14874B00EA807C /* syn-bondarenko.json */; };
+		4C3F9EAF2C14874B00EA807C /* bti.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA32C14874B00EA807C /* bti.json */; };
+		4C3F9EB02C14874B00EA807C /* kjv.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA42C14874B00EA807C /* kjv.json */; };
+		4C3F9EB12C14874B00EA807C /* nrt.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA52C14874B00EA807C /* nrt.json */; };
+		4C3F9EB22C14874B00EA807C /* syn.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA62C14874B00EA807C /* syn.json */; };
+		4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F9EB42C148DCD00EA807C /* advElements.swift */; };
+		4C749DFD2C149EF800CF4234 /* advCornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */; };
+		4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E002C14ABE700CF4234 /* typeBible.swift */; };
+		4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E022C14ABFB00CF4234 /* modelBible.swift */; };
+		4C749E052C14AC1500CF4234 /* advBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E042C14AC1500CF4234 /* advBible.swift */; };
 		4C7691242BECEA1300C66FDC /* BiblePauseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */; };
 		4C7691262BECEA1300C66FDC /* PageMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7691252BECEA1300C66FDC /* PageMainView.swift */; };
 		4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C7691272BECEA1800C66FDC /* Assets.xcassets */; };
@@ -22,17 +32,26 @@
 		4C99F3762C023FD400879594 /* advUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3752C023FD400879594 /* advUtility.swift */; };
 		4C99F3782C02660C00879594 /* advExcerpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3772C02660C00879594 /* advExcerpt.swift */; };
 		4C99F37A2C0266C900879594 /* advGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3792C0266C900879594 /* advGlobals.swift */; };
-		4C99F37C2C02697B00879594 /* typeBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F37B2C02697B00879594 /* typeBook.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		047B3BC42BEEB626009DEC11 /* SkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonView.swift; sourceTree = "<group>"; };
 		047B3BC62BEEBADD009DEC11 /* PageReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReadView.swift; sourceTree = "<group>"; };
 		047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectView.swift; sourceTree = "<group>"; };
-		4C10A3AD2C026CE9008CB5C0 /* modelBooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modelBooks.swift; sourceTree = "<group>"; };
-		4C10A3AF2C026EF1008CB5C0 /* syno-mf.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "syno-mf.json"; path = "../../../cep-ios/cep/Resources/Bible/SYNO/syno-mf.json"; sourceTree = "<group>"; };
-		4C10A3B12C026F05008CB5C0 /* nrt-mf.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "nrt-mf.json"; path = "../../../cep-ios/cep/Resources/Bible/NRT/nrt-mf.json"; sourceTree = "<group>"; };
 		4C141A032BED275000412C60 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
+		4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "bti-prozorovsky.json"; sourceTree = "<group>"; };
+		4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko-nopause.json"; sourceTree = "<group>"; };
+		4C3F9E9B2C14874B00EA807C /* syn-bondarenko-pause.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko-pause.json"; sourceTree = "<group>"; };
+		4C3F9E9C2C14874B00EA807C /* syn-bondarenko.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko.json"; sourceTree = "<group>"; };
+		4C3F9EA32C14874B00EA807C /* bti.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bti.json; sourceTree = "<group>"; };
+		4C3F9EA42C14874B00EA807C /* kjv.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = kjv.json; sourceTree = "<group>"; };
+		4C3F9EA52C14874B00EA807C /* nrt.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = nrt.json; sourceTree = "<group>"; };
+		4C3F9EA62C14874B00EA807C /* syn.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = syn.json; sourceTree = "<group>"; };
+		4C3F9EB42C148DCD00EA807C /* advElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advElements.swift; sourceTree = "<group>"; };
+		4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advCornerRadius.swift; sourceTree = "<group>"; };
+		4C749E002C14ABE700CF4234 /* typeBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = typeBible.swift; sourceTree = "<group>"; };
+		4C749E022C14ABFB00CF4234 /* modelBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modelBible.swift; sourceTree = "<group>"; };
+		4C749E042C14AC1500CF4234 /* advBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advBible.swift; sourceTree = "<group>"; };
 		4C7691202BECEA1300C66FDC /* BiblePause.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiblePause.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiblePauseApp.swift; sourceTree = "<group>"; };
 		4C7691252BECEA1300C66FDC /* PageMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMainView.swift; sourceTree = "<group>"; };
@@ -42,7 +61,6 @@
 		4C99F3752C023FD400879594 /* advUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advUtility.swift; sourceTree = "<group>"; };
 		4C99F3772C02660C00879594 /* advExcerpt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advExcerpt.swift; sourceTree = "<group>"; };
 		4C99F3792C0266C900879594 /* advGlobals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advGlobals.swift; sourceTree = "<group>"; };
-		4C99F37B2C02697B00879594 /* typeBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = typeBook.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +74,86 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4C2C74BD2C147BAA005AA3A7 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4C3F9EA82C14874B00EA807C /* Bible */,
+			);
+			name = Resources;
+			path = "../../../cep-ios/cep/Resources";
+			sourceTree = "<group>";
+		};
+		4C3F9E9D2C14874B00EA807C /* audio */ = {
+			isa = PBXGroup;
+			children = (
+				4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */,
+				4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */,
+				4C3F9E9B2C14874B00EA807C /* syn-bondarenko-pause.json */,
+				4C3F9E9C2C14874B00EA807C /* syn-bondarenko.json */,
+			);
+			path = audio;
+			sourceTree = "<group>";
+		};
+		4C3F9EA72C14874B00EA807C /* text */ = {
+			isa = PBXGroup;
+			children = (
+				4C3F9EA32C14874B00EA807C /* bti.json */,
+				4C3F9EA42C14874B00EA807C /* kjv.json */,
+				4C3F9EA52C14874B00EA807C /* nrt.json */,
+				4C3F9EA62C14874B00EA807C /* syn.json */,
+			);
+			path = text;
+			sourceTree = "<group>";
+		};
+		4C3F9EA82C14874B00EA807C /* Bible */ = {
+			isa = PBXGroup;
+			children = (
+				4C3F9E9D2C14874B00EA807C /* audio */,
+				4C3F9EA72C14874B00EA807C /* text */,
+			);
+			name = Bible;
+			path = BiblePause/Resources/Bible;
+			sourceTree = SOURCE_ROOT;
+		};
+		4C3F9EB32C148DB200EA807C /* Adv */ = {
+			isa = PBXGroup;
+			children = (
+				4C99F3792C0266C900879594 /* advGlobals.swift */,
+				4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */,
+				4C3F9EB42C148DCD00EA807C /* advElements.swift */,
+				4C99F3732C023F4300879594 /* advAudioManager.swift */,
+			);
+			path = Adv;
+			sourceTree = "<group>";
+		};
+		4C3F9EB62C148EA200EA807C /* Pages */ = {
+			isa = PBXGroup;
+			children = (
+				4C7691252BECEA1300C66FDC /* PageMainView.swift */,
+				047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */,
+				047B3BC62BEEBADD009DEC11 /* PageReadView.swift */,
+			);
+			path = Pages;
+			sourceTree = "<group>";
+		};
+		4C749DFE2C14ABC000CF4234 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				4C749DFF2C14ABD100CF4234 /* Bible */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		4C749DFF2C14ABD100CF4234 /* Bible */ = {
+			isa = PBXGroup;
+			children = (
+				4C749E002C14ABE700CF4234 /* typeBible.swift */,
+				4C749E022C14ABFB00CF4234 /* modelBible.swift */,
+				4C749E042C14AC1500CF4234 /* advBible.swift */,
+			);
+			path = Bible;
+			sourceTree = "<group>";
+		};
 		4C7691172BECEA1300C66FDC = {
 			isa = PBXGroup;
 			children = (
@@ -78,19 +176,14 @@
 				4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */,
 				047B3BC42BEEB626009DEC11 /* SkeletonView.swift */,
 				4C141A032BED275000412C60 /* MenuView.swift */,
-				4C7691252BECEA1300C66FDC /* PageMainView.swift */,
-				047B3BC62BEEBADD009DEC11 /* PageReadView.swift */,
-				047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */,
+				4C3F9EB62C148EA200EA807C /* Pages */,
+				4C3F9EB32C148DB200EA807C /* Adv */,
+				4C749DFE2C14ABC000CF4234 /* Models */,
 				4C7691272BECEA1800C66FDC /* Assets.xcassets */,
 				4C7691292BECEA1800C66FDC /* Preview Content */,
-				4C99F3732C023F4300879594 /* advAudioManager.swift */,
 				4C99F3752C023FD400879594 /* advUtility.swift */,
-				4C99F3792C0266C900879594 /* advGlobals.swift */,
-				4C99F37B2C02697B00879594 /* typeBook.swift */,
-				4C10A3AD2C026CE9008CB5C0 /* modelBooks.swift */,
 				4C99F3772C02660C00879594 /* advExcerpt.swift */,
-				4C10A3AF2C026EF1008CB5C0 /* syno-mf.json */,
-				4C10A3B12C026F05008CB5C0 /* nrt-mf.json */,
+				4C2C74BD2C147BAA005AA3A7 /* Resources */,
 			);
 			path = BiblePause;
 			sourceTree = "<group>";
@@ -162,9 +255,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C76912B2BECEA1800C66FDC /* Preview Assets.xcassets in Resources */,
+				4C3F9EAA2C14874B00EA807C /* syn-bondarenko-nopause.json in Resources */,
+				4C3F9EB22C14874B00EA807C /* syn.json in Resources */,
+				4C3F9EAF2C14874B00EA807C /* bti.json in Resources */,
+				4C3F9EB02C14874B00EA807C /* kjv.json in Resources */,
+				4C3F9EA92C14874B00EA807C /* bti-prozorovsky.json in Resources */,
+				4C3F9EAC2C14874B00EA807C /* syn-bondarenko.json in Resources */,
+				4C3F9EB12C14874B00EA807C /* nrt.json in Resources */,
 				4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */,
-				4C10A3B02C026EF1008CB5C0 /* syno-mf.json in Resources */,
-				4C10A3B22C026F05008CB5C0 /* nrt-mf.json in Resources */,
+				4C3F9EAB2C14874B00EA807C /* syn-bondarenko-pause.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,16 +275,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C7691262BECEA1300C66FDC /* PageMainView.swift in Sources */,
-				4C99F37C2C02697B00879594 /* typeBook.swift in Sources */,
 				047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */,
 				4C99F37A2C0266C900879594 /* advGlobals.swift in Sources */,
+				4C749E052C14AC1500CF4234 /* advBible.swift in Sources */,
 				4C99F3762C023FD400879594 /* advUtility.swift in Sources */,
 				4C99F3742C023F4300879594 /* advAudioManager.swift in Sources */,
 				4C141A042BED275000412C60 /* MenuView.swift in Sources */,
+				4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */,
 				4C99F3782C02660C00879594 /* advExcerpt.swift in Sources */,
+				4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */,
 				047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */,
 				4C7691242BECEA1300C66FDC /* BiblePauseApp.swift in Sources */,
-				4C10A3AE2C026CE9008CB5C0 /* modelBooks.swift in Sources */,
+				4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */,
+				4C749DFD2C149EF800CF4234 /* advCornerRadius.swift in Sources */,
 				047B3BC72BEEBADD009DEC11 /* PageReadView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

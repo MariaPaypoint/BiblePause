@@ -18,7 +18,7 @@ enum MenuItem {
 struct MenuView: View{
     
     @Binding var showMenu: Bool
-    @Binding var menuItem: MenuItem
+    @Binding var selectedMenuItem: MenuItem
     
     var body: some View{
         
@@ -47,11 +47,11 @@ struct MenuView: View{
                 .padding(.bottom, 15)
 
                 // MARK: Menu Buttons
-                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (menuItem == .main)) }
-                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (menuItem == .read)) }
-                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (menuItem == .select)) }
-                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (menuItem == .setup)) }
-                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (menuItem == .contacts)) }
+                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (selectedMenuItem == .main)) }
+                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (selectedMenuItem == .read)) }
+                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (selectedMenuItem == .select)) }
+                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (selectedMenuItem == .setup)) }
+                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (selectedMenuItem == .contacts)) }
                 
                 Spacer(minLength: 10)
                 
@@ -101,7 +101,7 @@ struct MenuView: View{
     // MARK: Закрытие меню по выбору пункта
     func changeSelected(selected: MenuItem) {
         toggleWithAnimation()
-        menuItem = selected
+        selectedMenuItem = selected
         
     }
     
@@ -162,7 +162,7 @@ struct MenuShape: Shape{
 struct MenuButtonView: View {
     
     @Binding var showMenu: Bool
-    @Binding var menuItem: MenuItem
+    @Binding var selectedMenuItem: MenuItem
     
     var body: some View {
         Button {
@@ -229,13 +229,13 @@ struct BlurView: UIViewRepresentable {
 struct TestView: View {
     
     @State var showMenu: Bool = true
-    @State var menuItem: MenuItem = .contacts
+    @State var selectedMenuItem: MenuItem = .contacts
     
     var body: some View {
         
         ZStack{
             MenuView(showMenu: $showMenu,
-                     menuItem: $menuItem)
+                     selectedMenuItem: $selectedMenuItem)
                 .offset(x: showMenu ? 0 : -getRect().width)
         }
         .background(

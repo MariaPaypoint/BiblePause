@@ -10,29 +10,33 @@ import SwiftUI
 struct SkeletonView: View {
     
     @State var showMenu: Bool = false
-    @State var menuItem: MenuItem = .main
+    @State var selectedMenuItem: MenuItem = .main
+    
+    @State var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
         
     var body: some View {
         
         ZStack {
-            if menuItem == .main {
+            if selectedMenuItem == .main {
                 PageMainView(showMenu: $showMenu,
-                             menuItem: $menuItem)
+                             selectedMenuItem: $selectedMenuItem)
             }
-            else if menuItem == .read {
+            else if selectedMenuItem == .read {
                 PageReadView(showMenu: $showMenu,
-                             menuItem: $menuItem)
+                             selectedMenuItem: $selectedMenuItem)
+                .transition(.move(edge: .trailing))
             }
-            else if menuItem == .select {
+            else if selectedMenuItem == .select {
                 PageSelectView(showMenu: $showMenu,
-                               menuItem: $menuItem)
+                               selectedMenuItem: $selectedMenuItem)
+                .transition(.move(edge: .leading))
             }
             
             
             // слой меню
             MenuView(
                 showMenu: $showMenu,
-                menuItem: $menuItem)
+                selectedMenuItem: $selectedMenuItem)
                 .offset(x: showMenu ? 0 : -getRect().width)
         }
     }

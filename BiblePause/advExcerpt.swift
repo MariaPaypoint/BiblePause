@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-
+/*
 // MARK: Отрывок - массив строк
 func getExcerptStrings(excerpts: String, translationIndex: Int) -> [Verse] {
     
@@ -64,32 +64,6 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
     
     let verses = getExcerptStrings(excerpts: excerpts, translationIndex: translationIndex)
     
-    /*
-    Group {
-        ForEach(verses, id: \.self) { verse in
-            //HStack(alignment: .top, spacing: 4) {
-            
-            Text(String(verse.id))
-                .font(.footnote)
-                .foregroundColor(Color("Mustard"))
-            //.frame(width: 20, alignment: .leading)
-            //.padding(.top, 3)
-            +
-            Text(verse.text)
-            //.frame(maxWidth: .infinity, alignment: .leading)
-            
-            //.padding(.top, 4)
-        }
-    }
-     */
-    
-    /*
-    Text(verses.reduce("") { partialResult, verse in
-        partialResult + (partialResult.isEmpty ? "" : " ") + "\(verse.id). \(verse.text)"
-            })
-            .padding()
-    */
-    
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
         partialResult
         +
@@ -107,6 +81,7 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
     VStack {
         formattedText
             .lineSpacing(/*@START_MENU_TOKEN@*/10.0/*@END_MENU_TOKEN@*/)
-            .padding(basePadding)
+            .padding(globalBasePadding)
     }
 }
+*/
