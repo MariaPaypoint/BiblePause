@@ -9,36 +9,55 @@ import SwiftUI
 
 struct SkeletonView: View {
     
-    @State var showMenu: Bool = false
-    @State var selectedMenuItem: MenuItem = .main
+    @State private var showMenu: Bool = false
+    @State private var selectedMenuItem: MenuItem = .main
     
-    @State var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
-        
+    @State private var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
+    @State private var currentExcerpt: String = "mat 1"
+    @State private var currentExcerptTitle: String = "Евангелие от Матфея"
+    @State private var currentExcerptSubtitle: String = "Глава 1"
+    @State private var currentExcerptIsSingleChapter: Bool = true
+    
+    // не имеет значения здесь
+    @State private var showSelectionAsPartOfRead: Bool = false
+    
     var body: some View {
         
         ZStack {
+            Color("DarkGreen")
+                .edgesIgnoringSafeArea(.all)
+            
             if selectedMenuItem == .main {
                 PageMainView(showMenu: $showMenu,
                              selectedMenuItem: $selectedMenuItem)
             }
-            else if selectedMenuItem == .read {
+            
+            if selectedMenuItem == .read {
                 PageReadView(showMenu: $showMenu,
-                             selectedMenuItem: $selectedMenuItem)
-                .transition(.move(edge: .trailing))
-            }
-            else if selectedMenuItem == .select {
-                PageSelectView(showMenu: $showMenu,
-                               selectedMenuItem: $selectedMenuItem)
-                .transition(.move(edge: .leading))
+                             selectedMenuItem: $selectedMenuItem, 
+                             currentExcerpt: $currentExcerpt,
+                             currentExcerptTitle: $currentExcerptTitle,
+                             currentExcerptSubtitle: $currentExcerptSubtitle,
+                             currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter)
+                //.opacity(selectedMenuItem == .read ? 1 : 0)
             }
             
+            if selectedMenuItem == .select {
+                PageSelectView(showMenu: $showMenu,
+                               selectedMenuItem: $selectedMenuItem,
+                               showFromRead: $showSelectionAsPartOfRead,
+                               currentExcerpt: $currentExcerpt,
+                               currentExcerptTitle: $currentExcerptTitle,
+                               currentExcerptSubtitle: $currentExcerptSubtitle)
+            }
             
             // слой меню
             MenuView(
                 showMenu: $showMenu,
                 selectedMenuItem: $selectedMenuItem)
-                .offset(x: showMenu ? 0 : -getRect().width)
+            .offset(x: showMenu ? 0 : -getRect().width)
         }
+        
     }
 }
 

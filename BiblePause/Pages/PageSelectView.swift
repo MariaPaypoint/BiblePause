@@ -14,6 +14,10 @@ struct PageSelectView: View {
     
     @Binding var showMenu: Bool
     @Binding var selectedMenuItem: MenuItem
+    @Binding var showFromRead: Bool
+    @Binding var currentExcerpt: String
+    @Binding var currentExcerptTitle: String
+    @Binding var currentExcerptSubtitle: String
     
     @State var selectedBiblePartIndex: Int = 1
     @State var expandedBooks: Set<Int> = []
@@ -26,15 +30,19 @@ struct PageSelectView: View {
                 VStack(spacing: 0) {
                     // MARK: шапка
                     HStack {
-                        MenuButtonView(
-                            showMenu: $showMenu,
-                            selectedMenuItem: $selectedMenuItem)
-                        
+                        if showFromRead {
+                            
+                        }
+                        else {
+                            MenuButtonView(
+                                showMenu: $showMenu,
+                                selectedMenuItem: $selectedMenuItem)
+                        }
                         Spacer()
                         
                         Text("Выберите")
                             .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
-                            .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру
+                            .padding(.trailing, showFromRead ? 0 : 32) // компенсация меню, чтобы надпись была по центру
                         
                         Spacer()
                         
@@ -46,7 +54,7 @@ struct PageSelectView: View {
                     // MARK: Выбор завета
                     viewSegmentedButtons(arr: bibleParts,
                                          selIndex: selectedBiblePartIndex,
-                                         baseColor: Color("Marigold"), 
+                                         baseColor: Color("Marigold"),
                                          bgColor: Color("DarkGreen-light")
                     ) { selectedIndex in
                         self.setBiblePart(index: selectedIndex)
@@ -70,7 +78,7 @@ struct PageSelectView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .multilineTextAlignment(.leading)
                                     .padding(.vertical, 10)
-                                    //
+                                //
                                     .onTapGesture {
                                         withAnimation {
                                             toggleBookExpansion(bookId: book.id)
@@ -78,25 +86,29 @@ struct PageSelectView: View {
                                     }
                                 if expandedBooks.contains(book.id) {
                                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
-                                            ForEach(book.chapters) { chapter in
-                                                Button(action: {
-                                                    // Действие при нажатии на кнопку главы
-                                                    withAnimation() {
-                                                        selectedMenuItem = .read
-                                                    }
-                                                }) {
-                                                    Text("\(chapter.id)").frame(maxWidth: .infinity)
-                                                        .padding(10)
-                                                        .foregroundColor(.white)
-                                                        .overlay(
-                                                            RoundedRectangle(cornerRadius: 5)
-                                                                .stroke(Color.white, lineWidth: 1)
-                                                        )
-                                                        .fontWeight(.bold)
+                                        ForEach(book.chapters) { chapter in
+                                            Button(action: {
+                                                // MARK: Действие при нажатии на кнопку главы
+                                                currentExcerpt = "\(book.code) \(chapter.id)"
+                                                currentExcerptTitle = book.fullName
+                                                currentExcerptSubtitle = "Глава \(chapter.id)"
+                                                selectedMenuItem = .read
+                                                withAnimation(Animation.easeInOut(duration: 1)) {
+                                                    showFromRead = false
                                                 }
+                                            }) {
+                                                Text("\(chapter.id)").frame(maxWidth: .infinity)
+                                                    .padding(10)
+                                                    .foregroundColor(.white)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 5)
+                                                            .stroke(Color.white, lineWidth: 1)
+                                                    )
+                                                    .fontWeight(.bold)
                                             }
                                         }
-                                        .padding(.bottom, 10)
+                                    }
+                                    .padding(.bottom, 10)
                                 }
                             }
                         }
@@ -120,11 +132,13 @@ struct PageSelectView: View {
                 Color("DarkGreen")
             )
             
+            
             // слой меню
             MenuView(showMenu: $showMenu,
                      selectedMenuItem: $selectedMenuItem
             )
             .offset(x: showMenu ? 0 : -getRect().width)
+            
         }
         
     }
@@ -148,12 +162,20 @@ struct PageSelectView: View {
 
 struct TestPageSelectView: View {
     
-    @State var showMenu: Bool = false
-    @State var selectedMenuItem: MenuItem = .read
+    @State private var showMenu: Bool = false
+    @State private var selectedMenuItem: MenuItem = .read
+    @State private var showSelection: Bool = false
+    @State private var currentExcerpt = "mat 2"
+    @State private var currentExcerptTitle: String = "Евангелие от Матфея"
+    @State private var currentExcerptSubtitle: String = "Глава 2"
     
     var body: some View {
         PageSelectView(showMenu: $showMenu,
-                       selectedMenuItem: $selectedMenuItem)
+                       selectedMenuItem: $selectedMenuItem, 
+                       showFromRead: $showSelection,
+                       currentExcerpt: $currentExcerpt,
+                       currentExcerptTitle: $currentExcerptTitle,
+                       currentExcerptSubtitle: $currentExcerptSubtitle)
     }
 }
 

@@ -44,7 +44,9 @@ func getExcerptStrings(excerpts: String, translationIndex: Int) -> [Verse] {
     }
     return resVerses
 }
+ */
 
+/*
 // MARK: Отрывок - 1 строка
 func getExcerptText(excerpts: String, translationIndex: Int) -> String {
     
@@ -58,11 +60,14 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
     
     return resText.trimmingCharacters(in: CharacterSet(charactersIn: " ,"))
 }
+ */
 
 // MARK: Готовое отображение
-@ViewBuilder func viewExcerpt(translationIndex: Int, excerpts: String, selectedId: Int=0) -> some View {
+@ViewBuilder 
+//func viewExcerpt(translationIndex: Int, excerpts: String, selectedId: Int=0) -> some View {
+func viewExcerpt(verses: [BibleTextVerseFull], selectedId: Int=0) -> some View {
     
-    let verses = getExcerptStrings(excerpts: excerpts, translationIndex: translationIndex)
+    //let verses = getExcerptStrings(excerpts: excerpts, translationIndex: translationIndex)
     
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
         partialResult
@@ -81,7 +86,7 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
     VStack {
         formattedText
             .lineSpacing(/*@START_MENU_TOKEN@*/10.0/*@END_MENU_TOKEN@*/)
-            .padding(globalBasePadding)
+            //.padding(globalBasePadding)
     }
 }
-*/
+

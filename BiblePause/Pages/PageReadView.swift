@@ -8,74 +8,126 @@
 import SwiftUI
 import AVFoundation
 
-let periodFrom: Double = 18.0
-let periodTo: Double = 248.5 // 248
-
 struct PageReadView: View {
     
     @Binding var showMenu: Bool
     @Binding var selectedMenuItem: MenuItem
+    @Binding var currentExcerpt: String
+    @Binding var currentExcerptTitle: String
+    @Binding var currentExcerptSubtitle: String
+    @Binding var currentExcerptIsSingleChapter: Bool
     
-    @State var currentTranslationIndex: Int = globalCurrentTranslationIndex
-    @State private var currentPosition = 0.0
+    @State private var currentTranslationIndex: Int = globalCurrentTranslationIndex
+    
+    @State private var showSelection = false
     
     let player = AVPlayer()
+    @State private var periodFrom: Double = 0
+    @State private var periodTo: Double = 0
+    @State private var errorDescription: String = ""
+    
+    @State private var textVerses: [BibleTextVerseFull] = []
+    @State private var audioVerses: [BibleAudioVerseFull] = []
+    @State private var currentVerseId = 0
+    
+    @State private var showAudioPanel = true
     
     var body: some View {
         
         ZStack {
             VStack(spacing: 0) {
                 
-                VStack(spacing: 0) {
-                    // шапка
-                    HStack {
-                        MenuButtonView(
-                            showMenu: $showMenu,
-                            selectedMenuItem: $selectedMenuItem)
-                        
-                        Spacer()
-                        
-                        Text("Название книги")
-                            .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
-                        
-                        Spacer()
-                        
-                        Image(systemName: "textformat.size")
-                            .font(.title2)
-                    }
-                    .foregroundColor(.white)
+                // MARK: шапка
+                HStack(alignment: .center) {
+                    MenuButtonView(
+                        showMenu: $showMenu,
+                        selectedMenuItem: $selectedMenuItem)
                     
-                    Text("Глава X")
-                        .foregroundColor(Color("Mustard"))
-                        .font(.title3)
+                    Spacer()
+                    
+                    Button {
+                        player.pause()
+                        
+                        withAnimation(Animation.easeInOut(duration: 1)) {
+                            //selectedMenuItem = .select
+                            showSelection = true
+                        }
+                    } label: {
+                        VStack(spacing: 0) {
+                            Text(currentExcerptTitle)
+                                .fontWeight(.bold)
+                            Text(currentExcerptSubtitle.uppercased())
+                                .foregroundColor(Color("Mustard"))
+                                .font(.footnote)
+                                .fontWeight(.bold)
+                        }
+                        .padding(.top, 6)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "textformat.size")
+                        .font(.system(size: 24))
+                        //.padding(.top, 7)
                 }
+                .foregroundColor(.white)
                 .padding(.horizontal, globalBasePadding)
-                .padding(.top, globalBasePadding)
+                .padding(.bottom, 5)
                 
+                // MARK: Текст
                 ScrollView() {
-                    /*
-                    viewExcerpt(translationIndex: currentTranslationIndex, excerpts: "mf 13:3-23", selectedId: 7)
-                     */
+                    viewExcerpt(verses: textVerses, selectedId: currentVerseId)
+                        .padding(.horizontal, globalBasePadding)
+                        .padding(.vertical, 20)
                 }
                 .frame(maxHeight: .infinity)
-                .mask(
-                            LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                                           startPoint: .init(x: 0.5, y: 0.8), // Начало градиента на 80% высоты
-                                           endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
-                        )
+                .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                                     startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 80% высоты
+                                     endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
+                )
                 Spacer()
                 
                 // MARK: Панель с плеером
                 VStack {
+                    Button {
+                        withAnimation {
+                            showAudioPanel.toggle()
+                        }
+                    } label: {
+                        VStack {
+                            Image(systemName: showAudioPanel ? "chevron.compact.down" : "chevron.compact.up")
+                                .font(.system(size: 36))
+                                .padding(.top, 7)
+                                .padding(.bottom, 7)
+                                .foregroundColor(Color("DarkGreen"))
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    
                     InfoView()
-                    /*
+                        //.hidden(!showAudioPanel)
+                        .frame(height: showAudioPanel ? nil : 0)
+                        .opacity(showAudioPanel ? 1 : 0)
+                    
                     AudioPlayerControlsView(player: player,
                                             timeObserver: PlayerTimeObserver(player: player),
                                             durationObserver: PlayerDurationObserver(player: player),
-                                            itemObserver: PlayerItemObserver(player: player), localAccentColor: "localAccentColor")
-                     */
+                                            itemObserver: PlayerItemObserver(player: player),
+                                            localAccentColor: "localAccentColor",
+                                            periodFrom: currentExcerptIsSingleChapter ? 0 : periodFrom,
+                                            periodTo: currentExcerptIsSingleChapter ? 0 : periodTo,
+                                            audioVerses: audioVerses,
+                                            onChangeCurrentVerse: changeCurrentVerse)
+                    //.padding(.bottom, 30)
+                    //.hidden(!showAudioPanel)
+                    .frame(maxHeight: showAudioPanel ? nil : 0)
+                    .opacity(showAudioPanel ? 1 : 0)
+                    
+                    Spacer()
                 }
-                .padding(.top, globalBasePadding)
+                .frame(maxWidth: .infinity)
+                .frame(height: showAudioPanel ? 265 : 45)
+                //.padding(.top, globalBasePadding)
                 .padding(.horizontal, globalBasePadding)
                 .background(Color("DarkGreen-light"))
                 .clipShape(
@@ -87,11 +139,11 @@ struct PageReadView: View {
                     )
                 )
             }
-            //.padding(20)
+            
             // подложка
             .background(
-                //Color("DarkGreen")
-                LinearGradient(gradient: Gradient(colors: [Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen-light"), Color("DarkGreen-light")]), startPoint: .top, endPoint: .bottom)
+                Color("DarkGreen")
+                //LinearGradient(gradient: Gradient(colors: [Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen-light"), Color("DarkGreen-light")]), startPoint: .top, endPoint: .bottom)
             )
             
             // слой меню
@@ -100,32 +152,63 @@ struct PageReadView: View {
             )
             .offset(x: showMenu ? 0 : -getRect().width)
         }
-        
-        .onAppear {
-            // Настройка аудио сессии
-            do {
-                try AVAudioSession.sharedInstance().setCategory(.playback)
-                try AVAudioSession.sharedInstance().setActive(true)
-            } catch {
-                print("Не удалось настроить аудио сессию: \(error)")
-            }
-                
-            // Здесь ваш код для начала воспроизведения или другой инициализации
-            guard let url = URL(string: "https://4bbl.ru/data/syn-bondarenko/40/13.mp3") else {
-                return
-            }
-            let playerItem = AVPlayerItem(url: url)
-            self.player.replaceCurrentItem(with: playerItem)
-            
-            //self.player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
+        .fullScreenCover(isPresented: $showSelection, onDismiss: {updateExcerpt()} ) {
+            PageSelectView(showMenu: $showMenu,
+                           selectedMenuItem: $selectedMenuItem,
+                           showFromRead: $showSelection,
+                           currentExcerpt: $currentExcerpt,
+                           currentExcerptTitle: $currentExcerptTitle,
+                           currentExcerptSubtitle: $currentExcerptSubtitle)
         }
+        .onAppear {
+            updateExcerpt()
+        }
+        .edgesIgnoringSafeArea(.bottom)
+    }
+    
+    func updateExcerpt() {
+        (textVerses, currentExcerptIsSingleChapter) = getExcerptTextVerses(excerpts: currentExcerpt)
+        
+        let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
+        let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
+        
+        if audioVerses.count > 0 {
+            self.currentVerseId = audioVerses[0].id
+        }
+        
+        self.audioVerses = audioVerses
+        self.periodFrom = from
+        self.periodTo = to
+        self.errorDescription = err
+        
+        // MARK: Audio URL
+        let voice = globalBibleAudio.getCurrentVoice()
+        let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
+        
+        //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
+    
+        let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
+        
+        guard let url = URL(string: address) else {
+            self.errorDescription = "URL not found: \(address)"
+            return
+        }
+        
+        let playerItem = AVPlayerItem(url: url)
+        self.player.replaceCurrentItem(with: playerItem)
+    }
+    
+    func changeCurrentVerse(_ cur: Int) {
+        self.currentVerseId = cur
     }
 }
 
+// MARK: Audio Info&Setup
 struct InfoView: View {
     var body: some View {
         HStack {
             Text("SYNO")
+                .foregroundColor(Color("DarkGreen"))
                 .font(.footnote)
                 .padding(4)
                 .background {
@@ -158,9 +241,10 @@ struct InfoView: View {
         }
     }
 }
-/*
-// MARK: Player
+
+// MARK: Audio Controls
 struct AudioPlayerControlsView: View {
+    
     private enum PlaybackState: Int {
         case waitingForSelection
         case waitingForPlay
@@ -174,6 +258,8 @@ struct AudioPlayerControlsView: View {
     let durationObserver: PlayerDurationObserver
     let itemObserver: PlayerItemObserver
     let localAccentColor: String
+    let periodFrom: Double
+    let periodTo: Double // 0 означает отсутствие конца отрывка
     
     @State private var currentTime: TimeInterval = 0
     @State private var currentDuration: TimeInterval = 0
@@ -182,11 +268,32 @@ struct AudioPlayerControlsView: View {
     
     @State private var stopAtEnd = true
     
+    let audioVerses: [BibleAudioVerseFull]
+    @State private var currentVerseIndex: Int = 0
+    
+    var onChangeCurrentVerse: ((Int) -> Void)
+    
     var body: some View {
-        VStack(spacing: 0) {
+        
+        VStack {
+            
+            // debug
+            //if state == .waitingForSelection {
+            //    let _ = print("Select a song below")
+            //} else if state == .buffering {
+            //    let _ = print("Buffering...")
+            //} else if state == .waitingForPlay {
+            //    let _ = print("You can play now...")
+            //} else if state == .pausing {
+            //    let _ = print("OK, we are waiting...")
+            //} else {
+            //    let _ = print("Great choice!")
+            //}
+            
+            
+            
             
             // MARK: Timeline
-            
             ZStack {
                 
                 Slider(value: $currentTime, in: 0...currentDuration, onEditingChanged: sliderEditingChanged)
@@ -209,7 +316,7 @@ struct AudioPlayerControlsView: View {
                     
                     let pointStart: Double = Double(periodFrom) * point
                     let pointCenter: Double = currentTime * point
-                    let pointEnd: Double = Double(periodTo) * point
+                    let pointEnd: Double = Double(periodTo == 0 ? currentDuration : periodTo) * point
                     
                     let circleLeftSpace: Double = 13 * currentTime / currentDuration
                     let circleRightSpace: Double = 13 - circleLeftSpace
@@ -244,7 +351,6 @@ struct AudioPlayerControlsView: View {
             .padding(.top, globalBasePadding)
             
             // MARK: Times
-            
             HStack {
                     Text("\(Utility.formatSecondsToHMS(currentTime))")
                         .font(.system(size: 13))
@@ -257,10 +363,9 @@ struct AudioPlayerControlsView: View {
                         .foregroundColor(Color("localAccentColor"))
                 
             }
-            
             .padding(.bottom, 10)
-            // MARK: Player buttons
             
+            // MARK: Player buttons
             HStack(spacing: 0) {
                 
                 HStack{
@@ -268,12 +373,12 @@ struct AudioPlayerControlsView: View {
                     Button {
                         
                     } label: {
-                        //Image(systemName: "repeat")
-                        Image(systemName: "backward.fill")
+                        Image(systemName: "backward.frame.fill")
                     }
                     
                     Spacer()
                     
+                    // MARK: Restart
                     Button {
                         stopAtEnd = true
                         self.player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
@@ -281,25 +386,35 @@ struct AudioPlayerControlsView: View {
                         self.player.play()
                     } label: {
                         //Image(systemName: "repeat")
-                        Image(systemName: "backward.end")
+                        Image(systemName: "gobackward")
                     }
                     
                     Spacer()
                     
+                    // MARK: Previos verse
                     Button {
-                        self.player.seek(to: CMTimeMake(value: Int64((currentTime-15)*100), timescale: 100))
+                        //self.player.seek(to: CMTimeMake(value: Int64((currentTime-15)*100), timescale: 100))
+                        
+                        if currentVerseIndex > 0 {
+                            setCurrentVerseIndex(currentVerseIndex - 1)
+                            
+                            let begin = audioVerses[currentVerseIndex].begin
+                            self.player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+                            self.currentTime = begin
+                        }
                     } label: {
-                        Image(systemName: "gobackward.15")
+                        Image(systemName: "arrowshape.turn.up.left.fill")
                     }
                     
                     Spacer()
                     
+                    // MARK: Play/Pause
                     Button {
                         if state == .playing {
                             state = .pausing
                             player.pause()
                         } else {
-                            if self.currentTime >= Double(periodTo) {
+                            if self.currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
                                 self.stopAtEnd = false
                             }
                             
@@ -317,14 +432,22 @@ struct AudioPlayerControlsView: View {
                     
                     Spacer()
                     
+                    // MARK: Next verse
                     Button {
-                        self.player.seek(to: CMTimeMake(value: Int64((currentTime+15)*100), timescale: 100))
+                        //self.player.seek(to: CMTimeMake(value: Int64((currentTime+15)*100), timescale: 100))
+                        if currentVerseIndex+1 < audioVerses.count {
+                            setCurrentVerseIndex(currentVerseIndex + 1)
+                            let begin = audioVerses[currentVerseIndex].begin
+                            self.player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+                            self.currentTime = begin
+                        }
                     } label: {
-                        Image(systemName: "goforward.15")
+                        Image(systemName: "arrowshape.turn.up.right.fill")
                     }
                     
                     Spacer()
                     
+                    // MARK: Speed
                     Button {
                         if self.state == .playing {
                             if self.player.rate >= 2 || self.player.rate < 0.6 {
@@ -336,18 +459,17 @@ struct AudioPlayerControlsView: View {
                             lastRate = self.player.rate
                         }
                     } label: {
-                        Text(lastRate == 1 ? "1x" : String(format: "%.1f", lastRate))
-                            .font(.system(size: 18))
+                        Text(lastRate == 1 ? "x1" : String(format: "%.1f", lastRate))
+                            .font(.system(size: 20))
                         
                     }
                     
                     Spacer()
                     
-                    
                     Button {
                         
                     } label: {
-                        Image(systemName: "forward.fill")
+                        Image(systemName: "forward.frame.fill")
                     }
                     
                 }
@@ -359,7 +481,20 @@ struct AudioPlayerControlsView: View {
             .padding(.bottom, 5)
             .font(.system(size: 22))
             
+            //Slider(value: $currentTime,
+            //       in: 0...currentDuration,
+            //       onEditingChanged: sliderEditingChanged,
+            //       minimumValueLabel: Text("\(Utility.formatSecondsToHMS(currentTime))"),
+            //       maximumValueLabel: Text("\(Utility.formatSecondsToHMS(currentDuration))")) {
+            //        // I have no idea in what scenario this View is shown...
+            //        Text("seek/progress slider")
+            //}
+            //.disabled(state != .playing)
             
+        }
+        
+        .onAppear() {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
         }
         
         // MARK: Observers
@@ -367,17 +502,27 @@ struct AudioPlayerControlsView: View {
         // Listen out for the time observer publishing changes to the player's time
         .onReceive(timeObserver.publisher) { time in
             // Update the local var
-            //print("time: \(time)")
+            
             self.currentTime = time
             // And flag that we've started playback
             ///if time > 0 {
             ///    self.state = .playing
             ///}
             
-            if time > Double(periodTo) && self.stopAtEnd {
+            if time > Double(periodTo == 0 ? currentDuration : periodTo) && self.stopAtEnd {
                 self.state = .pausing
                 self.player.pause()
             }
+            
+            var cur = currentVerseIndex
+            for (index, verse) in audioVerses.enumerated() {
+                if time >= verse.begin && time < verse.end {
+                    cur = index
+                    break
+                }
+            }
+            setCurrentVerseIndex(cur)
+            
         }
         // Listen out for the duration observer publishing changes to the player's item duration
         .onReceive(durationObserver.publisher) { duration in
@@ -406,6 +551,13 @@ struct AudioPlayerControlsView: View {
 //        }
     }
     
+    private func setCurrentVerseIndex(_ cur: Int) {
+        if cur != currentVerseIndex {
+            currentVerseIndex = cur
+            onChangeCurrentVerse(audioVerses[cur].id)
+        }
+    }
+    
     // MARK: Private functions
     private func sliderEditingChanged(editingStarted: Bool) {
         
@@ -424,23 +576,30 @@ struct AudioPlayerControlsView: View {
                 self.timeObserver.pause(false)
                 ///self.state = .playing
             }
-            if currentTime >= Double(periodTo) {
+            if currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
                 self.stopAtEnd = false
             }
         }
     }
 }
-*/
 
-
+// MARK: Preview
 struct TestPageReadView: View {
     
-    @State var showMenu: Bool = false
-    @State var selectedMenuItem: MenuItem = .read
+    @State private var showMenu: Bool = false
+    @State private var selectedMenuItem: MenuItem = .read
+    @State private var currentExcerpt = "mat 2"
+    @State private var currentExcerptTitle: String = "Евангелие от Матфея"
+    @State private var currentExcerptSubtitle: String = "Глава 2"
+    @State private var currentExcerptIsSingleChapter: Bool = true
     
     var body: some View {
         PageReadView(showMenu: $showMenu,
-                     selectedMenuItem: $selectedMenuItem)
+                     selectedMenuItem: $selectedMenuItem,
+                     currentExcerpt: $currentExcerpt,
+                     currentExcerptTitle: $currentExcerptTitle,
+                     currentExcerptSubtitle: $currentExcerptSubtitle,
+                     currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter)
     }
 }
 

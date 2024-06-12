@@ -8,7 +8,7 @@
 
 import Foundation
 
-/*
+
 class Utility: NSObject {
     
     private static var timeHMSFormatter: DateComponentsFormatter = {
@@ -29,4 +29,4 @@ class Utility: NSObject {
     }
     
 }
-*/
+

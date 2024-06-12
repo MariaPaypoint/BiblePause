@@ -8,31 +8,34 @@
 import SwiftUI
 
 
-// MARK: Отрывок - массив строк
-func getExcerptTextVerses(excerpts: String) -> [BibleTextVerseFull] {
+// MARK: Отрывок - массив строк (возвращает список стихов и информацию, является ли отрывок одной единственной целой главой)
+func getExcerptTextVerses(excerpts: String) -> ([BibleTextVerseFull], Bool) {
     
     var resVerses: [BibleTextVerseFull] = []
+    var resSingleChapter: Bool = false
     
     let clear_excerpts = excerpts.trimmingCharacters(in: .whitespacesAndNewlines)
     //let clear_excerpts = "dfdfg, mfodd; 3:3, mf 18, mf 18:kk, mk kk:4, mk 6:4-uu, mk 6:w-4, mk 7:4-5, mk 7:14, , mk 70:14, mk 7:140, mf 5:47-50" // check correct/incorrect values
     
     guard clear_excerpts != "" else {
         if globalDebug { resVerses.append(BibleTextVerseFull(id: 0, text: "EMPTY EXCERPT")) }
-        return resVerses
+        return (resVerses, resSingleChapter)
     }
     
     var oldBook: Int = 0
     var oldChapter: Int = 0
     var oldVerse: Int = 0
     
-    for excerpt in clear_excerpts.components(separatedBy: ",") {
+    let arrClearExcerpts = clear_excerpts.components(separatedBy: ",")
+    
+    for excerpt in arrClearExcerpts {
         let arrExcerpt = excerpt.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: " ")
         guard arrExcerpt.count == 2 else {
             if globalDebug { resVerses.append(BibleTextVerseFull(id: 0, text: "INCORRECT EXCERPT: \(excerpt)")) }
             continue
         }
         let book_name = arrExcerpt[0] // for example: mf
-        let verses_address = arrExcerpt[1]
+        let chapter_and_verses = arrExcerpt[1]
         
         let book = (globalBibleText.getCurrentTranslation().books.first(where: {$0.code == book_name}))
         guard book != nil else {
@@ -40,22 +43,22 @@ func getExcerptTextVerses(excerpts: String) -> [BibleTextVerseFull] {
             continue
         }
         
-        let arrVersesAddress = verses_address.components(separatedBy: ":")
-        guard arrVersesAddress.count == 2 else {
-            if globalDebug { resVerses.append(BibleTextVerseFull(id: 0, text: "INCORRECT ADDRESS (NO VERSES): \(verses_address)")) }
+        let arrChapterAndVerses = chapter_and_verses.components(separatedBy: ":")
+        guard arrChapterAndVerses.count == 1 || arrChapterAndVerses.count == 2 else {
+            if globalDebug { resVerses.append(BibleTextVerseFull(id: 0, text: "INCORRECT CHAPTER AND VERSES: \(chapter_and_verses)")) }
             continue
         }
-        guard Int(arrVersesAddress[0]) != nil else {
-            resVerses.append(BibleTextVerseFull(id: 0, text: "INCORRECT ADDRESS (NOT INT): \(arrVersesAddress[0])"))
+        guard Int(arrChapterAndVerses[0]) != nil else {
+            resVerses.append(BibleTextVerseFull(id: 0, text: "INCORRECT CHAPTER (NOT INT): \(arrChapterAndVerses[0])"))
             continue
         }
-        let chapter_index = Int(arrVersesAddress[0])!
+        let chapter_index = Int(arrChapterAndVerses[0])!
         let chapter = book!.chapters.first(where: {element in element.id == chapter_index})
         guard chapter != nil else {
-            if globalDebug { resVerses.append(BibleTextVerseFull(id: 0, text: "INCORRECT CHAPTER: \(chapter_index)")) }
+            if globalDebug { resVerses.append(BibleTextVerseFull(id: 0, text: "NONEXISTENT CHAPTER: \(chapter_index)")) }
             continue
         }
-        let verses_interval = arrVersesAddress[1]
+        let verses_interval = arrChapterAndVerses.count == 1 ? "1-\(chapter!.verses.count)" : arrChapterAndVerses[1]
         
         let arrVersesInterval = verses_interval.components(separatedBy: "-")
         guard Int(arrVersesInterval[0]) != nil else {
@@ -92,9 +95,10 @@ func getExcerptTextVerses(excerpts: String) -> [BibleTextVerseFull] {
             oldVerse = verse!.id
             
         }
+        resSingleChapter = arrClearExcerpts.count == 1 && arrChapterAndVerses.count == 1
     }
     
-    return resVerses
+    return (resVerses, resSingleChapter)
 }
 
 // MARK: Audio
@@ -113,8 +117,6 @@ func getExcerptAudioVerses(textVerses: [BibleTextVerseFull]) -> ([BibleAudioVers
     var chapterDigitCode: Int = 0
     
     for textVerse in textVerses {
-        
-        print(textVerse.text)
         
         guard textVerse.id != 0 else { continue } // ошибка стиха, но может он один такой
         
@@ -185,8 +187,14 @@ func getExcerptPeriod(audioVerses: [BibleAudioVerseFull]) -> (Double, Double) {
         return (0, 0)
     }
     
+    // это нужно, чтобы если отрывок начинается с 1 стиха, то позиционировать на начало дорожки, а не на первый стих
+    //let period_from: Double = audioVerses[0].id == 1 ? 0 : audioVerses[0].begin
+    
     let period_from: Double = audioVerses[0].begin
     let period_to: Double = audioVerses[audioVerses.count - 1].end
+    
+    print(period_from)
+    print(period_to)
     
     return (period_from - 0, period_to - 0)
 }
@@ -194,7 +202,7 @@ func getExcerptPeriod(audioVerses: [BibleAudioVerseFull]) -> (Double, Double) {
 // MARK: Отрывок в 1 строку
 func getExcerptText(excerpts: String) -> String {
     
-    let verses = getExcerptTextVerses(excerpts: excerpts)
+    let (verses, isSingleChapter) = getExcerptTextVerses(excerpts: excerpts)
     
     var resText = ""
     
@@ -205,6 +213,7 @@ func getExcerptText(excerpts: String) -> String {
     return resText.trimmingCharacters(in: CharacterSet(charactersIn: " ,"))
 }
 
+/*
 // MARK: Готовое отображение
 @ViewBuilder func viewExcerpt(verses: [BibleTextVerseFull]) -> some View {
     
@@ -228,3 +237,4 @@ func getExcerptText(excerpts: String) -> String {
         .padding(.top, 4)
     }
 }
+*/
