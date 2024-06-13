@@ -13,10 +13,12 @@ struct SkeletonView: View {
     @State private var selectedMenuItem: MenuItem = .main
     
     @State private var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
-    @State private var currentExcerpt: String = "mat 1"
+    @State private var currentExcerpt: String = "mat 3:2-3"
     @State private var currentExcerptTitle: String = "Евангелие от Матфея"
-    @State private var currentExcerptSubtitle: String = "Глава 1"
+    @State private var currentExcerptSubtitle: String = "Глава 3:2-3"
     @State private var currentExcerptIsSingleChapter: Bool = true
+    @State private var currentBookId: Int = 0
+    @State private var currentChapterId: Int = 0
     
     // не имеет значения здесь
     @State private var showSelectionAsPartOfRead: Bool = false
@@ -38,7 +40,9 @@ struct SkeletonView: View {
                              currentExcerpt: $currentExcerpt,
                              currentExcerptTitle: $currentExcerptTitle,
                              currentExcerptSubtitle: $currentExcerptSubtitle,
-                             currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter)
+                             currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
+                             currentBookId: $currentBookId,
+                             currentChapterId: $currentChapterId)
                 //.opacity(selectedMenuItem == .read ? 1 : 0)
             }
             
@@ -48,7 +52,9 @@ struct SkeletonView: View {
                                showFromRead: $showSelectionAsPartOfRead,
                                currentExcerpt: $currentExcerpt,
                                currentExcerptTitle: $currentExcerptTitle,
-                               currentExcerptSubtitle: $currentExcerptSubtitle)
+                               currentExcerptSubtitle: $currentExcerptSubtitle,
+                               currentBookId: $currentBookId,
+                               currentChapterId: $currentChapterId)
             }
             
             // слой меню

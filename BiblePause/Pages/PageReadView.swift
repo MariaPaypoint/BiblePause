@@ -16,6 +16,8 @@ struct PageReadView: View {
     @Binding var currentExcerptTitle: String
     @Binding var currentExcerptSubtitle: String
     @Binding var currentExcerptIsSingleChapter: Bool
+    @Binding var currentBookId: Int
+    @Binding var currentChapterId: Int
     
     @State private var currentTranslationIndex: Int = globalCurrentTranslationIndex
     
@@ -66,8 +68,9 @@ struct PageReadView: View {
                         
                         Spacer()
                         
-                        Image(systemName: "textformat.size")
-                            .font(.system(size: 24))
+                        //Image(systemName: "textformat.size")
+                        Image(systemName: "slider.vertical.3")
+                            .font(.system(size: 28))
                         //.padding(.top, 7)
                     }
                     .foregroundColor(.white)
@@ -162,7 +165,10 @@ struct PageReadView: View {
                                showFromRead: $showSelection,
                                currentExcerpt: $currentExcerpt,
                                currentExcerptTitle: $currentExcerptTitle,
-                               currentExcerptSubtitle: $currentExcerptSubtitle)
+                               currentExcerptSubtitle: $currentExcerptSubtitle,
+                               currentBookId: $currentBookId,
+                               currentChapterId: $currentChapterId
+                )
             }
             .onAppear {
                 updateExcerpt(proxy: proxy)
@@ -206,6 +212,9 @@ struct PageReadView: View {
         withAnimation {
             proxy.scrollTo("top", anchor: .top)
         }
+        
+        currentBookId = textVerses[0].bookDigitCode
+        currentChapterId = textVerses[0].chapterDigitCode
     }
     
     func changeCurrentVerse(_ cur: Int) {
@@ -246,7 +255,7 @@ struct InfoView: View {
                     .font(.footnote)
             }
             Spacer()
-            Image(systemName: "gearshape")
+            Image(systemName: "gearshape.fill")
                 .imageScale(.large)
                 .foregroundStyle(Color("localAccentColor"))
         }
@@ -605,6 +614,8 @@ struct TestPageReadView: View {
     @State private var currentExcerptTitle: String = "Евангелие от Матфея"
     @State private var currentExcerptSubtitle: String = "Глава 2"
     @State private var currentExcerptIsSingleChapter: Bool = true
+    @State private var currentBookId: Int = 0
+    @State private var currentChapterId: Int = 0
     
     var body: some View {
         PageReadView(showMenu: $showMenu,
@@ -612,7 +623,9 @@ struct TestPageReadView: View {
                      currentExcerpt: $currentExcerpt,
                      currentExcerptTitle: $currentExcerptTitle,
                      currentExcerptSubtitle: $currentExcerptSubtitle,
-                     currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter)
+                     currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
+                     currentBookId: $currentBookId,
+                     currentChapterId: $currentChapterId)
     }
 }
 
