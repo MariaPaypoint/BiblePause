@@ -33,140 +33,145 @@ struct PageReadView: View {
     @State private var showAudioPanel = true
     
     var body: some View {
-        
-        ZStack {
-            VStack(spacing: 0) {
-                
-                // MARK: шапка
-                HStack(alignment: .center) {
-                    MenuButtonView(
-                        showMenu: $showMenu,
-                        selectedMenuItem: $selectedMenuItem)
+        ScrollViewReader { proxy in
+            ZStack {
+                VStack(spacing: 0) {
                     
-                    Spacer()
-                    
-                    Button {
-                        player.pause()
+                    // MARK: шапка
+                    HStack(alignment: .center) {
+                        MenuButtonView(
+                            showMenu: $showMenu,
+                            selectedMenuItem: $selectedMenuItem)
                         
-                        withAnimation(Animation.easeInOut(duration: 1)) {
-                            //selectedMenuItem = .select
-                            showSelection = true
+                        Spacer()
+                        
+                        Button {
+                            player.pause()
+                            
+                            withAnimation(Animation.easeInOut(duration: 1)) {
+                                //selectedMenuItem = .select
+                                showSelection = true
+                            }
+                        } label: {
+                            VStack(spacing: 0) {
+                                Text(currentExcerptTitle)
+                                    .fontWeight(.bold)
+                                Text(currentExcerptSubtitle.uppercased())
+                                    .foregroundColor(Color("Mustard"))
+                                    .font(.footnote)
+                                    .fontWeight(.bold)
+                            }
+                            .padding(.top, 6)
                         }
-                    } label: {
-                        VStack(spacing: 0) {
-                            Text(currentExcerptTitle)
-                                .fontWeight(.bold)
-                            Text(currentExcerptSubtitle.uppercased())
-                                .foregroundColor(Color("Mustard"))
-                                .font(.footnote)
-                                .fontWeight(.bold)
-                        }
-                        .padding(.top, 6)
-                    }
-                    
-                    Spacer()
-                    
-                    Image(systemName: "textformat.size")
-                        .font(.system(size: 24))
+                        
+                        Spacer()
+                        
+                        Image(systemName: "textformat.size")
+                            .font(.system(size: 24))
                         //.padding(.top, 7)
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, globalBasePadding)
-                .padding(.bottom, 5)
-                
-                // MARK: Текст
-                ScrollView() {
-                    viewExcerpt(verses: textVerses, selectedId: currentVerseId)
-                        .padding(.horizontal, globalBasePadding)
-                        .padding(.vertical, 20)
-                }
-                .frame(maxHeight: .infinity)
-                .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                                     startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 80% высоты
-                                     endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
-                )
-                Spacer()
-                
-                // MARK: Панель с плеером
-                VStack {
-                    Button {
-                        withAnimation {
-                            showAudioPanel.toggle()
-                        }
-                    } label: {
-                        VStack {
-                            Image(systemName: showAudioPanel ? "chevron.compact.down" : "chevron.compact.up")
-                                .font(.system(size: 36))
-                                .padding(.top, 7)
-                                .padding(.bottom, 7)
-                                .foregroundColor(Color("DarkGreen"))
-                        }
-                        .frame(maxWidth: .infinity)
                     }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, globalBasePadding)
+                    .padding(.bottom, 5)
                     
-                    InfoView()
-                        //.hidden(!showAudioPanel)
-                        .frame(height: showAudioPanel ? nil : 0)
-                        .opacity(showAudioPanel ? 1 : 0)
-                    
-                    AudioPlayerControlsView(player: player,
-                                            timeObserver: PlayerTimeObserver(player: player),
-                                            durationObserver: PlayerDurationObserver(player: player),
-                                            itemObserver: PlayerItemObserver(player: player),
-                                            localAccentColor: "localAccentColor",
-                                            periodFrom: currentExcerptIsSingleChapter ? 0 : periodFrom,
-                                            periodTo: currentExcerptIsSingleChapter ? 0 : periodTo,
-                                            audioVerses: audioVerses,
-                                            onChangeCurrentVerse: changeCurrentVerse)
-                    //.padding(.bottom, 30)
-                    //.hidden(!showAudioPanel)
-                    .frame(maxHeight: showAudioPanel ? nil : 0)
-                    .opacity(showAudioPanel ? 1 : 0)
-                    
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: showAudioPanel ? 265 : 45)
-                //.padding(.top, globalBasePadding)
-                .padding(.horizontal, globalBasePadding)
-                .background(Color("DarkGreen-light"))
-                .clipShape(
-                    .rect(
-                        topLeadingRadius: 25,
-                        bottomLeadingRadius: 0,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: 25
+                    // MARK: Текст
+                    ScrollView() {
+                        viewExcerpt(verses: textVerses, selectedId: currentVerseId)
+                            .padding(.horizontal, globalBasePadding)
+                            .padding(.vertical, 20)
+                            .id("top")
+                    }
+                    .frame(maxHeight: .infinity)
+                    .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                                         startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 80% высоты
+                                         endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
                     )
+                    Spacer()
+                    
+                    // MARK: Панель с плеером
+                    VStack {
+                        Button {
+                            withAnimation {
+                                showAudioPanel.toggle()
+                            }
+                        } label: {
+                            VStack {
+                                Image(systemName: showAudioPanel ? "chevron.compact.down" : "chevron.compact.up")
+                                    .font(.system(size: 36))
+                                    .padding(.top, 7)
+                                    .padding(.bottom, 7)
+                                    .foregroundColor(Color("DarkGreen"))
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        
+                        InfoView()
+                        //.hidden(!showAudioPanel)
+                            .frame(height: showAudioPanel ? nil : 0)
+                            .opacity(showAudioPanel ? 1 : 0)
+                        
+                        AudioPlayerControlsView(player: player,
+                                                timeObserver: PlayerTimeObserver(player: player),
+                                                durationObserver: PlayerDurationObserver(player: player),
+                                                itemObserver: PlayerItemObserver(player: player),
+                                                localAccentColor: "localAccentColor",
+                                                periodFrom: currentExcerptIsSingleChapter ? 0 : periodFrom,
+                                                periodTo: currentExcerptIsSingleChapter ? 0 : periodTo,
+                                                audioVerses: audioVerses,
+                                                onChangeCurrentVerse: changeCurrentVerse)
+                        //.padding(.bottom, 30)
+                        //.hidden(!showAudioPanel)
+                        .frame(maxHeight: showAudioPanel ? nil : 0)
+                        .opacity(showAudioPanel ? 1 : 0)
+                        
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: showAudioPanel ? 265 : 45)
+                    //.padding(.top, globalBasePadding)
+                    .padding(.horizontal, globalBasePadding)
+                    .background(Color("DarkGreen-light"))
+                    .clipShape(
+                        .rect(
+                            topLeadingRadius: 25,
+                            bottomLeadingRadius: 0,
+                            bottomTrailingRadius: 0,
+                            topTrailingRadius: 25
+                        )
+                    )
+                }
+                
+                // подложка
+                .background(
+                    Color("DarkGreen")
+                    //LinearGradient(gradient: Gradient(colors: [Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen-light"), Color("DarkGreen-light")]), startPoint: .top, endPoint: .bottom)
                 )
+                
+                // слой меню
+                MenuView(showMenu: $showMenu,
+                         selectedMenuItem: $selectedMenuItem
+                )
+                .offset(x: showMenu ? 0 : -getRect().width)
             }
-            
-            // подложка
-            .background(
-                Color("DarkGreen")
-                //LinearGradient(gradient: Gradient(colors: [Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen"), Color("DarkGreen-light"), Color("DarkGreen-light")]), startPoint: .top, endPoint: .bottom)
-            )
-            
-            // слой меню
-            MenuView(showMenu: $showMenu,
-                     selectedMenuItem: $selectedMenuItem
-            )
-            .offset(x: showMenu ? 0 : -getRect().width)
+            .fullScreenCover(isPresented: $showSelection, onDismiss: {
+                updateExcerpt(proxy: proxy)
+            })
+            {
+                PageSelectView(showMenu: $showMenu,
+                               selectedMenuItem: $selectedMenuItem,
+                               showFromRead: $showSelection,
+                               currentExcerpt: $currentExcerpt,
+                               currentExcerptTitle: $currentExcerptTitle,
+                               currentExcerptSubtitle: $currentExcerptSubtitle)
+            }
+            .onAppear {
+                updateExcerpt(proxy: proxy)
+            }
+            .edgesIgnoringSafeArea(.bottom)
         }
-        .fullScreenCover(isPresented: $showSelection, onDismiss: {updateExcerpt()} ) {
-            PageSelectView(showMenu: $showMenu,
-                           selectedMenuItem: $selectedMenuItem,
-                           showFromRead: $showSelection,
-                           currentExcerpt: $currentExcerpt,
-                           currentExcerptTitle: $currentExcerptTitle,
-                           currentExcerptSubtitle: $currentExcerptSubtitle)
-        }
-        .onAppear {
-            updateExcerpt()
-        }
-        .edgesIgnoringSafeArea(.bottom)
     }
     
-    func updateExcerpt() {
+    func updateExcerpt(proxy: ScrollViewProxy) {
         (textVerses, currentExcerptIsSingleChapter) = getExcerptTextVerses(excerpts: currentExcerpt)
         
         let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
@@ -196,10 +201,16 @@ struct PageReadView: View {
         
         let playerItem = AVPlayerItem(url: url)
         self.player.replaceCurrentItem(with: playerItem)
+        
+        // листание наверх
+        withAnimation {
+            proxy.scrollTo("top", anchor: .top)
+        }
     }
     
     func changeCurrentVerse(_ cur: Int) {
         self.currentVerseId = cur
+        print(cur)
     }
 }
 
@@ -401,6 +412,8 @@ struct AudioPlayerControlsView: View {
                             let begin = audioVerses[currentVerseIndex].begin
                             self.player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
                             self.currentTime = begin
+                            
+                            onChangeCurrentVerse(0)
                         }
                     } label: {
                         Image(systemName: "arrowshape.turn.up.left.fill")
