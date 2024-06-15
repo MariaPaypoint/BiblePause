@@ -18,7 +18,7 @@ struct PageSelectView: View {
     @Binding var currentBookId: Int
     @Binding var currentChapterId: Int
     
-    @State private var selectedBiblePartIndex: Int = 1
+    @State private var selectedBiblePartIndex: Int = -1 // 0 - ВЗ, 1 - НЗ
     @State private var expandedBook: Int = 0
     @State private var needSelectedBookOpen: Bool = true
 
@@ -67,7 +67,13 @@ struct PageSelectView: View {
                                          baseColor: Color("Marigold"),
                                          bgColor: Color("DarkGreen-light")
                     ) { selectedIndex in
-                        self.setBiblePart(index: selectedIndex)
+                        if selectedBiblePartIndex == selectedIndex {
+                            // повторный клик - отмена выделения
+                            selectedBiblePartIndex = -1
+                        }
+                        else {
+                            selectedBiblePartIndex = selectedIndex
+                        }
                     }
                     .padding(.vertical, 15)
                     .font(.title)
@@ -78,71 +84,75 @@ struct PageSelectView: View {
                             VStack(alignment: .leading) {
                                 let books = globalBibleText.getCurrentTranslation().books
                                 ForEach(Array(books.enumerated()), id: \.element.id) { index, book in
-                                    if let headerTitle = bibleHeaders[index] {
-                                        Text(headerTitle)
-                                            .textCase(.uppercase)
-                                            .padding(.top, 30)
-                                            .padding(.bottom, 10)
-                                            .foregroundColor(Color("localAccentColor").opacity(0.5))
-                                    }
-                                    // MARK: Разворачивание книги
-                                    Button {
-                                        withAnimation {
-                                            expandedBook = book.id
-                                            
-                                            if book.id != currentBookId {
-                                                needSelectedBookOpen = false
-                                            }
-                                            
-                                            proxy.scrollTo("top_\(book.id)", anchor: .top)
+                                    if (selectedBiblePartIndex == 0 && index < 39) || (selectedBiblePartIndex == 1 && index >= 39) || selectedBiblePartIndex == -1 {
+                                        if let headerTitle = bibleHeaders[index] {
+                                            Text(headerTitle)
+                                                .textCase(.uppercase)
+                                                .padding(.top, 30)
+                                                .padding(.bottom, 10)
+                                                .foregroundColor(Color("localAccentColor").opacity(0.5))
                                         }
-                                    } label: {
-                                        Text(book.fullName)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .frame(width: .infinity)
-                                            .padding(.vertical, 10)
-                                            .id("top_\(book.id)")
-                                    }
-                                    
-                                    if expandedBook == book.id || (currentBookId == book.id && needSelectedBookOpen) {
-                                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
-                                            ForEach(book.chapters) { chapter in
-                                                Button(action: {
-                                                    // MARK: Действие при нажатии на кнопку главы
-                                                    currentExcerpt = "\(book.code) \(chapter.id)"
-                                                    currentExcerptTitle = book.fullName
-                                                    currentExcerptSubtitle = "Глава \(chapter.id)"
-                                                    selectedMenuItem = .read
-                                                    withAnimation(Animation.easeInOut(duration: 1)) {
-                                                        showFromRead = false
-                                                    }
-                                                    
-                                                }) {
-                                                    if currentBookId == book.id && currentChapterId == chapter.id {
-                                                        Text("\(chapter.id)").frame(maxWidth: .infinity)
-                                                            .padding(10)
+                                        // MARK: Разворачивание книги
+                                        Button {
+                                            withAnimation {
+                                                expandedBook = book.id
+                                                
+                                                if book.id != currentBookId {
+                                                    needSelectedBookOpen = false
+                                                }
+                                                
+                                                proxy.scrollTo("top_\(book.id)", anchor: .top)
+                                            }
+                                        } label: {
+                                            Text(book.fullName)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .frame(width: .infinity)
+                                                .padding(.vertical, 10)
+                                                .id("top_\(book.id)")
+                                        }
+                                        
+                                        if expandedBook == book.id || (currentBookId == book.id && needSelectedBookOpen) {
+                                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
+                                                ForEach(book.chapters) { chapter in
+                                                    Button(action: {
+                                                        // MARK: Действие при нажатии на кнопку главы
+                                                        currentExcerpt = "\(book.code) \(chapter.id)"
+                                                        currentExcerptTitle = book.fullName
+                                                        currentExcerptSubtitle = "Глава \(chapter.id)"
+                                                        selectedMenuItem = .read
+                                                        withAnimation(Animation.easeInOut(duration: 1)) {
+                                                            showFromRead = false
+                                                        }
+                                                        
+                                                    }) {
+                                                        if currentBookId == book.id && currentChapterId == chapter.id {
+                                                            Text("\(chapter.id)").frame(maxWidth: .infinity)
+                                                                .padding(.vertical, 10)
                                                             //.foregroundColor(Color("DarkGreen"))
-                                                            .background(.white.opacity(0.3))
-                                                            .cornerRadius(5)
-                                                            .overlay(
-                                                                RoundedRectangle(cornerRadius: 5)
-                                                                    .stroke(Color.white, lineWidth: 1)
-                                                            )
-                                                            .fontWeight(.bold)
-                                                    } else {
-                                                        Text("\(chapter.id)").frame(maxWidth: .infinity)
-                                                            .padding(.vertical, 10)
-                                                            .foregroundColor(.white)
-                                                            .overlay(
-                                                                RoundedRectangle(cornerRadius: 5)
-                                                                    .stroke(Color.white, lineWidth: 1)
-                                                            )
-                                                            .fontWeight(.bold)
+                                                                .background(.white.opacity(0.3))
+                                                                .cornerRadius(5)
+                                                                .overlay(
+                                                                    RoundedRectangle(cornerRadius: 5)
+                                                                        .stroke(Color.white, lineWidth: 1)
+                                                                )
+                                                                .fontWeight(.bold)
+                                                        } else {
+                                                            Text("\(chapter.id)").frame(maxWidth: .infinity)
+                                                                .padding(.vertical, 10)
+                                                                .foregroundColor(.white)
+                                                                .overlay(
+                                                                    RoundedRectangle(cornerRadius: 5)
+                                                                        .stroke(Color.white, lineWidth: 1)
+                                                                )
+                                                                .fontWeight(.bold)
+                                                            
+                                                        }
                                                     }
                                                 }
                                             }
+                                            .padding(.bottom, 10)
+                                            .padding(1)
                                         }
-                                        .padding(.bottom, 10)
                                     }
                                 }
                             }
@@ -176,17 +186,7 @@ struct PageSelectView: View {
             .offset(x: showMenu ? 0 : -getRect().width)
             
         }
-        
     }
-    
-    private func setBiblePart(index: Int) {
-        
-        selectedBiblePartIndex = index
-        //globalBibleText.setCurrentTranslation(index: index)
-        
-    }
-    
-
 }
 
 struct TestPageSelectView: View {
