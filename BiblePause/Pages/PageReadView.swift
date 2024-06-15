@@ -47,6 +47,7 @@ struct PageReadView: View {
                         
                         Spacer()
                         
+                        // заголовок, который ведет на выбор главы
                         Button {
                             player.pause()
                             
@@ -68,10 +69,14 @@ struct PageReadView: View {
                         
                         Spacer()
                         
+                        
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 26))
+                        //    .foregroundStyle(Color("localAccentColor"))
                         //Image(systemName: "textformat.size")
-                        Image(systemName: "slider.vertical.3")
-                            .font(.system(size: 28))
-                        //.padding(.top, 7)
+                        //Image(systemName: "slider.vertical.3")
+                        //    .font(.system(size: 28))
+                        //    .padding(.top, 7)
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, globalBasePadding)
@@ -93,6 +98,7 @@ struct PageReadView: View {
                     
                     // MARK: Панель с плеером
                     VStack {
+                        // сворачивание/разворачивание панельки
                         Button {
                             withAnimation {
                                 showAudioPanel.toggle()
@@ -108,11 +114,12 @@ struct PageReadView: View {
                             .frame(maxWidth: .infinity)
                         }
                         
+                        // информация
                         InfoView()
-                        //.hidden(!showAudioPanel)
                             .frame(height: showAudioPanel ? nil : 0)
                             .opacity(showAudioPanel ? 1 : 0)
                         
+                        // плеер
                         AudioPlayerControlsView(player: player,
                                                 timeObserver: PlayerTimeObserver(player: player),
                                                 durationObserver: PlayerDurationObserver(player: player),
@@ -122,10 +129,8 @@ struct PageReadView: View {
                                                 periodTo: currentExcerptIsSingleChapter ? 0 : periodTo,
                                                 audioVerses: audioVerses,
                                                 onChangeCurrentVerse: changeCurrentVerse)
-                        //.padding(.bottom, 30)
-                        //.hidden(!showAudioPanel)
-                        .frame(maxHeight: showAudioPanel ? nil : 0)
-                        .opacity(showAudioPanel ? 1 : 0)
+                            .frame(maxHeight: showAudioPanel ? nil : 0)
+                            .opacity(showAudioPanel ? 1 : 0)
                         
                         Spacer()
                     }
@@ -254,10 +259,10 @@ struct InfoView: View {
                     .foregroundStyle(Color("localAccentColor"))
                     .font(.footnote)
             }
-            Spacer()
-            Image(systemName: "gearshape.fill")
-                .imageScale(.large)
-                .foregroundStyle(Color("localAccentColor"))
+            //Spacer()
+            //Image(systemName: "gearshape.fill")
+            //    .imageScale(.large)
+            //    .foregroundStyle(Color("localAccentColor"))
         }
     }
 }

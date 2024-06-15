@@ -54,11 +54,7 @@ struct PageSelectView: View {
                             .foregroundColor(.white)
                         
                         Spacer()
-                        
-                        //Image(systemName: "textformat.size")
-                        //    .font(.title2)
                     }
-                    
                     .padding(.bottom, 10)
                     
                     // MARK: Выбор завета
@@ -86,11 +82,7 @@ struct PageSelectView: View {
                                 ForEach(Array(books.enumerated()), id: \.element.id) { index, book in
                                     if (selectedBiblePartIndex == 0 && index < 39) || (selectedBiblePartIndex == 1 && index >= 39) || selectedBiblePartIndex == -1 {
                                         if let headerTitle = bibleHeaders[index] {
-                                            Text(headerTitle)
-                                                .textCase(.uppercase)
-                                                .padding(.top, 30)
-                                                .padding(.bottom, 10)
-                                                .foregroundColor(Color("localAccentColor").opacity(0.5))
+                                            viewGroup(text: headerTitle)
                                         }
                                         // MARK: Разворачивание книги
                                         Button {
@@ -168,10 +160,6 @@ struct PageSelectView: View {
                     }
                 }
                 .padding(.horizontal, globalBasePadding)
-                .padding(.top, globalBasePadding)
-                
-                //
-                
             }
             // подложка
             .background(
@@ -193,7 +181,7 @@ struct TestPageSelectView: View {
     
     @State private var showMenu: Bool = false
     @State private var selectedMenuItem: MenuItem = .read
-    @State private var showSelection: Bool = true
+    @State private var showFromRead: Bool = true
     @State private var currentExcerpt = "mat 2"
     @State private var currentExcerptTitle: String = "Евангелие от Матфея"
     @State private var currentExcerptSubtitle: String = "Глава 2"
@@ -203,7 +191,7 @@ struct TestPageSelectView: View {
     var body: some View {
         PageSelectView(showMenu: $showMenu,
                        selectedMenuItem: $selectedMenuItem, 
-                       showFromRead: $showSelection,
+                       showFromRead: $showFromRead,
                        currentExcerpt: $currentExcerpt,
                        currentExcerptTitle: $currentExcerptTitle,
                        currentExcerptSubtitle: $currentExcerptSubtitle,

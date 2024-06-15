@@ -202,7 +202,7 @@ func getExcerptPeriod(audioVerses: [BibleAudioVerseFull]) -> (Double, Double) {
 // MARK: Отрывок в 1 строку
 func getExcerptText(excerpts: String) -> String {
     
-    let (verses, isSingleChapter) = getExcerptTextVerses(excerpts: excerpts)
+    let (verses, _) = getExcerptTextVerses(excerpts: excerpts)
     
     var resText = ""
     

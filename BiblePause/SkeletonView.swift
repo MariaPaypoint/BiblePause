@@ -21,7 +21,7 @@ struct SkeletonView: View {
     @State private var currentChapterId: Int = 0
     
     // не имеет значения здесь
-    @State private var showSelectionAsPartOfRead: Bool = false
+    @State private var showAsPartOfRead: Bool = false
     
     var body: some View {
         
@@ -34,7 +34,7 @@ struct SkeletonView: View {
                              selectedMenuItem: $selectedMenuItem)
             }
             
-            if selectedMenuItem == .read {
+            else if selectedMenuItem == .read {
                 PageReadView(showMenu: $showMenu,
                              selectedMenuItem: $selectedMenuItem, 
                              currentExcerpt: $currentExcerpt,
@@ -43,18 +43,23 @@ struct SkeletonView: View {
                              currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
                              currentBookId: $currentBookId,
                              currentChapterId: $currentChapterId)
-                //.opacity(selectedMenuItem == .read ? 1 : 0)
             }
             
-            if selectedMenuItem == .select {
+            else if selectedMenuItem == .select {
                 PageSelectView(showMenu: $showMenu,
                                selectedMenuItem: $selectedMenuItem,
-                               showFromRead: $showSelectionAsPartOfRead,
+                               showFromRead: $showAsPartOfRead,
                                currentExcerpt: $currentExcerpt,
                                currentExcerptTitle: $currentExcerptTitle,
                                currentExcerptSubtitle: $currentExcerptSubtitle,
                                currentBookId: $currentBookId,
                                currentChapterId: $currentChapterId)
+            }
+            
+            else if selectedMenuItem == .setup {
+                PageSetupView(showMenu: $showMenu,
+                              selectedMenuItem: $selectedMenuItem,
+                              showFromRead: $showAsPartOfRead)
             }
             
             // слой меню

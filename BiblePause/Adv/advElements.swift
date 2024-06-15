@@ -8,7 +8,8 @@
 import SwiftUI
 
 // красивые кнопки-переключалки
-@ViewBuilder func viewSegmentedButtons(arr: [String], selIndex: Int, baseColor: Color, bgColor: Color, closure:@escaping (_ selectedIndex: Int) -> Void) -> some View {
+@ViewBuilder 
+func viewSegmentedButtons(arr: [String], selIndex: Int, baseColor: Color, bgColor: Color, closure:@escaping (_ selectedIndex: Int) -> Void) -> some View {
     
     
     let columns = Array(repeating: GridItem(spacing: 1), count:arr.count)
@@ -51,4 +52,39 @@ import SwiftUI
     .cornerRadius(globalCornerRadius)
     //.padding(.bottom, 10)
      
+}
+
+// Группа
+@ViewBuilder
+func viewGroup(text: String) -> some View {
+        Text(text)
+            .textCase(.uppercase)
+            .padding(.top, 30)
+            .padding(.bottom, 10)
+            .foregroundColor(Color("localAccentColor").opacity(0.5))
+            .frame(maxWidth: .infinity, alignment: .leading)
+}
+
+
+@ViewBuilder
+func OptionsView(arr: [String], selectedText: Binding<String>) -> some View {
+    LazyVStack(alignment: .leading, spacing: 0) {
+        ForEach(arr, id: \.self) { option in
+            HStack {
+                Text(option)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(selectedText.wrappedValue == option ? Color("Mustard") : .white)
+                    .padding(.vertical, 10)
+                Spacer()
+                if selectedText.wrappedValue == option {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(Color("Mustard"))
+                }
+            }
+            .background(Color("DarkGreen")) // без этой прозрачной заливки тапается только на надпись
+            .onTapGesture {
+                selectedText.wrappedValue = option
+            }
+        }
+    }
 }

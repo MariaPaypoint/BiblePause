@@ -78,7 +78,7 @@ func viewExcerpt(verses: [BibleTextVerseFull], selectedId: Int=0) -> some View {
         +
         Text(verse.text) // Текст стиха
             .foregroundColor(selectedId == verse.id ? Color("DarkGreen-accent") : .white)
-            .font(.system(size: 20))
+            //.font(.system(size: 20))
         +
         Text(" ")
     }
