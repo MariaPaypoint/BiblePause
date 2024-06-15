@@ -67,23 +67,24 @@ func viewGroup(text: String) -> some View {
 
 
 @ViewBuilder
-func OptionsView(arr: [String], selectedText: Binding<String>) -> some View {
+func OptionsView(texts: [String], keys: [String], userDefaultsKeyName: String, selectedKey: Binding<String>) -> some View {
     LazyVStack(alignment: .leading, spacing: 0) {
-        ForEach(arr, id: \.self) { option in
+        ForEach(Array(zip(texts, keys)), id: \.1) { text, key in
             HStack {
-                Text(option)
+                Text(text)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundColor(selectedText.wrappedValue == option ? Color("Mustard") : .white)
+                    .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
                     .padding(.vertical, 10)
                 Spacer()
-                if selectedText.wrappedValue == option {
+                if selectedKey.wrappedValue == key {
                     Image(systemName: "checkmark")
                         .foregroundColor(Color("Mustard"))
                 }
             }
-            .background(Color("DarkGreen")) // без этой прозрачной заливки тапается только на надпись
+            .background(Color("DarkGreen"))
             .onTapGesture {
-                selectedText.wrappedValue = option
+                selectedKey.wrappedValue = key
+                UserDefaults.standard.set(key, forKey: userDefaultsKeyName)
             }
         }
     }

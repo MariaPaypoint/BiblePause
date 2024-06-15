@@ -22,16 +22,6 @@ enum pauseBlockValues {
     case fragment
 }
 
-let languageTexts = ["Английский", "Русский", "Украинский"]
-enum languageValues {
-    case english
-    case russian
-    case ukrainian
-}
-
-let translateTexts = ["SYNO (Русский Синодальный)", "НРП (Новый Русский)", "BTI (под редакцией Кулаковых)"]
-let audioTexts = ["Александр Бондаренко", "''Свет на востоке''"]
-
 struct PageSetupView: View {
     
     @Binding var showMenu: Bool
@@ -66,19 +56,17 @@ struct PageSetupView: View {
     }
     
     // MARK: Языки и переводы
-    @State private var languageText = languageTexts[1]
-    var language: languageValues {
-        let mapping: [String: languageValues] = [
-            languageTexts[0]: .english,
-            languageTexts[1]: .russian,
-            languageTexts[2]: .ukrainian
-        ]
-        return mapping[languageText] ?? .english
-    }
+    let languageTexts = ["Английский", "Русский", "Украинский"]
+    let languageKeys  = ["en",         "ru",      "ua"]
+    @State private var languageKey: String = UserDefaults.standard.string(forKey: "languageKey") ?? "en"
     
-    @State private var translateText = translateTexts[0]
+    let translateTexts = ["SYNO (Русский Синодальный)", "НРП (Новый Русский)", "BTI (под редакцией Кулаковых)"]
+    let translateKeys  = ["syno",                       "nrp",                 "bti"]
+    @State private var translateKey: String = UserDefaults.standard.string(forKey: "translateKey") ?? "syno"
     
-    @State private var audioText = audioTexts[0]
+    let audioTexts = ["Александр Бондаренко", "''Свет на востоке''"]
+    let audioKeys  = ["bondarenko",           "eastlight"]
+    @State private var audioKey = "bondarenko"
     
     var body: some View {
         ZStack {
@@ -265,15 +253,15 @@ struct PageSetupView: View {
                     
                     // MARK: Языки
                     viewGroup(text: "Язык Библии")
-                    OptionsView(arr: languageTexts, selectedText: $languageText)
+                    OptionsView(texts: languageTexts, keys: languageKeys, userDefaultsKeyName: "languageKey", selectedKey: $languageKey)
                         .padding(.vertical, -5)
                     
                     viewGroup(text: "Перевод")
-                    OptionsView(arr: translateTexts, selectedText: $translateText)
+                    OptionsView(texts: translateTexts, keys: translateKeys, userDefaultsKeyName: "translateKey", selectedKey: $translateKey)
                         .padding(.vertical, -5)
                     
                     viewGroup(text: "Читает")
-                    OptionsView(arr: audioTexts, selectedText: $audioText)
+                    OptionsView(texts: audioTexts, keys: audioKeys, userDefaultsKeyName: "audioKey", selectedKey: $audioKey)
                         .padding(.vertical, -5)
                     
                 }
