@@ -23,6 +23,8 @@ struct SkeletonView: View {
     // не имеет значения здесь
     @State private var showAsPartOfRead: Bool = false
     
+    @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
+    
     var body: some View {
         
         ZStack {
@@ -42,7 +44,8 @@ struct SkeletonView: View {
                              currentExcerptSubtitle: $currentExcerptSubtitle,
                              currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
                              currentBookId: $currentBookId,
-                             currentChapterId: $currentChapterId)
+                             currentChapterId: $currentChapterId, 
+                             fontIncreasePercent: $fontIncreasePercent)
             }
             
             else if selectedMenuItem == .select {
@@ -59,7 +62,8 @@ struct SkeletonView: View {
             else if selectedMenuItem == .setup {
                 PageSetupView(showMenu: $showMenu,
                               selectedMenuItem: $selectedMenuItem,
-                              showFromRead: $showAsPartOfRead)
+                              showFromRead: $showAsPartOfRead,
+                              fontIncreasePercent: $fontIncreasePercent)
             }
             
             // слой меню

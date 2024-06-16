@@ -22,6 +22,7 @@ struct PageReadView: View {
     @State private var currentTranslationIndex: Int = globalCurrentTranslationIndex
     
     @State private var showSelection = false
+    @State private var showSetup = false
     
     let player = AVPlayer()
     @State private var periodFrom: Double = 0
@@ -34,12 +35,14 @@ struct PageReadView: View {
     
     @State private var showAudioPanel = true
     
+    @Binding var fontIncreasePercent: Double
+    
     var body: some View {
         ScrollViewReader { proxy in
             ZStack {
                 VStack(spacing: 0) {
                     
-                    // MARK: шапка
+                    // MARK: Шапка
                     HStack(alignment: .center) {
                         MenuButtonView(
                             showMenu: $showMenu,
@@ -69,14 +72,14 @@ struct PageReadView: View {
                         
                         Spacer()
                         
-                        
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 26))
-                        //    .foregroundStyle(Color("localAccentColor"))
-                        //Image(systemName: "textformat.size")
-                        //Image(systemName: "slider.vertical.3")
-                        //    .font(.system(size: 28))
-                        //    .padding(.top, 7)
+                        Button {
+                            withAnimation(Animation.easeInOut(duration: 1)) {
+                                showSetup = true
+                            }
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 26))
+                        }
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, globalBasePadding)
@@ -84,7 +87,7 @@ struct PageReadView: View {
                     
                     // MARK: Текст
                     ScrollView() {
-                        viewExcerpt(verses: textVerses, selectedId: currentVerseId)
+                        viewExcerpt(verses: textVerses, fontIncreasePercent: fontIncreasePercent, selectedId: currentVerseId)
                             .padding(.horizontal, globalBasePadding)
                             .padding(.vertical, 20)
                             .id("top")
@@ -172,8 +175,16 @@ struct PageReadView: View {
                                currentExcerptTitle: $currentExcerptTitle,
                                currentExcerptSubtitle: $currentExcerptSubtitle,
                                currentBookId: $currentBookId,
-                               currentChapterId: $currentChapterId
-                )
+                               currentChapterId: $currentChapterId)
+            }
+            .fullScreenCover(isPresented: $showSetup, onDismiss: {
+                //
+            })
+            {
+                PageSetupView(showMenu: $showMenu,
+                              selectedMenuItem: $selectedMenuItem,
+                              showFromRead: $showSetup,
+                              fontIncreasePercent: $fontIncreasePercent)
             }
             .onAppear {
                 updateExcerpt(proxy: proxy)
@@ -621,6 +632,7 @@ struct TestPageReadView: View {
     @State private var currentExcerptIsSingleChapter: Bool = true
     @State private var currentBookId: Int = 0
     @State private var currentChapterId: Int = 0
+    @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
     
     var body: some View {
         PageReadView(showMenu: $showMenu,
@@ -630,7 +642,8 @@ struct TestPageReadView: View {
                      currentExcerptSubtitle: $currentExcerptSubtitle,
                      currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
                      currentBookId: $currentBookId,
-                     currentChapterId: $currentChapterId)
+                     currentChapterId: $currentChapterId,
+                     fontIncreasePercent: $fontIncreasePercent)
     }
 }
 

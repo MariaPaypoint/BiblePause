@@ -82,7 +82,7 @@ struct PageSelectView: View {
                                 ForEach(Array(books.enumerated()), id: \.element.id) { index, book in
                                     if (selectedBiblePartIndex == 0 && index < 39) || (selectedBiblePartIndex == 1 && index >= 39) || selectedBiblePartIndex == -1 {
                                         if let headerTitle = bibleHeaders[index] {
-                                            viewGroup(text: headerTitle)
+                                            viewGroupHeader(text: headerTitle)
                                         }
                                         // MARK: Разворачивание книги
                                         Button {

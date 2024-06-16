@@ -54,20 +54,20 @@ func viewSegmentedButtons(arr: [String], selIndex: Int, baseColor: Color, bgColo
      
 }
 
-// Группа
+// заголовок группы
 @ViewBuilder
-func viewGroup(text: String) -> some View {
-        Text(text)
-            .textCase(.uppercase)
-            .padding(.top, 30)
-            .padding(.bottom, 10)
-            .foregroundColor(Color("localAccentColor").opacity(0.5))
-            .frame(maxWidth: .infinity, alignment: .leading)
+func viewGroupHeader(text: String) -> some View {
+    Text(text)
+        .textCase(.uppercase)
+        .padding(.top, 30)
+        .padding(.bottom, 10)
+        .foregroundColor(Color("localAccentColor").opacity(0.5))
+        .frame(maxWidth: .infinity, alignment: .leading)
 }
 
-
+// выбор из листа
 @ViewBuilder
-func OptionsView(texts: [String], keys: [String], userDefaultsKeyName: String, selectedKey: Binding<String>) -> some View {
+func viewSelectList(texts: [String], keys: [String], userDefaultsKeyName: String, selectedKey: Binding<String>) -> some View {
     LazyVStack(alignment: .leading, spacing: 0) {
         ForEach(Array(zip(texts, keys)), id: \.1) { text, key in
             HStack {
@@ -87,5 +87,34 @@ func OptionsView(texts: [String], keys: [String], userDefaultsKeyName: String, s
                 UserDefaults.standard.set(key, forKey: userDefaultsKeyName)
             }
         }
+    }
+}
+
+// выбор из выпадающего списка
+@ViewBuilder
+func viewEnumPicker<T: RawRepresentable & CaseIterable & Identifiable & Hashable & DisplayNameProvider>(
+    title: String,
+    selection: Binding<T>
+) -> some View where T.RawValue == String, T.AllCases: RandomAccessCollection, T.AllCases.Element == T {
+    Menu {
+        Picker("", selection: selection) {
+            ForEach(Array(T.allCases), id: \.self) { value in
+                Text(value.displayName).tag(value)
+            }
+        }
+    } label: {
+        HStack {
+            Text(title)
+            Spacer()
+            Image(systemName: "chevron.down")
+        }
+        .padding(.vertical, 9)
+        .padding(.horizontal, 12)
+        .background(Color("DarkGreen-light").opacity(0.6))
+        .cornerRadius(5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 5)
+                .stroke(.white.opacity(0.25), lineWidth: 1)
+        )
     }
 }

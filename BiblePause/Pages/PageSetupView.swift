@@ -8,18 +8,40 @@
 import SwiftUI
 
 // MARK: Константы
-let pauseTypeTexts = ["Не делать пауз", "Приостанавливать на время", "Останавливать полностью"]
-enum pauseTypeValues {
+protocol DisplayNameProvider {
+    var displayName: String { get }
+}
+enum PauseType: String, CaseIterable, Identifiable, DisplayNameProvider {
     case none
     case time
     case full
+    
+    var id: String { self.rawValue }
+    
+    var displayName: String {
+        switch self {
+            case .none: return "Не делать пауз"
+            case .time: return "Приостанавливать на время"
+            case .full: return "Останавливать полностью"
+        }
+    }
 }
 
-let pauseBlockTexts = ["стиха", "абзаца", "отрывка"]
-enum pauseBlockValues {
+//let pauseBlockTexts = ["стиха", "абзаца", "отрывка"]
+enum PauseBlock: String, CaseIterable, Identifiable, DisplayNameProvider {
     case verse
     case paragraph
     case fragment
+    
+    var id: String { self.rawValue }
+    
+    var displayName: String {
+        switch self {
+            case .verse: return "стиха"
+            case .paragraph: return "абзаца"
+            case .fragment: return "отрывка"
+        }
+    }
 }
 
 struct PageSetupView: View {
@@ -28,32 +50,38 @@ struct PageSetupView: View {
     @Binding var selectedMenuItem: MenuItem
     @Binding var showFromRead: Bool
     
-    @State private var selectedFontIndex = -1
+    @Binding var fontIncreasePercent: Double
     
-    @State private var fontIncreasePersent = 100.0
+    //@AppStorage("pauseType") private var pauseType: String = pauseTypeValues.none.rawValue
+    //var pauseTypeText: String {
+    //    (pauseTypeValues(rawValue: pauseType) ?? .none).displayName
+    //}
+    @AppStorage("pauseType") private var pauseType: PauseType = .none
     
     // MARK: Паузы
-    @State private var pauseTypeText = pauseTypeTexts[0]
-    var pauseTypeValue: pauseTypeValues {
-        let mapping: [String: pauseTypeValues] = [
-            pauseTypeTexts[0]: .none,
-            pauseTypeTexts[1]: .time,
-            pauseTypeTexts[2]: .full
-        ]
-        return mapping[pauseTypeText] ?? .none
-    }
+    //@State private var pauseTypeText = pauseTypeTexts[0]
+    //var pauseTypeValue: pauseTypeValues {
+    //    let mapping: [String: pauseTypeValues] = [
+    //        pauseTypeTexts[0]: .none,
+    //        pauseTypeTexts[1]: .time,
+    //        pauseTypeTexts[2]: .full
+    //    ]
+    //    return mapping[pauseTypeText] ?? .none
+    //}
     
     @State private var pauseLength = "3"
     
-    @State private var pauseBlockText = pauseBlockTexts[0]
-    var pauseBlock: pauseBlockValues {
-        let mapping: [String: pauseBlockValues] = [
-            pauseBlockTexts[0]: .verse,
-            pauseBlockTexts[1]: .paragraph,
-            pauseBlockTexts[2]: .fragment
-        ]
-        return mapping[pauseBlockText] ?? .verse
-    }
+    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
+    
+    //@State private var pauseBlockText = pauseBlockTexts[0]
+    //var pauseBlock: PauseBlock {
+    //    let mapping: [String: PauseBlock] = [
+    //        pauseBlockTexts[0]: .verse,
+    //        pauseBlockTexts[1]: .paragraph,
+    //        pauseBlockTexts[2]: .fragment
+    //    ]
+    //    return mapping[pauseBlockText] ?? .verse
+    //}
     
     // MARK: Языки и переводы
     let languageTexts = ["Английский", "Русский", "Украинский"]
@@ -98,172 +126,136 @@ struct PageSetupView: View {
                     
                     Spacer()
                 }
+                .padding(.horizontal, globalBasePadding)
                 
                 ScrollView() {
-                    
-                    // MARK: Шрифт
                     VStack {
-                        viewGroup(text: "Шрифт")
-                        
-                        HStack {
-                            Text("\(Int(fontIncreasePersent))%")
-                                .foregroundColor(.white)
-                                .frame(width: 70)
+                        // MARK: Шрифт
+                        VStack {
+                            viewGroupHeader(text: "Шрифт")
                             
-                            Spacer()
-                            
-                            HStack(spacing: 0) {
-                                Button(action: {
-                                    fontIncreasePersent = fontIncreasePersent - 10
-                                }) {
-                                    Text("A")
-                                        .font(.title3)
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color.clear)
-                                        .foregroundColor(.white)
-                                }
-                                
-                                Divider() // Разделительная линия между кнопками
-                                    .background(Color.white)
-                                
-                                Button(action: {
-                                    fontIncreasePersent = fontIncreasePersent + 10
-                                }) {
-                                    Text("A")
-                                        .font(.title)
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color.clear)
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .background(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.white, lineWidth: 1)
-                            )
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.clear)
-                            )
-                            .frame(maxWidth: 200) // Максимальная ширина для примера
-                            .frame(maxHeight: 42)
-                            .padding()
-                            
-                            Spacer()
-                            Text("Сброс")
-                                .foregroundColor(Color("Mustard"))
-                                .frame(width: 70)
-                            
-                        }
-                        
-                        Text("Пример:")
-                            .foregroundColor(.white.opacity(0.5))
-                        ScrollView() {
-                            let (textVerses, _) = getExcerptTextVerses(excerpts: "jhn 1:1-3")
-                            viewExcerpt(verses: textVerses, selectedId: 0)
-                                .padding(.bottom, 20)
-                                .id("top")
-                                .font(.system(size: 10 * (1 + fontIncreasePersent / 100)))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .frame(maxHeight: 158)
-                        //.background(.white.opacity(0.1))
-                    }
-                    
-                    // MARK: Пауза
-                    viewGroup(text: "Пауза")
-                    VStack(spacing: 15) {
-                        // тип остановки
-                        Menu {
-                            Picker("", selection: $pauseTypeText) {
-                                ForEach(pauseTypeTexts, id: \.self) { text in
-                                    Text(text)
-                                }
-                            }
-                        } label: {
                             HStack {
-                                Text(pauseTypeText)
+                                Text("\(Int(fontIncreasePercent))%")
+                                    .foregroundColor(.white)
+                                    .frame(width: 70)
                                 
                                 Spacer()
-                                Image(systemName: "chevron.down")
+                                
+                                HStack(spacing: 0) {
+                                    Button(action: {
+                                        if fontIncreasePercent > 10 {
+                                            fontIncreasePercent = fontIncreasePercent - 10
+                                        }
+                                    }) {
+                                        Text("A")
+                                            .font(.title3)
+                                            .frame(maxWidth: .infinity)
+                                            .background(Color.clear)
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    Divider() // Разделительная линия между кнопками
+                                        .background(Color.white)
+                                    
+                                    Button(action: {
+                                        if fontIncreasePercent < 500 {
+                                            fontIncreasePercent = fontIncreasePercent + 10
+                                        }
+                                    }) {
+                                        Text("A")
+                                            .font(.title)
+                                            .frame(maxWidth: .infinity)
+                                            .background(Color.clear)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .background(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(Color.white, lineWidth: 1)
+                                )
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.clear)
+                                )
+                                .frame(maxWidth: 200)
+                                .frame(maxHeight: 42)
+                                .padding()
+                                
+                                Spacer()
+                                Button {
+                                    fontIncreasePercent = 100.0
+                                } label: {
+                                    Text("Сброс")
+                                        .foregroundColor(Color("Mustard"))
+                                        .frame(width: 70)
+                                }
                             }
-                            .padding(.vertical, 9)
-                            .padding(.horizontal, 12)
-                            .background(Color("DarkGreen-light").opacity(0.6))
-                            .cornerRadius(5)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .stroke(.white.opacity(0.25), lineWidth: 1)
-                            )
+                            
+                            Text("Пример:")
+                                .foregroundColor(.white.opacity(0.5))
+                            ScrollView() {
+                                let (textVerses, _) = getExcerptTextVerses(excerpts: "jhn 1:1-3")
+                                viewExcerpt(verses: textVerses, fontIncreasePercent: fontIncreasePercent)
+                                    .padding(.bottom, 20)
+                                    .id("top")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxHeight: 158)
                         }
                         
-                        if pauseTypeValue != .none {
-                            // время
-                            if pauseTypeValue == .time {
+                        // MARK: Пауза
+                        viewGroupHeader(text: "Пауза")
+                        VStack(spacing: 15) {
+                            viewEnumPicker(title: pauseType.displayName, selection: $pauseType)
+                            
+                            if pauseType != .none {
+                                // время
+                                if pauseType == .time {
+                                    HStack {
+                                        Text("Делать паузу")
+                                            .frame(width: 140, alignment: .leading)
+                                        Spacer()
+                                        TextField("", text: $pauseLength)
+                                            .padding(.vertical, 8)
+                                            .padding(.horizontal, 12)
+                                            .background(Color("DarkGreen-light").opacity(0.6))
+                                            .cornerRadius(5)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 5)
+                                                    .stroke(.white.opacity(0.25), lineWidth: 1)
+                                            )
+                                            .multilineTextAlignment(.center)
+                                        
+                                        Text("сек.")
+                                    }
+                                }
+                                
+                                // после чего
                                 HStack {
-                                    Text("Делать паузу")
+                                    Text("После каждого")
                                         .frame(width: 140, alignment: .leading)
                                     Spacer()
-                                    TextField("", text: $pauseLength)
-                                        .padding(.vertical, 8)
-                                        .padding(.horizontal, 12)
-                                        .background(Color("DarkGreen-light").opacity(0.6))
-                                        .cornerRadius(5)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 5)
-                                                .stroke(.white.opacity(0.25), lineWidth: 1)
-                                        )
-                                    //.frame(maxWidth: 100)
-                                        .multilineTextAlignment(.center)
                                     
-                                    Text("сек.")
-                                }
-                            }
-                            
-                            // после чего
-                            HStack {
-                                Text("После каждого")
-                                    .frame(width: 140, alignment: .leading)
-                                Spacer()
-                                Menu {
-                                    Picker("", selection: $pauseBlockText) {
-                                        ForEach(pauseBlockTexts, id: \.self) { text in
-                                            Text(text)
-                                        }
-                                    }
-                                } label: {
-                                    HStack {
-                                        Text(pauseBlockText)
-                                        
-                                        Spacer()
-                                        Image(systemName: "chevron.down")
-                                    }
-                                    .padding(.vertical, 9)
-                                    .padding(.horizontal, 12)
-                                    .background(Color("DarkGreen-light").opacity(0.6))
-                                    .cornerRadius(5)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .stroke(.white.opacity(0.25), lineWidth: 1)
-                                    )
+                                    viewEnumPicker(title: pauseBlock.displayName, selection: $pauseBlock)
                                 }
                             }
                         }
+                        .padding(1)
+                        
+                        // MARK: Языки
+                        viewGroupHeader(text: "Язык Библии")
+                        viewSelectList(texts: languageTexts, keys: languageKeys, userDefaultsKeyName: "languageKey", selectedKey: $languageKey)
+                            .padding(.vertical, -5)
+                        
+                        viewGroupHeader(text: "Перевод")
+                        viewSelectList(texts: translateTexts, keys: translateKeys, userDefaultsKeyName: "translateKey", selectedKey: $translateKey)
+                            .padding(.vertical, -5)
+                        
+                        viewGroupHeader(text: "Читает")
+                        viewSelectList(texts: audioTexts, keys: audioKeys, userDefaultsKeyName: "audioKey", selectedKey: $audioKey)
+                            .padding(.vertical, -5)
                     }
-                    .padding(1)
-                    
-                    // MARK: Языки
-                    viewGroup(text: "Язык Библии")
-                    OptionsView(texts: languageTexts, keys: languageKeys, userDefaultsKeyName: "languageKey", selectedKey: $languageKey)
-                        .padding(.vertical, -5)
-                    
-                    viewGroup(text: "Перевод")
-                    OptionsView(texts: translateTexts, keys: translateKeys, userDefaultsKeyName: "translateKey", selectedKey: $translateKey)
-                        .padding(.vertical, -5)
-                    
-                    viewGroup(text: "Читает")
-                    OptionsView(texts: audioTexts, keys: audioKeys, userDefaultsKeyName: "audioKey", selectedKey: $audioKey)
-                        .padding(.vertical, -5)
-                    
+                    .padding(.horizontal, globalBasePadding)
                 }
                 .foregroundColor(.white)
             }
@@ -275,7 +267,6 @@ struct PageSetupView: View {
             .offset(x: showMenu ? 0 : -getRect().width)
             
         }
-        .padding(.horizontal, globalBasePadding)
         // подложка
         .background(
             Color("DarkGreen")
@@ -289,10 +280,13 @@ struct TestPageSetupView: View {
     @State var selectedMenuItem: MenuItem = .main
     @State private var showFromRead: Bool = true
     
+    @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
+    
     var body: some View {
         PageSetupView(showMenu: $showMenu,
                       selectedMenuItem: $selectedMenuItem,
-                      showFromRead: $showFromRead)
+                      showFromRead: $showFromRead,
+                      fontIncreasePercent: $fontIncreasePercent)
     }
 }
 

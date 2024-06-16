@@ -65,7 +65,7 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
 // MARK: Готовое отображение
 @ViewBuilder 
 //func viewExcerpt(translationIndex: Int, excerpts: String, selectedId: Int=0) -> some View {
-func viewExcerpt(verses: [BibleTextVerseFull], selectedId: Int=0) -> some View {
+func viewExcerpt(verses: [BibleTextVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
     
     //let verses = getExcerptStrings(excerpts: excerpts, translationIndex: translationIndex)
     
@@ -73,19 +73,19 @@ func viewExcerpt(verses: [BibleTextVerseFull], selectedId: Int=0) -> some View {
         partialResult
         +
         Text("\(verse.id). ") // Номер стиха
-            .font(.footnote)
+            .font(.system(size: 7 * (1 + fontIncreasePercent / 100)))
             .foregroundColor(.white.opacity(0.5))
         +
         Text(verse.text) // Текст стиха
             .foregroundColor(selectedId == verse.id ? Color("DarkGreen-accent") : .white)
-            //.font(.system(size: 20))
+            .font(.system(size: 10 * (1 + fontIncreasePercent / 100)))
         +
         Text(" ")
     }
 
     VStack {
         formattedText
-            .lineSpacing(/*@START_MENU_TOKEN@*/10.0/*@END_MENU_TOKEN@*/)
+            .lineSpacing(10.0)
             //.padding(globalBasePadding)
     }
 }
