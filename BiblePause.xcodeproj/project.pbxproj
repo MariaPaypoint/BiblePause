@@ -27,6 +27,7 @@
 		4C749E072C1A133800CF4234 /* advExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E062C1A133800CF4234 /* advExtensions.swift */; };
 		4C749E092C1D804A00CF4234 /* PageSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E082C1D804A00CF4234 /* PageSetupView.swift */; };
 		4C749E0B2C1E1FC000CF4234 /* PageContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E0A2C1E1FC000CF4234 /* PageContactsView.swift */; };
+		4C749E0D2C1F690100CF4234 /* advSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E0C2C1F690100CF4234 /* advSettings.swift */; };
 		4C7691242BECEA1300C66FDC /* BiblePauseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */; };
 		4C7691262BECEA1300C66FDC /* PageMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7691252BECEA1300C66FDC /* PageMainView.swift */; };
 		4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C7691272BECEA1800C66FDC /* Assets.xcassets */; };
@@ -58,6 +59,7 @@
 		4C749E062C1A133800CF4234 /* advExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advExtensions.swift; sourceTree = "<group>"; };
 		4C749E082C1D804A00CF4234 /* PageSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSetupView.swift; sourceTree = "<group>"; };
 		4C749E0A2C1E1FC000CF4234 /* PageContactsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageContactsView.swift; sourceTree = "<group>"; };
+		4C749E0C2C1F690100CF4234 /* advSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advSettings.swift; sourceTree = "<group>"; };
 		4C7691202BECEA1300C66FDC /* BiblePause.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiblePause.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiblePauseApp.swift; sourceTree = "<group>"; };
 		4C7691252BECEA1300C66FDC /* PageMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMainView.swift; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 				4C99F3732C023F4300879594 /* advAudioManager.swift */,
 				4C99F3752C023FD400879594 /* advUtility.swift */,
 				4C749E062C1A133800CF4234 /* advExtensions.swift */,
+				4C749E0C2C1F690100CF4234 /* advSettings.swift */,
 			);
 			path = Adv;
 			sourceTree = "<group>";
@@ -293,6 +296,7 @@
 				4C141A042BED275000412C60 /* MenuView.swift in Sources */,
 				4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */,
 				4C99F3782C02660C00879594 /* advExcerpt.swift in Sources */,
+				4C749E0D2C1F690100CF4234 /* advSettings.swift in Sources */,
 				4C749E072C1A133800CF4234 /* advExtensions.swift in Sources */,
 				4C749E092C1D804A00CF4234 /* PageSetupView.swift in Sources */,
 				4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */,

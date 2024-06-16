@@ -9,6 +9,7 @@ import SwiftUI
 import AVFoundation
 
 struct PageReadView: View {
+    @ObservedObject var settingsManager = SettingsManager()
     
     @Binding var showMenu: Bool
     @Binding var selectedMenuItem: MenuItem
@@ -34,12 +35,6 @@ struct PageReadView: View {
     @State private var currentVerseId = 0
     
     @State private var showAudioPanel = true
-    
-    @Binding var fontIncreasePercent: Double
-    
-    @Binding var pauseType: PauseType
-    @Binding var pauseLength: Double
-    @Binding var pauseBlock: PauseBlock
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -91,7 +86,7 @@ struct PageReadView: View {
                     
                     // MARK: Текст
                     ScrollView() {
-                        viewExcerpt(verses: textVerses, fontIncreasePercent: fontIncreasePercent, selectedId: currentVerseId)
+                        viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent, selectedId: currentVerseId)
                             .padding(.horizontal, globalBasePadding)
                             .padding(.vertical, 20)
                             .id("top")
@@ -135,7 +130,8 @@ struct PageReadView: View {
                                                 periodFrom: currentExcerptIsSingleChapter ? 0 : periodFrom,
                                                 periodTo: currentExcerptIsSingleChapter ? 0 : periodTo,
                                                 audioVerses: audioVerses,
-                                                onChangeCurrentVerse: changeCurrentVerse)
+                                                onChangeCurrentVerse: changeCurrentVerse,
+                                                onEndCurrentVerse: endCurrentVerse)
                             .frame(maxHeight: showAudioPanel ? nil : 0)
                             .opacity(showAudioPanel ? 1 : 0)
                         
@@ -187,11 +183,7 @@ struct PageReadView: View {
             {
                 PageSetupView(showMenu: $showMenu,
                               selectedMenuItem: $selectedMenuItem,
-                              showFromRead: $showSetup,
-                              fontIncreasePercent: $fontIncreasePercent,
-                              pauseType: $pauseType,
-                              pauseLength: $pauseLength,
-                              pauseBlock: $pauseBlock)
+                              showFromRead: $showSetup)
             }
             .onAppear {
                 updateExcerpt(proxy: proxy)
@@ -242,7 +234,11 @@ struct PageReadView: View {
     
     func changeCurrentVerse(_ cur: Int) {
         self.currentVerseId = cur
-        print(cur)
+    }
+    
+    func endCurrentVerse() {
+        
+        player.pause()
     }
 }
 
@@ -312,10 +308,31 @@ struct AudioPlayerControlsView: View {
     @State private var stopAtEnd = true
     
     let audioVerses: [BibleAudioVerseFull]
+    @State private var interverse: Bool = false
     @State private var currentVerseIndex: Int = 0
     
     var onChangeCurrentVerse: ((Int) -> Void)
+    var onEndCurrentVerse: (() -> Void)
     
+    func pauseSmoothly(duration: TimeInterval) {
+            let initialVolume = player.volume
+            let steps = 10
+            let interval = duration / Double(steps)
+            var currentStep = 0
+            
+            Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+                if currentStep < steps {
+                    let newVolume = initialVolume * (1.0 - Float(currentStep) / Float(steps))
+                    player.volume = newVolume
+                    currentStep += 1
+                } else {
+                    player.pause()
+                    player.volume = initialVolume // Reset volume to original after pausing
+                    self.state = .pausing
+                    timer.invalidate()
+                }
+            }
+        }
     var body: some View {
         
         VStack {
@@ -456,8 +473,9 @@ struct AudioPlayerControlsView: View {
                     // MARK: Play/Pause
                     Button {
                         if state == .playing {
-                            state = .pausing
-                            player.pause()
+                            //state = .pausing
+                            //player.pause()
+                            pauseSmoothly(duration: 0.5)
                         } else {
                             if self.currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
                                 self.stopAtEnd = false
@@ -559,15 +577,24 @@ struct AudioPlayerControlsView: View {
                 self.player.pause()
             }
             
-            var cur = currentVerseIndex
+            var cur = -1
             for (index, verse) in audioVerses.enumerated() {
                 if time >= verse.begin && time < verse.end {
                     cur = index
+                    interverse = false
                     break
                 }
             }
-            setCurrentVerseIndex(cur)
-            
+            // один стих закончился, а другой еще не начался
+            if cur == -1 {
+                if !interverse && currentVerseIndex > 0 {
+                    interverse = true
+                    onEndCurrentVerse()
+                }
+            }
+            else {
+                setCurrentVerseIndex(cur)
+            }
         }
         // Listen out for the duration observer publishing changes to the player's item duration
         .onReceive(durationObserver.publisher) { duration in
@@ -642,10 +669,6 @@ struct TestPageReadView: View {
     
     @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
     
-    @AppStorage("pauseType") private var pauseType: PauseType = .none
-    @AppStorage("pauseLength") private var pauseLength: Double = 3.0
-    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
-    
     var body: some View {
         PageReadView(showMenu: $showMenu,
                      selectedMenuItem: $selectedMenuItem,
@@ -654,11 +677,7 @@ struct TestPageReadView: View {
                      currentExcerptSubtitle: $currentExcerptSubtitle,
                      currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
                      currentBookId: $currentBookId,
-                     currentChapterId: $currentChapterId,
-                     fontIncreasePercent: $fontIncreasePercent,
-                     pauseType: $pauseType,
-                     pauseLength: $pauseLength,
-                     pauseBlock: $pauseBlock)
+                     currentChapterId: $currentChapterId)
     }
 }
 

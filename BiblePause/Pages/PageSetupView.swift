@@ -7,53 +7,13 @@
 
 import SwiftUI
 
-// MARK: Константы
-protocol DisplayNameProvider {
-    var displayName: String { get }
-}
-enum PauseType: String, CaseIterable, Identifiable, DisplayNameProvider {
-    case none
-    case time
-    case full
-    
-    var id: String { self.rawValue }
-    
-    var displayName: String {
-        switch self {
-            case .none: return "Не делать пауз"
-            case .time: return "Приостанавливать на время"
-            case .full: return "Останавливать полностью"
-        }
-    }
-}
-
-enum PauseBlock: String, CaseIterable, Identifiable, DisplayNameProvider {
-    case verse
-    case paragraph
-    case fragment
-    
-    var id: String { self.rawValue }
-    
-    var displayName: String {
-        switch self {
-            case .verse: return "стиха"
-            case .paragraph: return "абзаца"
-            case .fragment: return "отрывка"
-        }
-    }
-}
-
 struct PageSetupView: View {
+    
+    @ObservedObject var settingsManager = SettingsManager()
     
     @Binding var showMenu: Bool
     @Binding var selectedMenuItem: MenuItem
     @Binding var showFromRead: Bool
-    
-    @Binding var fontIncreasePercent: Double
-    
-    @Binding var pauseType: PauseType
-    @Binding var pauseLength: Double
-    @Binding var pauseBlock: PauseBlock
     
     // MARK: Языки и переводы
     let languageTexts = ["Английский", "Русский", "Украинский"]
@@ -107,7 +67,7 @@ struct PageSetupView: View {
                             viewGroupHeader(text: "Шрифт")
                             
                             HStack {
-                                Text("\(Int(fontIncreasePercent))%")
+                                Text("\(Int(settingsManager.fontIncreasePercent))%")
                                     .foregroundColor(.white)
                                     .frame(width: 70)
                                 
@@ -115,8 +75,8 @@ struct PageSetupView: View {
                                 
                                 HStack(spacing: 0) {
                                     Button(action: {
-                                        if fontIncreasePercent > 10 {
-                                            fontIncreasePercent = fontIncreasePercent - 10
+                                        if settingsManager.fontIncreasePercent > 10 {
+                                            settingsManager.fontIncreasePercent = settingsManager.fontIncreasePercent - 10
                                         }
                                     }) {
                                         Text("A")
@@ -130,8 +90,8 @@ struct PageSetupView: View {
                                         .background(Color.white)
                                     
                                     Button(action: {
-                                        if fontIncreasePercent < 500 {
-                                            fontIncreasePercent = fontIncreasePercent + 10
+                                        if settingsManager.fontIncreasePercent < 500 {
+                                            settingsManager.fontIncreasePercent = settingsManager.fontIncreasePercent + 10
                                         }
                                     }) {
                                         Text("A")
@@ -155,7 +115,7 @@ struct PageSetupView: View {
                                 
                                 Spacer()
                                 Button {
-                                    fontIncreasePercent = 100.0
+                                    settingsManager.fontIncreasePercent = 100.0
                                 } label: {
                                     Text("Сброс")
                                         .foregroundColor(Color("Mustard"))
@@ -167,7 +127,7 @@ struct PageSetupView: View {
                                 .foregroundColor(.white.opacity(0.5))
                             ScrollView() {
                                 let (textVerses, _) = getExcerptTextVerses(excerpts: "jhn 1:1-3")
-                                viewExcerpt(verses: textVerses, fontIncreasePercent: fontIncreasePercent)
+                                viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
                                     .padding(.bottom, 20)
                                     .id("top")
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -178,22 +138,22 @@ struct PageSetupView: View {
                         // MARK: Пауза
                         viewGroupHeader(text: "Пауза")
                         VStack(spacing: 15) {
-                            viewEnumPicker(title: pauseType.displayName, selection: $pauseType)
+                            viewEnumPicker(title: settingsManager.pauseType.displayName, selection: $settingsManager.pauseType)
                             
-                            if pauseType != .none {
+                            if settingsManager.pauseType != .none {
                                 // время
-                                if pauseType == .time {
+                                if settingsManager.pauseType == .time {
                                     HStack {
                                         Text("Делать паузу")
                                             .frame(width: 140, alignment: .leading)
                                         Spacer()
                                         TextField("", text: Binding(
                                             get: {
-                                                String(pauseLength)
+                                                String(settingsManager.pauseLength)
                                             },
                                             set: { newValue in
                                                 if let value = Double(newValue) {
-                                                    pauseLength = value
+                                                    settingsManager.pauseLength = value
                                                 }
                                             }
                                         ))
@@ -217,7 +177,7 @@ struct PageSetupView: View {
                                         .frame(width: 140, alignment: .leading)
                                     Spacer()
                                     
-                                    viewEnumPicker(title: pauseBlock.displayName, selection: $pauseBlock)
+                                    viewEnumPicker(title: settingsManager.pauseBlock.displayName, selection: $settingsManager.pauseBlock)
                                 }
                             }
                         }
@@ -261,20 +221,10 @@ struct TestPageSetupView: View {
     @State var selectedMenuItem: MenuItem = .main
     @State private var showFromRead: Bool = true
     
-    @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
-    
-    @AppStorage("pauseType") private var pauseType: PauseType = .none
-    @AppStorage("pauseLength") private var pauseLength: Double = 3.0
-    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
-    
     var body: some View {
         PageSetupView(showMenu: $showMenu,
                       selectedMenuItem: $selectedMenuItem,
-                      showFromRead: $showFromRead,
-                      fontIncreasePercent: $fontIncreasePercent,
-                      pauseType: $pauseType,
-                      pauseLength: $pauseLength,
-                      pauseBlock: $pauseBlock)
+                      showFromRead: $showFromRead)
     }
 }
 
