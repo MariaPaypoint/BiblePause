@@ -27,7 +27,6 @@ enum PauseType: String, CaseIterable, Identifiable, DisplayNameProvider {
     }
 }
 
-//let pauseBlockTexts = ["стиха", "абзаца", "отрывка"]
 enum PauseBlock: String, CaseIterable, Identifiable, DisplayNameProvider {
     case verse
     case paragraph
@@ -52,36 +51,9 @@ struct PageSetupView: View {
     
     @Binding var fontIncreasePercent: Double
     
-    //@AppStorage("pauseType") private var pauseType: String = pauseTypeValues.none.rawValue
-    //var pauseTypeText: String {
-    //    (pauseTypeValues(rawValue: pauseType) ?? .none).displayName
-    //}
-    @AppStorage("pauseType") private var pauseType: PauseType = .none
-    
-    // MARK: Паузы
-    //@State private var pauseTypeText = pauseTypeTexts[0]
-    //var pauseTypeValue: pauseTypeValues {
-    //    let mapping: [String: pauseTypeValues] = [
-    //        pauseTypeTexts[0]: .none,
-    //        pauseTypeTexts[1]: .time,
-    //        pauseTypeTexts[2]: .full
-    //    ]
-    //    return mapping[pauseTypeText] ?? .none
-    //}
-    
-    @State private var pauseLength = "3"
-    
-    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
-    
-    //@State private var pauseBlockText = pauseBlockTexts[0]
-    //var pauseBlock: PauseBlock {
-    //    let mapping: [String: PauseBlock] = [
-    //        pauseBlockTexts[0]: .verse,
-    //        pauseBlockTexts[1]: .paragraph,
-    //        pauseBlockTexts[2]: .fragment
-    //    ]
-    //    return mapping[pauseBlockText] ?? .verse
-    //}
+    @Binding var pauseType: PauseType
+    @Binding var pauseLength: Double
+    @Binding var pauseBlock: PauseBlock
     
     // MARK: Языки и переводы
     let languageTexts = ["Английский", "Русский", "Украинский"]
@@ -215,7 +187,16 @@ struct PageSetupView: View {
                                         Text("Делать паузу")
                                             .frame(width: 140, alignment: .leading)
                                         Spacer()
-                                        TextField("", text: $pauseLength)
+                                        TextField("", text: Binding(
+                                            get: {
+                                                String(pauseLength)
+                                            },
+                                            set: { newValue in
+                                                if let value = Double(newValue) {
+                                                    pauseLength = value
+                                                }
+                                            }
+                                        ))
                                             .padding(.vertical, 8)
                                             .padding(.horizontal, 12)
                                             .background(Color("DarkGreen-light").opacity(0.6))
@@ -282,11 +263,18 @@ struct TestPageSetupView: View {
     
     @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
     
+    @AppStorage("pauseType") private var pauseType: PauseType = .none
+    @AppStorage("pauseLength") private var pauseLength: Double = 3.0
+    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
+    
     var body: some View {
         PageSetupView(showMenu: $showMenu,
                       selectedMenuItem: $selectedMenuItem,
                       showFromRead: $showFromRead,
-                      fontIncreasePercent: $fontIncreasePercent)
+                      fontIncreasePercent: $fontIncreasePercent,
+                      pauseType: $pauseType,
+                      pauseLength: $pauseLength,
+                      pauseBlock: $pauseBlock)
     }
 }
 

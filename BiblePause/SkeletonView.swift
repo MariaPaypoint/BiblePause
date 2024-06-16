@@ -25,6 +25,10 @@ struct SkeletonView: View {
     
     @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
     
+    @AppStorage("pauseType") private var pauseType: PauseType = .none
+    @AppStorage("pauseLength") private var pauseLength: Double = 3.0
+    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
+    
     var body: some View {
         
         ZStack {
@@ -45,7 +49,10 @@ struct SkeletonView: View {
                              currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
                              currentBookId: $currentBookId,
                              currentChapterId: $currentChapterId, 
-                             fontIncreasePercent: $fontIncreasePercent)
+                             fontIncreasePercent: $fontIncreasePercent,
+                             pauseType: $pauseType,
+                             pauseLength: $pauseLength,
+                             pauseBlock: $pauseBlock)
             }
             
             else if selectedMenuItem == .select {
@@ -63,9 +70,15 @@ struct SkeletonView: View {
                 PageSetupView(showMenu: $showMenu,
                               selectedMenuItem: $selectedMenuItem,
                               showFromRead: $showAsPartOfRead,
-                              fontIncreasePercent: $fontIncreasePercent)
+                              fontIncreasePercent: $fontIncreasePercent,
+                              pauseType: $pauseType,
+                              pauseLength: $pauseLength,
+                              pauseBlock: $pauseBlock)
             }
             
+            else if selectedMenuItem == .contacts {
+                PageContactsView()
+            }
             // слой меню
             MenuView(
                 showMenu: $showMenu,

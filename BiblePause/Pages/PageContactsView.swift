@@ -9,14 +9,27 @@ import SwiftUI
 
 struct PageContactsView: View {
     var body: some View {
+        
         ScrollView {
-            LazyVStack {
-                Text("A List Item")
-                Text("A Second List Item")
-                Text("A Third List Item")
+            ForEach(getAllUserDefaults().sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
+                HStack {
+                    Text("\(key):")
+                        .bold()
+                    Spacer()
+                    Text("\(String(describing: value))")
+                }
+                .padding(.vertical, 2)
             }
-            .padding()
         }
+        .padding()
+
+    }
+    
+    
+    func getAllUserDefaults() -> [String: Any] {
+        let defaults = UserDefaults.standard
+        let dictionary = defaults.dictionaryRepresentation()
+        return dictionary
     }
 }
 

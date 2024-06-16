@@ -37,6 +37,10 @@ struct PageReadView: View {
     
     @Binding var fontIncreasePercent: Double
     
+    @Binding var pauseType: PauseType
+    @Binding var pauseLength: Double
+    @Binding var pauseBlock: PauseBlock
+    
     var body: some View {
         ScrollViewReader { proxy in
             ZStack {
@@ -184,7 +188,10 @@ struct PageReadView: View {
                 PageSetupView(showMenu: $showMenu,
                               selectedMenuItem: $selectedMenuItem,
                               showFromRead: $showSetup,
-                              fontIncreasePercent: $fontIncreasePercent)
+                              fontIncreasePercent: $fontIncreasePercent,
+                              pauseType: $pauseType,
+                              pauseLength: $pauseLength,
+                              pauseBlock: $pauseBlock)
             }
             .onAppear {
                 updateExcerpt(proxy: proxy)
@@ -632,7 +639,12 @@ struct TestPageReadView: View {
     @State private var currentExcerptIsSingleChapter: Bool = true
     @State private var currentBookId: Int = 0
     @State private var currentChapterId: Int = 0
+    
     @AppStorage("fontIncreasePercent") private var fontIncreasePercent: Double = 100.0
+    
+    @AppStorage("pauseType") private var pauseType: PauseType = .none
+    @AppStorage("pauseLength") private var pauseLength: Double = 3.0
+    @AppStorage("pauseBlock") private var pauseBlock: PauseBlock = .verse
     
     var body: some View {
         PageReadView(showMenu: $showMenu,
@@ -643,7 +655,10 @@ struct TestPageReadView: View {
                      currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
                      currentBookId: $currentBookId,
                      currentChapterId: $currentChapterId,
-                     fontIncreasePercent: $fontIncreasePercent)
+                     fontIncreasePercent: $fontIncreasePercent,
+                     pauseType: $pauseType,
+                     pauseLength: $pauseLength,
+                     pauseBlock: $pauseBlock)
     }
 }
 
