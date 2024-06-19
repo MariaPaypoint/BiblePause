@@ -121,6 +121,7 @@ class PlayerTimeObserver {
     }
 }
 
+// в отрефакторенной версии не нужно
 class PlayerItemObserver {
     let publisher = PassthroughSubject<Bool, Never>()
     private var itemObservation: NSKeyValueObservation?
@@ -158,4 +159,3 @@ class PlayerDurationObserver {
         cancellable?.cancel()
     }
 }
-

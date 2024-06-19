@@ -25,7 +25,8 @@ struct PageReadView: View {
     @State private var showSelection = false
     @State private var showSetup = false
     
-    let player = AVPlayer()
+    let player: AVPlayer = AVPlayer()
+    let aplayer: AVAudioPlayer = AVAudioPlayer()
     @State private var periodFrom: Double = 0
     @State private var periodTo: Double = 0
     @State private var errorDescription: String = ""
@@ -284,7 +285,7 @@ struct InfoView: View {
 // MARK: Audio Controls
 struct AudioPlayerControlsView: View {
     
-    private enum PlaybackState: Int {
+    private enum PlaybackState: Int { //
         case waitingForSelection
         case waitingForPlay
         case buffering
@@ -292,29 +293,28 @@ struct AudioPlayerControlsView: View {
         case pausing
     }
     
-    let player: AVPlayer
+    let player: AVPlayer //
     let timeObserver: PlayerTimeObserver
     let durationObserver: PlayerDurationObserver
     let itemObserver: PlayerItemObserver
     let localAccentColor: String
-    let periodFrom: Double
+    let periodFrom: Double //
     let periodTo: Double // 0 означает отсутствие конца отрывка
     
-    @State private var currentTime: TimeInterval = 0
-    @State private var currentDuration: TimeInterval = 0
-    @State private var state = PlaybackState.waitingForSelection
-    @State private var lastRate: Float = 1.0
+    @State private var currentTime: TimeInterval = 0 //
+    @State private var currentDuration: TimeInterval = 0 //
+    @State private var state = PlaybackState.waitingForSelection //
+    @State private var lastRate: Float = 1.0 //
+    @State private var stopAtEnd = true //
     
-    @State private var stopAtEnd = true
+    let audioVerses: [BibleAudioVerseFull] //
+    @State private var interverse: Bool = false //
+    @State private var currentVerseIndex: Int = 0 // 
     
-    let audioVerses: [BibleAudioVerseFull]
-    @State private var interverse: Bool = false
-    @State private var currentVerseIndex: Int = 0
+    var onChangeCurrentVerse: ((Int) -> Void) //
+    var onEndCurrentVerse: (() -> Void) //
     
-    var onChangeCurrentVerse: ((Int) -> Void)
-    var onEndCurrentVerse: (() -> Void)
-    
-    func pauseSmoothly(duration: TimeInterval) {
+    func pauseSmoothly(duration: TimeInterval) { //
             let initialVolume = player.volume
             let steps = 10
             let interval = duration / Double(steps)
@@ -354,7 +354,7 @@ struct AudioPlayerControlsView: View {
             
             
             // MARK: Timeline
-            ZStack {
+            ZStack { //
                 
                 Slider(value: $currentTime, in: 0...currentDuration, onEditingChanged: sliderEditingChanged)
                     .accentColor(Color("localAccentColor"))
@@ -597,10 +597,10 @@ struct AudioPlayerControlsView: View {
             }
         }
         // Listen out for the duration observer publishing changes to the player's item duration
-        .onReceive(durationObserver.publisher) { duration in
+        .onReceive(durationObserver.publisher) { duration in //
             // Update the local var
             //print("duration: \(duration)")
-            self.currentDuration = duration
+            self.currentDuration = duration //
             if self.state == .buffering {
                 self.state = .waitingForPlay
                 self.player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
@@ -623,7 +623,7 @@ struct AudioPlayerControlsView: View {
 //        }
     }
     
-    private func setCurrentVerseIndex(_ cur: Int) {
+    private func setCurrentVerseIndex(_ cur: Int) { //
         if cur != currentVerseIndex {
             currentVerseIndex = cur
             onChangeCurrentVerse(audioVerses[cur].id)
@@ -631,7 +631,7 @@ struct AudioPlayerControlsView: View {
     }
     
     // MARK: Private functions
-    private func sliderEditingChanged(editingStarted: Bool) {
+    private func sliderEditingChanged(editingStarted: Bool) { //
         
         if editingStarted {
             // Tell the PlayerTimeObserver to stop publishing updates while the user is interacting

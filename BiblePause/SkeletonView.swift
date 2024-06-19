@@ -63,7 +63,14 @@ struct SkeletonView: View {
             }
             
             else if selectedMenuItem == .contacts {
-                PageContactsView()
+                PageContactsView(showMenu: $showMenu,
+                                 selectedMenuItem: $selectedMenuItem,
+                                 currentExcerpt: $currentExcerpt,
+                                 currentExcerptTitle: $currentExcerptTitle,
+                                 currentExcerptSubtitle: $currentExcerptSubtitle,
+                                 currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
+                                 currentBookId: $currentBookId,
+                                 currentChapterId: $currentChapterId)
             }
             // слой меню
             MenuView(
