@@ -9,17 +9,17 @@ import SwiftUI
 
 struct PageMainView: View {
     
-    @Binding var showMenu: Bool
-    @Binding var selectedMenuItem: MenuItem
+    @ObservedObject var windowsDataManager: WindowsDataManager
+    
+    //@Binding var showMenu: Bool
+    //@Binding var selectedMenuItem: MenuItem
     
     var body: some View {
         
         ZStack {
             VStack(spacing: 20) {
                 HStack {
-                    MenuButtonView(
-                        showMenu: $showMenu,
-                        selectedMenuItem: $selectedMenuItem)
+                    MenuButtonView(windowsDataManager: windowsDataManager)
                     .padding(.bottom, 50)
                     Spacer()
                 }
@@ -57,22 +57,18 @@ struct PageMainView: View {
             )
             
             // слой меню
-            MenuView(showMenu: $showMenu,
-                     selectedMenuItem: $selectedMenuItem
-            )
-                .offset(x: showMenu ? 0 : -getRect().width)
+            MenuView(windowsDataManager: windowsDataManager)
+            .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
         }
     }
 }
 
 struct TestPageMainView: View {
     
-    @State var showMenu: Bool = false
-    @State var selectedMenuItem: MenuItem = .main
+    @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageMainView(showMenu: $showMenu,
-                     selectedMenuItem: $selectedMenuItem)
+        PageMainView(windowsDataManager: windowsDataManager)
     }
 }
 

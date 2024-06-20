@@ -10,9 +10,8 @@ import SwiftUI
 struct PageSetupView: View {
     
     @ObservedObject var settingsManager = SettingsManager()
+    @ObservedObject var windowsDataManager: WindowsDataManager
     
-    @Binding var showMenu: Bool
-    @Binding var selectedMenuItem: MenuItem
     @Binding var showFromRead: Bool
     
     // MARK: Языки и переводы
@@ -45,9 +44,7 @@ struct PageSetupView: View {
                         .foregroundColor(Color.white.opacity(0.5))
                     }
                     else {
-                        MenuButtonView(
-                            showMenu: $showMenu,
-                            selectedMenuItem: $selectedMenuItem)
+                        MenuButtonView(windowsDataManager: windowsDataManager)
                     }
                     Spacer()
                     
@@ -202,10 +199,8 @@ struct PageSetupView: View {
             }
             
             // слой меню
-            MenuView(showMenu: $showMenu,
-                     selectedMenuItem: $selectedMenuItem
-            )
-            .offset(x: showMenu ? 0 : -getRect().width)
+            MenuView(windowsDataManager: windowsDataManager)
+                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
             
         }
         // подложка
@@ -217,13 +212,11 @@ struct PageSetupView: View {
 
 struct TestPageSetupView: View {
     
-    @State var showMenu: Bool = false
-    @State var selectedMenuItem: MenuItem = .main
     @State private var showFromRead: Bool = true
+    @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageSetupView(showMenu: $showMenu,
-                      selectedMenuItem: $selectedMenuItem,
+        PageSetupView(windowsDataManager: windowsDataManager,
                       showFromRead: $showFromRead)
     }
 }

@@ -9,14 +9,9 @@ import SwiftUI
 
 struct PageSelectView: View {
     
-    @Binding var showMenu: Bool
-    @Binding var selectedMenuItem: MenuItem
+    @ObservedObject var windowsDataManager: WindowsDataManager
+    
     @Binding var showFromRead: Bool
-    @Binding var currentExcerpt: String
-    @Binding var currentExcerptTitle: String
-    @Binding var currentExcerptSubtitle: String
-    @Binding var currentBookId: Int
-    @Binding var currentChapterId: Int
     
     @State private var selectedBiblePartIndex: Int = -1 // 0 - ВЗ, 1 - НЗ
     @State private var expandedBook: Int = 0
@@ -42,9 +37,7 @@ struct PageSelectView: View {
                             .foregroundColor(Color.white.opacity(0.5))
                         }
                         else {
-                            MenuButtonView(
-                                showMenu: $showMenu,
-                                selectedMenuItem: $selectedMenuItem)
+                            MenuButtonView(windowsDataManager: windowsDataManager)
                         }
                         Spacer()
                         
@@ -89,7 +82,7 @@ struct PageSelectView: View {
                                             withAnimation {
                                                 expandedBook = book.id
                                                 
-                                                if book.id != currentBookId {
+                                                if book.id != windowsDataManager.currentBookId {
                                                     needSelectedBookOpen = false
                                                 }
                                                 
@@ -103,21 +96,21 @@ struct PageSelectView: View {
                                                 .id("top_\(book.id)")
                                         }
                                         
-                                        if expandedBook == book.id || (currentBookId == book.id && needSelectedBookOpen) {
+                                        if expandedBook == book.id || (windowsDataManager.currentBookId == book.id && needSelectedBookOpen) {
                                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
                                                 ForEach(book.chapters) { chapter in
                                                     Button(action: {
                                                         // MARK: Действие при нажатии на кнопку главы
-                                                        currentExcerpt = "\(book.code) \(chapter.id)"
-                                                        currentExcerptTitle = book.fullName
-                                                        currentExcerptSubtitle = "Глава \(chapter.id)"
-                                                        selectedMenuItem = .read
+                                                        windowsDataManager.currentExcerpt = "\(book.code) \(chapter.id)"
+                                                        windowsDataManager.currentExcerptTitle = book.fullName
+                                                        windowsDataManager.currentExcerptSubtitle = "Глава \(chapter.id)"
+                                                        windowsDataManager.selectedMenuItem = .read
                                                         withAnimation(Animation.easeInOut(duration: 1)) {
                                                             showFromRead = false
                                                         }
                                                         
                                                     }) {
-                                                        if currentBookId == book.id && currentChapterId == chapter.id {
+                                                        if windowsDataManager.currentBookId == book.id && windowsDataManager.currentChapterId == chapter.id {
                                                             Text("\(chapter.id)").frame(maxWidth: .infinity)
                                                                 .padding(.vertical, 10)
                                                             //.foregroundColor(Color("DarkGreen"))
@@ -154,7 +147,7 @@ struct PageSelectView: View {
                         }
                         .frame(maxHeight: .infinity)
                         .onAppear {
-                            proxy.scrollTo("top_\(currentBookId)", anchor: .top)
+                            proxy.scrollTo("top_\(windowsDataManager.currentBookId)", anchor: .top)
                         }
                         //Spacer()
                     }
@@ -168,38 +161,24 @@ struct PageSelectView: View {
             
             
             // слой меню
-            MenuView(showMenu: $showMenu,
-                     selectedMenuItem: $selectedMenuItem
-            )
-            .offset(x: showMenu ? 0 : -getRect().width)
+            MenuView(windowsDataManager: windowsDataManager)
+            .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
             
         }
     }
 }
 
+
 struct TestPageSelectView: View {
     
-    @State private var showMenu: Bool = false
-    @State private var selectedMenuItem: MenuItem = .read
     @State private var showFromRead: Bool = true
-    @State private var currentExcerpt = "mat 2"
-    @State private var currentExcerptTitle: String = "Евангелие от Матфея"
-    @State private var currentExcerptSubtitle: String = "Глава 2"
-    @State private var currentBookId: Int = 2
-    @State private var currentChapterId: Int = 3
+    @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageSelectView(showMenu: $showMenu,
-                       selectedMenuItem: $selectedMenuItem, 
-                       showFromRead: $showFromRead,
-                       currentExcerpt: $currentExcerpt,
-                       currentExcerptTitle: $currentExcerptTitle,
-                       currentExcerptSubtitle: $currentExcerptSubtitle,
-                       currentBookId: $currentBookId,
-                       currentChapterId: $currentChapterId
-        )
+        PageSelectView(windowsDataManager: windowsDataManager, showFromRead: $showFromRead)
     }
 }
+
 
 #Preview {
     TestPageSelectView()

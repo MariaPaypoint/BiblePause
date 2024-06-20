@@ -7,18 +7,23 @@
 
 import SwiftUI
 
+class WindowsDataManager: ObservableObject {
+    @Published var showMenu: Bool = false
+    @Published var selectedMenuItem: MenuItem = .main
+    
+    @Published var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
+    
+    @Published var currentExcerpt: String = "mat 3:2-3"
+    @Published var currentExcerptTitle: String = "Евангелие от Матфея"
+    @Published var currentExcerptSubtitle: String = "Глава 3:2-3"
+    @Published var currentExcerptIsSingleChapter: Bool = true
+    @Published var currentBookId: Int = 0
+    @Published var currentChapterId: Int = 0
+}
+
 struct SkeletonView: View {
     
-    @State private var showMenu: Bool = false
-    @State private var selectedMenuItem: MenuItem = .main
-    
-    @State private var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
-    @State private var currentExcerpt: String = "mat 3:2-3"
-    @State private var currentExcerptTitle: String = "Евангелие от Матфея"
-    @State private var currentExcerptSubtitle: String = "Глава 3:2-3"
-    @State private var currentExcerptIsSingleChapter: Bool = true
-    @State private var currentBookId: Int = 0
-    @State private var currentChapterId: Int = 0
+    @StateObject var windowsDataManager = WindowsDataManager()
     
     // не имеет значения здесь
     @State private var showAsPartOfRead: Bool = false
@@ -29,54 +34,31 @@ struct SkeletonView: View {
             Color("DarkGreen")
                 .edgesIgnoringSafeArea(.all)
             
-            if selectedMenuItem == .main {
-                PageMainView(showMenu: $showMenu,
-                             selectedMenuItem: $selectedMenuItem)
+            if windowsDataManager.selectedMenuItem == .main {
+                PageMainView(windowsDataManager: windowsDataManager)
             }
             
-            else if selectedMenuItem == .read {
-                PageReadView(showMenu: $showMenu,
-                             selectedMenuItem: $selectedMenuItem, 
-                             currentExcerpt: $currentExcerpt,
-                             currentExcerptTitle: $currentExcerptTitle,
-                             currentExcerptSubtitle: $currentExcerptSubtitle,
-                             currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
-                             currentBookId: $currentBookId,
-                             currentChapterId: $currentChapterId)
+            else if windowsDataManager.selectedMenuItem == .read {
+                PageReadView(windowsDataManager: windowsDataManager)
             }
             
-            else if selectedMenuItem == .select {
-                PageSelectView(showMenu: $showMenu,
-                               selectedMenuItem: $selectedMenuItem,
-                               showFromRead: $showAsPartOfRead,
-                               currentExcerpt: $currentExcerpt,
-                               currentExcerptTitle: $currentExcerptTitle,
-                               currentExcerptSubtitle: $currentExcerptSubtitle,
-                               currentBookId: $currentBookId,
-                               currentChapterId: $currentChapterId)
+            else if windowsDataManager.selectedMenuItem == .select {
+                PageSelectView(windowsDataManager: windowsDataManager,
+                               showFromRead: $showAsPartOfRead)
             }
             
-            else if selectedMenuItem == .setup {
-                PageSetupView(showMenu: $showMenu,
-                              selectedMenuItem: $selectedMenuItem,
+            else if windowsDataManager.selectedMenuItem == .setup {
+                PageSetupView(windowsDataManager: windowsDataManager,
                               showFromRead: $showAsPartOfRead)
             }
             
-            else if selectedMenuItem == .contacts {
-                PageContactsView(showMenu: $showMenu,
-                                 selectedMenuItem: $selectedMenuItem,
-                                 currentExcerpt: $currentExcerpt,
-                                 currentExcerptTitle: $currentExcerptTitle,
-                                 currentExcerptSubtitle: $currentExcerptSubtitle,
-                                 currentExcerptIsSingleChapter: $currentExcerptIsSingleChapter,
-                                 currentBookId: $currentBookId,
-                                 currentChapterId: $currentChapterId)
+            else if windowsDataManager.selectedMenuItem == .contacts {
+                PageContactsView(windowsDataManager: windowsDataManager)
             }
+            
             // слой меню
-            MenuView(
-                showMenu: $showMenu,
-                selectedMenuItem: $selectedMenuItem)
-            .offset(x: showMenu ? 0 : -getRect().width)
+            MenuView(windowsDataManager: windowsDataManager)
+                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
         }
         
     }
