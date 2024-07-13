@@ -63,11 +63,7 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
  */
 
 // MARK: Готовое отображение
-@ViewBuilder 
-//func viewExcerpt(translationIndex: Int, excerpts: String, selectedId: Int=0) -> some View {
-func viewExcerpt(verses: [BibleTextVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
-    
-    //let verses = getExcerptStrings(excerpts: excerpts, translationIndex: translationIndex)
+@ViewBuilder func viewExcerpt(verses: [BibleTextVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
     
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
         partialResult
@@ -75,6 +71,7 @@ func viewExcerpt(verses: [BibleTextVerseFull], fontIncreasePercent: Double, sele
         Text("\(verse.id). ") // Номер стиха
             .font(.system(size: 7 * (1 + fontIncreasePercent / 100)))
             .foregroundColor(.white.opacity(0.5))
+            //.id("verse_number_\(verse.id)")
         +
         Text(verse.text) // Текст стиха
             .foregroundColor(selectedId == verse.id ? Color("DarkGreen-accent") : .white)
@@ -86,7 +83,5 @@ func viewExcerpt(verses: [BibleTextVerseFull], fontIncreasePercent: Double, sele
     VStack {
         formattedText
             .lineSpacing(10.0)
-            //.padding(globalBasePadding)
     }
 }
-

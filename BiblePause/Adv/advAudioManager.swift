@@ -97,6 +97,7 @@ class PlayerTimeObserver {
     private var paused = false
     
     init(player: AVPlayer) {
+        print("PlayerTimeObserver deinit")
         self.player = player
         
         // Periodically observe the player's current time, whilst playing
@@ -110,6 +111,7 @@ class PlayerTimeObserver {
     }
     
     deinit {
+        print("PlayerTimeObserver deinit")
         if let player = player,
             let observer = timeObservation {
             player.removeTimeObserver(observer)
@@ -117,6 +119,7 @@ class PlayerTimeObserver {
     }
     
     func pause(_ pause: Bool) {
+        print("PlayerTimeObserver pause", pause)
         paused = pause
     }
 }

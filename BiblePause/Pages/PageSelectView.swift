@@ -91,7 +91,7 @@ struct PageSelectView: View {
                                         } label: {
                                             Text(book.fullName)
                                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                                .frame(width: .infinity)
+                                                //.frame(width: .infinity)
                                                 .padding(.vertical, 10)
                                                 .id("top_\(book.id)")
                                         }

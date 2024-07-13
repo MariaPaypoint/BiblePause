@@ -1,5 +1,5 @@
 //
-//  PageContactsView.swift
+//  PageReadView.swift
 //  BiblePause
 //
 //  Created by Maria Novikova on 15.06.2024.
@@ -21,8 +21,6 @@ struct PageReadView: View {
     @State private var showSelection = false
     @State private var showSetup = false
     
-    //@State private var periodFrom: Double = 0
-    //@State private var periodTo: Double = 0
     @State private var errorDescription: String = ""
     
     @State private var textVerses: [BibleTextVerseFull] = []
@@ -30,6 +28,8 @@ struct PageReadView: View {
     @State private var currentVerseId = 0
     
     @State private var showAudioPanel = true
+    
+    @State private var scrollViewProxy: ScrollViewProxy? = nil
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -64,6 +64,7 @@ struct PageReadView: View {
                         
                         Spacer()
                         
+                        // кнопка настроек
                         Button {
                             withAnimation(Animation.easeInOut(duration: 1)) {
                                 showSetup = true
@@ -119,21 +120,25 @@ struct PageReadView: View {
                 updateExcerpt(proxy: proxy)
                 audiopleer.onEndVerse = onEndVerse
                 audiopleer.onStartVerse = onStartVerse
+                self.scrollViewProxy = proxy
             }
             .edgesIgnoringSafeArea(.bottom)
         }
     }
     
+    // MARK: После выбора
     func updateExcerpt(proxy: ScrollViewProxy) {
-        (textVerses, _) = getExcerptTextVerses(excerpts: windowsDataManager.currentExcerpt)
+        let (thistextVerses, isSingleChapter) = getExcerptTextVerses(excerpts: windowsDataManager.currentExcerpt)
+        
+        textVerses = thistextVerses
         
         let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
         let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
         
+        
         ///self.audioVerses = audioVerses
         self.errorDescription = err
         
-        // MARK: Audio URL
         let voice = globalBibleAudio.getCurrentVoice()
         let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
         
@@ -146,7 +151,7 @@ struct PageReadView: View {
         }
         
         let playerItem = AVPlayerItem(url: url)
-        audiopleer.setItem(playerItem: playerItem, periodFrom: from, periodTo: to, audioVerses: audioVerses)
+        audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses)
         
         // листание наверх
         withAnimation {
@@ -155,20 +160,34 @@ struct PageReadView: View {
         
         windowsDataManager.currentBookId = textVerses[0].bookDigitCode
         windowsDataManager.currentChapterId = textVerses[0].chapterDigitCode
+        
+        self.currentVerseId = -1
     }
     
     func onStartVerse(_ cur: Int) {
         self.currentVerseId = cur
+        
+        //guard let proxy = scrollViewProxy else {
+        //    return
+        //}
+        // прокрутка до текущего стиха
+        withAnimation {
+            //proxy.scrollTo("verse_number_\(cur)", anchor: .top)
+        }
+        
     }
     
     func onEndVerse() {
         // если нужна пауза - сделать ее
         ///player.pause()
+        //if settingsManager.pauseType == .time {
+        //    audiopleer.breakForSeconds(settingsManager.pauseLength)
+        //}
     }
     
-    @ViewBuilder
-    private func viewAudioPanel() -> some View {
-        // MARK: Панель с плеером
+    // MARK: Панель с плеером
+    @ViewBuilder private func viewAudioPanel() -> some View {
+        
         VStack {
             // сворачивание/разворачивание панельки
             Button {
@@ -212,8 +231,8 @@ struct PageReadView: View {
         )
     }
     
-    @ViewBuilder
-    private func viewAudioInfo() -> some View {
+    // MARK: Панель - информация
+    @ViewBuilder private func viewAudioInfo() -> some View {
         HStack {
             Text("SYNO")
                 .foregroundColor(Color("DarkGreen"))
@@ -249,12 +268,9 @@ struct PageReadView: View {
         }
     }
     
-    @ViewBuilder
-    private func viewAudioTimeline() -> some View {
-        
-        // MARK: Timeline
+    // MARK: Панель - Timeline
+    @ViewBuilder private func viewAudioTimeline() -> some View {
         ZStack {
-            
             Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
                 .accentColor(Color("localAccentColor"))
                 .onAppear {
@@ -267,7 +283,7 @@ struct PageReadView: View {
                 .disabled(audiopleer.state == .waitingForSelection || audiopleer.state == .buffering)
             
             // подсветка текущего отрывка
-            if audiopleer.currentDuration > 0 {
+            if audiopleer.periodTo > 0 {
                 
                 // https://stackoverflow.com/a/62641399
                 let frameWidth: Double = UIScreen.main.bounds.size.width - globalBasePadding*2
@@ -310,8 +326,10 @@ struct PageReadView: View {
         .padding(.top, globalBasePadding)
     }
     
-    @ViewBuilder
-    fileprivate func viewAudioButtons() -> some View {
+    // MARK: Панель - AudioButtons
+    @ViewBuilder fileprivate func viewAudioButtons() -> some View {
+        
+        let buttonsColor = audiopleer.state == .buffering ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         
         HStack {
             
@@ -328,6 +346,7 @@ struct PageReadView: View {
                 audiopleer.restart()
             } label: {
                 Image(systemName: "gobackward")
+                    .foregroundColor(buttonsColor)
             }
             Spacer()
             
@@ -336,15 +355,14 @@ struct PageReadView: View {
                 audiopleer.previousVerse()
             } label: {
                 Image(systemName: "arrowshape.turn.up.left.fill")
+                    .foregroundColor(buttonsColor)
             }
             Spacer()
             
-            // MARK: Play/Pause
+            // Play/Pause
             Button {
                 audiopleer.doPlayOrPause()
             } label: {
-                let buttonsColor = audiopleer.state == .buffering ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
-                
                 Image(systemName: audiopleer.state != .playing ? "play.circle.fill" : "pause.circle.fill")
                     .font(.system(size: 55))
                     .foregroundColor(buttonsColor)
@@ -356,6 +374,7 @@ struct PageReadView: View {
                 audiopleer.nextVerse()
             } label: {
                 Image(systemName: "arrowshape.turn.up.right.fill")
+                    .foregroundColor(buttonsColor)
             }
             Spacer()
             
@@ -365,6 +384,7 @@ struct PageReadView: View {
             } label: {
                 Text(audiopleer.currentSpeed == 1 ? "x1" : String(format: "%.1f", audiopleer.currentSpeed))
                     .font(.system(size: 20))
+                    .foregroundColor(buttonsColor)
             }
             Spacer()
             
@@ -387,6 +407,7 @@ class PlayerModel: ObservableObject {
     enum PlaybackState: Int { // private
         case waitingForSelection
         case waitingForPlay
+        case waitingForPause
         case buffering
         case playing
         case pausing
@@ -394,7 +415,8 @@ class PlayerModel: ObservableObject {
     
     private let player: AVPlayer
     private let durationObserver: PlayerDurationObserver
-    private let timeObserver: PlayerTimeObserver
+    private var timeObserver: PlayerTimeObserver
+    private var boundaryObserver: Any?
     private var cancellables = Set<AnyCancellable>()
     
     @Published var state = PlaybackState.waitingForSelection
@@ -412,6 +434,7 @@ class PlayerModel: ObservableObject {
     var onStartVerse: ((Int) -> Void)? // устанавливается снаружи, поэтому без private
     var onEndVerse: (() -> Void)? // устанавливается снаружи, поэтому без private
     
+    private var pauseTimer: Timer?
     
     init(onStartVerse: ((Int) -> Void)? = nil, onEndVerse: (() -> Void)? = nil) {
         
@@ -424,10 +447,8 @@ class PlayerModel: ObservableObject {
         self.onStartVerse = onStartVerse
         self.onEndVerse = onEndVerse
         
-        self.state = .buffering
-        self.currentTime = 0
-        self.currentDuration = 0
-        
+        //self.player.automaticallyWaitsToMinimizeStalling = false
+
         // наблюдаем, когда подгрузится песня и определится ее длина
         durationObserver.publisher
             .receive(on: DispatchQueue.main)
@@ -442,15 +463,16 @@ class PlayerModel: ObservableObject {
             }
             .store(in: &cancellables)
         
+        
         // наблюдаем за изменением позиции
         timeObserver.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] time in
                 self?.currentTime = time
-                
+                print("time", time)
+         /*
                 // остановка при достижении конца отрывка
-                let endPosition = (self?.periodTo == 0 ? self?.currentDuration : self?.periodTo) ?? 0
-                if time > Double(endPosition) && self?.stopAtEnd ?? false {
+                if self!.periodTo > 0 && time > Double(self!.periodTo) && self!.stopAtEnd {
                     self?.state = .pausing
                     self?.player.pause()
                 }
@@ -459,8 +481,10 @@ class PlayerModel: ObservableObject {
                 var cur = -1
                 for (index, verse) in self!.audioVerses.enumerated() {
                     if time >= verse.begin && time < verse.end {
+                        if index != self!.currentVerseIndex { print("cur changed from", self!.currentVerseIndex, "to", index) }
                         cur = index
                         self?.interverse = false
+                        
                         break
                     }
                 }
@@ -468,16 +492,19 @@ class PlayerModel: ObservableObject {
                 // стих не нашелся (например, в самом начале, или если один стих закончился, а другой еще не начался,
                 // или проигрывается за пределами отрывка)
                 if cur == -1 {
-                    if !self!.interverse && self!.currentVerseIndex > 0 {
+                    if !self!.interverse && self!.currentVerseIndex >= 0 {
                         self?.interverse = true
+                        print("onEndVerse")
                         self?.onEndVerse?()
                     }
                 }
                 else {
                     self?.setCurrentVerseIndex(cur)
                 }
+          */
             }
             .store(in: &cancellables)
+        
     }
     
     private func setCurrentVerseIndex(_ cur: Int) { //
@@ -487,29 +514,82 @@ class PlayerModel: ObservableObject {
         }
     }
     
-    // установка параметров новой композиции
+    // MARK: установка параметров новой композиции
     func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAudioVerseFull]) {
              
-        self.player.replaceCurrentItem(with: playerItem)
         self.periodFrom = periodFrom
         self.periodTo = periodTo
+        
         self.audioVerses = audioVerses
         self.interverse = false
-    }
-    
-    // пауза
-    func doPlayOrPause() {
-        if self.state == .playing {
-            pauseSmoothly(duration: 0.5)
-        } else {
-            if self.currentTime >= Double(self.periodTo == 0 ? self.currentDuration : self.periodTo) {
-                self.stopAtEnd = false
+        self.currentVerseIndex = -1
+        
+        self.state = .buffering
+        self.currentTime = 0
+        self.currentDuration = 0
+        
+        self.player.replaceCurrentItem(with: playerItem)
+        
+        
+        var times: [NSValue] = []
+        for verse in audioVerses {
+            let verseEndTime = CMTime(seconds: verse.end, preferredTimescale: 10)
+            times.append(NSValue(time: verseEndTime))
+        }
+        // Удаление предыдущего наблюдателя, если он существует
+        if let boundaryObserver = boundaryObserver {
+            player.removeTimeObserver(boundaryObserver)
+            self.boundaryObserver = nil
+        }
+        boundaryObserver = player.addBoundaryTimeObserver(forTimes: times, queue: .main) {
+            print("Reached verse end time")
+            
+            
+            self.player.pause()
+            //self.pauseSimple()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                self.player.play()
+                self.player.automaticallyWaitsToMinimizeStalling = false
+                self.player.setRate(self.currentSpeed, time: .invalid, atHostTime: .invalid)
+                //self.player.rate = self.currentSpeed
+                //self.playSimple()
             }
             
-            self.state = .playing
-            self.player.play()
-            self.player.rate = self.currentSpeed
+            //self.breakForSeconds(3)
         }
+    }
+    
+    // MARK: воспр/пауза
+    func doPlayOrPause() {
+        if self.state == .playing {
+            pauseSmoothly(duration: 0.3)
+        }
+        else if state == .buffering {
+            // ничего не делать
+        }
+        else {
+            // если воспроизведение запущено после конца отрывка, то уже не стопаться
+            if self.currentTime >= self.periodTo {
+                self.stopAtEnd = false
+            }
+            self.playSimple()
+        }
+    }
+    
+    private func playSimple() {
+        self.state = .playing
+        self.player.play()
+        //self.player.rate = self.currentSpeed
+        //self.timeObserver.pause(false)
+        
+        self.player.automaticallyWaitsToMinimizeStalling = false
+        self.player.setRate(self.currentSpeed, time: .invalid, atHostTime: .invalid)
+    }
+    
+    private func pauseSimple() {
+        //self.timeObserver.pause(true)
+        self.player.pause()
+        self.state = .pausing
     }
     
     private func pauseSmoothly(duration: TimeInterval) {
@@ -518,17 +598,38 @@ class PlayerModel: ObservableObject {
         let interval = duration / Double(steps)
         var currentStep = 0
         
+        self.state = .waitingForPause
         Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
             if currentStep < steps {
                 let newVolume = initialVolume * (1.0 - Float(currentStep) / Float(steps))
                 self.player.volume = newVolume
                 currentStep += 1
             } else {
-                self.player.pause()
                 self.player.volume = initialVolume // Reset volume to original after pausing
-                self.state = .pausing
                 timer.invalidate()
+                self.pauseSimple()
             }
+        }
+    }
+    
+    func breakForSeconds(_ seconds: Double) {
+        
+        //pauseSimple()
+        /*
+        // Использование DispatchQueue для задержки
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            self.playSimple()
+        }
+        */
+        
+        //pauseTimer?.invalidate()
+        //pauseTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
+        //    self?.playSimple()
+        //}
+        
+        self.pauseSimple()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.playSimple()
         }
     }
     
@@ -538,7 +639,7 @@ class PlayerModel: ObservableObject {
         if editingStarted {
             // Tell the PlayerTimeObserver to stop publishing updates while the user is interacting with the slider
             // (otherwise it would keep jumping from where they've moved it to, back to where the player is currently at)
-            timeObserver.pause(true)
+            self.timeObserver.pause(true)
         }
         else {
             // Editing finished, start the seek
@@ -548,48 +649,51 @@ class PlayerModel: ObservableObject {
                 self.timeObserver.pause(false)
             }
             if currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
-                self.stopAtEnd = false
+                stopAtEnd = false
             }
         }
     }
     
     func restart() {
-        self.stopAtEnd = true
-        self.player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
-        //self.state = .playing
-        //self.player.play()
+        if state == .playing || state == .pausing {
+            stopAtEnd = true
+            player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
+        }
     }
     
     func previousVerse() {
-        if currentVerseIndex > 0 {
+        if state == .playing && currentVerseIndex > 0 {
             setCurrentVerseIndex(currentVerseIndex - 1)
             
             let begin = audioVerses[currentVerseIndex].begin
-            self.player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
-            self.currentTime = begin
+            player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+            currentTime = begin
         }
     }
     
     func nextVerse() {
-        if currentVerseIndex+1 < audioVerses.count {
+        if state == .playing && currentVerseIndex+1 < audioVerses.count {
             setCurrentVerseIndex(currentVerseIndex + 1)
             let begin = audioVerses[currentVerseIndex].begin
-            self.player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
-            self.currentTime = begin
+            player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+            currentTime = begin
         }
     }
     
     func changeSpeed() {
+        if currentSpeed >= 2 || currentSpeed < 0.6 {
+            currentSpeed = 0.6
+        }
+        else {
+            currentSpeed += 0.2
+        }
+        
         if state == .playing {
-            if player.rate >= 2 || player.rate < 0.6 {
-                player.rate = 0.6
-            }
-            else {
-                player.rate += 0.2
-            }
-            currentSpeed = player.rate
+            //player.rate = currentSpeed
+            player.setRate(currentSpeed, time: .invalid, atHostTime: .invalid)
         }
     }
+    
 }
 
 // MARK: Preview

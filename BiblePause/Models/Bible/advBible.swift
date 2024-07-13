@@ -193,9 +193,6 @@ func getExcerptPeriod(audioVerses: [BibleAudioVerseFull]) -> (Double, Double) {
     let period_from: Double = audioVerses[0].begin
     let period_to: Double = audioVerses[audioVerses.count - 1].end
     
-    print(period_from)
-    print(period_to)
-    
     return (period_from - 0, period_to - 0)
 }
 
