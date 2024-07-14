@@ -5,90 +5,10 @@
 //  Created by Maria Novikova on 27.08.2022.
 //
 
-
-//import Foundation
 import AVFoundation
-//import AVKit
-
-/*
-class SoundManager : ObservableObject {
-    var audioPlayer: AVPlayer?
-
-    func playSound(sound: String) {
-        if let url = URL(string: sound) {
-            self.audioPlayer = AVPlayer(url: url)
-        }
-    }
-    
-    func goToTime(seconds: Int64) {
-        let videoStartTime: CMTime = CMTimeMake(value: seconds, timescale: 1)
-        audioPlayer?.seek(to: videoStartTime)
-    }
-    
-    func getLen() -> String {
-        //audioPlayer?.currentItem?.duration.duration ?? "-00:00"
-        return audioPlayer?.currentItem?.duration.positionalTime ?? "-00:00"
-    }
-}
-
-extension CMTime {
-    var roundedSeconds: TimeInterval {
-        guard !(seconds.isNaN || seconds.isInfinite) else {
-            print("0")
-            return 0 // or do some error handling
-        }
-        print(seconds.rounded())
-        return seconds.rounded()
-    }
-    
-    var hours:  Int { return Int(roundedSeconds / 3600) }
-    var minute: Int { return Int(roundedSeconds.truncatingRemainder(dividingBy: 3600) / 60) }
-    var second: Int { return Int(roundedSeconds.truncatingRemainder(dividingBy: 60)) }
-    
-    var positionalTime: String {
-        return hours > 0 ?
-            String(format: "%d:%02d:%02d",
-                   hours, minute, second) :
-            String(format: "%02d:%02d",
-                   minute, second)
-    }
-}
-*/
-/*
-extension CMTime {
-    var hrs:  Int { return Int(seconds.rounded() / 3600) }
-    var mins: Int { return Int(seconds.truncatingRemainder(dividingBy: 3600) / 60) }
-    var secs: Int { return Int(seconds.truncatingRemainder(dividingBy: 60)) }
-    var duration: String { return hrs > 0 ? String(format: "%i:%02i:%02i", hrs, mins, secs) : String(format: "%02i:%02i", mins, secs)
-    }
-}
-*/
-
-/*
-class AudioManager {
-    static let shared = AudioManager()
-    
-    var audioPlayer: AVAudioPlayer?
-    
-    func startPlayer(track: String) {
-        let url = Bundle.main.url(forResource: track, withExtension: "mp3")
-        
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url!)
-            
-            audioPlayer?.play()
-        } catch {
-            print("Fail playing", error)
-        }
-    }
-}
-*/
-
-
-//
-
-
 import Combine
+
+// MARK: PlayerTimeObserver
 
 class PlayerTimeObserver {
     let publisher = PassthroughSubject<TimeInterval, Never>()
@@ -124,6 +44,28 @@ class PlayerTimeObserver {
     }
 }
 
+// MARK: PlayerDurationObserver
+
+class PlayerDurationObserver {
+   let publisher = PassthroughSubject<TimeInterval, Never>()
+   private var cancellable: AnyCancellable?
+   
+   init(player: AVPlayer) {
+       let durationKeyPath: KeyPath<AVPlayer, CMTime?> = \.currentItem?.duration
+       cancellable = player.publisher(for: durationKeyPath).sink { duration in
+           guard let duration = duration else { return }
+           guard duration.isNumeric else { return }
+           self.publisher.send(duration.seconds)
+       }
+   }
+   
+   deinit {
+       cancellable?.cancel()
+   }
+}
+
+
+/*
 // в отрефакторенной версии не нужно
 class PlayerItemObserver {
     let publisher = PassthroughSubject<Bool, Never>()
@@ -144,21 +86,368 @@ class PlayerItemObserver {
         }
     }
 }
+*/
+ 
+// MARK: PlayerModel
 
-class PlayerDurationObserver {
-    let publisher = PassthroughSubject<TimeInterval, Never>()
-    private var cancellable: AnyCancellable?
+class PlayerModel: ObservableObject {
     
-    init(player: AVPlayer) {
-        let durationKeyPath: KeyPath<AVPlayer, CMTime?> = \.currentItem?.duration
-        cancellable = player.publisher(for: durationKeyPath).sink { duration in
-            guard let duration = duration else { return }
-            guard duration.isNumeric else { return }
-            self.publisher.send(duration.seconds)
+    enum PlaybackState: Int { // private
+        case waitingForSelection
+        case waitingForPlay
+        case waitingForPause
+        case buffering
+        case playing
+        case pausing
+        case autopausing
+    }
+    
+    private let player: AVPlayer
+    private let durationObserver: PlayerDurationObserver
+    private var timeObserver: PlayerTimeObserver
+    private var boundaryObserverBegin: Any?
+    private var boundaryObserverEnd: Any?
+    private var cancellables = Set<AnyCancellable>()
+    
+    @Published var state = PlaybackState.waitingForSelection
+    @Published var periodFrom: Double = 0
+    @Published var periodTo: Double = 0 // 0 означает отсутствие конца отрывка, но оно потом перекроется
+    @Published var currentDuration: TimeInterval = 0
+    @Published var currentTime: TimeInterval = 0
+    @Published var currentSpeed: Float = 1.0
+    
+    private var oldState = PlaybackState.waitingForSelection
+    private var audioVerses: [BibleAudioVerseFull] = []
+    private var currentVerseIndex: Int = -1
+    private var interverse: Bool = false // сейчас играет между стихами
+    private var stopAtEnd = true
+    
+    var onStartVerse: ((Int) -> Void)? // устанавливается снаружи, поэтому без private
+    var onEndVerse: (() -> Void)? // устанавливается снаружи, поэтому без private
+    
+    private var pauseTimer: Timer?
+    
+    // MARK: init
+    init(onStartVerse: ((Int) -> Void)? = nil, onEndVerse: (() -> Void)? = nil) {
+        
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+        
+        self.player = AVPlayer()
+        self.durationObserver = PlayerDurationObserver(player: self.player)
+        self.timeObserver = PlayerTimeObserver(player: self.player)
+        
+        self.onStartVerse = onStartVerse
+        self.onEndVerse = onEndVerse
+        
+        //self.player.automaticallyWaitsToMinimizeStalling = false
+
+        // наблюдаем, когда подгрузится песня и определится ее длина
+        durationObserver.publisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] duration in
+                self?.currentDuration = duration
+                
+                if self?.state == .buffering {
+                    self?.state = .waitingForPlay
+                    self?.player.seek(to: CMTimeMake(value: Int64(self!.periodFrom*100), timescale: 100))
+                    //self?.currentTime = CMTimeGetSeconds(self?.player.currentTime() ?? .zero)
+                    self?.currentTime = self?.periodFrom ?? 0
+                    self?.findAndSetCurrentVerseIndex()
+                }
+                
+                if self?.oldState == .playing {
+                    self?.playSimple()
+                }
+                
+            }
+            .store(in: &cancellables)
+        
+        
+        // наблюдаем за изменением позиции
+        timeObserver.publisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] time in
+                self?.currentTime = time
+                print("time", time)
+         /*
+                // остановка при достижении конца отрывка
+                if self!.periodTo > 0 && time > Double(self!.periodTo) && self!.stopAtEnd {
+                    self?.state = .pausing
+                    self?.player.pause()
+                }
+                
+                // ищем стих, в который точно попадает текущее положение
+                var cur = -1
+                for (index, verse) in self!.audioVerses.enumerated() {
+                    if time >= verse.begin && time < verse.end {
+                        if index != self!.currentVerseIndex { print("cur changed from", self!.currentVerseIndex, "to", index) }
+                        cur = index
+                        self?.interverse = false
+                        
+                        break
+                    }
+                }
+                
+                // стих не нашелся (например, в самом начале, или если один стих закончился, а другой еще не начался,
+                // или проигрывается за пределами отрывка)
+                if cur == -1 {
+                    if !self!.interverse && self!.currentVerseIndex >= 0 {
+                        self?.interverse = true
+                        print("onEndVerse")
+                        self?.onEndVerse?()
+                    }
+                }
+                else {
+                    self?.setCurrentVerseIndex(cur)
+                }
+          */
+            }
+            .store(in: &cancellables)
+        
+    }
+    
+    // MARK: установка параметров новой композиции
+    func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAudioVerseFull]) {
+        
+        self.oldState = self.state
+        if self.state == .playing {
+            self.pauseSimple()
+        }
+        
+        self.periodFrom = periodFrom
+        self.periodTo = periodTo
+        
+        self.audioVerses = audioVerses
+        self.interverse = false
+        self.currentVerseIndex = -1
+        
+        self.state = .buffering
+        self.currentTime = 0
+        self.currentDuration = 0
+        
+        self.deleteObservation()
+        self.setObservation()
+        
+        self.player.replaceCurrentItem(with: playerItem)
+        
+    }
+    
+    // Удаление предыдущих наблюдателей, если они существуют
+    private func deleteObservation() {
+        if let observerBegin = boundaryObserverBegin {
+            player.removeTimeObserver(observerBegin)
+            self.boundaryObserverBegin = nil
+        }
+        if let observerEnd = boundaryObserverEnd {
+            player.removeTimeObserver(observerEnd)
+            self.boundaryObserverEnd = nil
         }
     }
     
-    deinit {
-        cancellable?.cancel()
+    private func setObservation() {
+        // вычисляем время
+        var timesBegin: [NSValue] = []
+        var timesEnd: [NSValue] = []
+        
+        for verse in audioVerses {
+            let verseBeginTime = CMTime(seconds: verse.begin, preferredTimescale: 10)
+            timesBegin.append(NSValue(time: verseBeginTime))
+            let verseEndTime = CMTime(seconds: verse.end, preferredTimescale: 10)
+            timesEnd.append(NSValue(time: verseEndTime))
+        }
+        
+        // наблюдаем за началом стиха, чтобы позиционировать
+        boundaryObserverBegin = player.addBoundaryTimeObserver(forTimes: timesBegin, queue: .main) {
+            print("Reached verse BEGIN")
+            self.currentTime = CMTimeGetSeconds(self.player.currentTime())
+            self.findAndSetCurrentVerseIndex()
+        }
+        
+        // наблюдаем за концом стиха, чтобы делать паузы
+        boundaryObserverEnd = player.addBoundaryTimeObserver(forTimes: timesEnd, queue: .main) {
+            print("Reached verse END")
+            
+            self.player.pause()
+            self.state = .autopausing
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                //self.player.play()
+                //self.player.automaticallyWaitsToMinimizeStalling = false
+                //self.player.setRate(self.currentSpeed, time: .invalid, atHostTime: .invalid)
+                
+                //self.player.rate = self.currentSpeed
+                self.playSimple()
+            }
+            
+            //self.breakForSeconds(3)
+        }
     }
+    
+    // ищем стих, в который точно попадает текущее положение
+    private func findAndSetCurrentVerseIndex() {
+        
+        for (index, verse) in audioVerses.enumerated() {
+            
+            //print("verse \(index)", verse.begin, "-", verse.end)
+            
+            // +0.1, т.к. позиционирование не точное, может сработать чуть раньше
+            if currentTime + 0.1 >= verse.begin && currentTime < verse.end {
+                if index != currentVerseIndex { print("cur changed from", currentVerseIndex, "to", index) }
+                setCurrentVerseIndex(index)
+                interverse = false
+                break
+            }
+        }
+        interverse = true
+        
+        //print("currentTime", currentTime)
+        //for (index, verse) in audioVerses.enumerated() {
+        //    print("verse \(index)", verse.begin, "-", verse.end)
+        //}
+    }
+    
+    private func setCurrentVerseIndex(_ cur: Int) { //
+        if cur != self.currentVerseIndex {
+            self.currentVerseIndex = cur
+            self.onStartVerse?(audioVerses[cur].id)
+        }
+    }
+    
+    // MARK: воспр/пауза
+    func doPlayOrPause() {
+        if self.state == .playing {
+            pauseSmoothly(duration: 0.3)
+        }
+        else if state == .buffering {
+            // ничего не делать
+        }
+        else {
+            // если воспроизведение запущено после конца отрывка, то уже не стопаться
+            if self.currentTime >= self.periodTo {
+                self.stopAtEnd = false
+            }
+            self.playSimple()
+        }
+    }
+    
+    private func playSimple() {
+        self.player.play()
+        self.state = .playing
+        //self.player.rate = self.currentSpeed
+        //self.timeObserver.pause(false)
+        
+        //self.player.automaticallyWaitsToMinimizeStalling = false
+        //self.player.setRate(self.currentSpeed, time: .invalid, atHostTime: .invalid)
+    }
+    
+    private func pauseSimple() {
+        //self.timeObserver.pause(true)
+        self.player.pause()
+        self.state = .pausing
+    }
+    
+    private func pauseSmoothly(duration: TimeInterval) {
+        let initialVolume = player.volume
+        let steps = 10
+        let interval = duration / Double(steps)
+        var currentStep = 0
+        
+        self.state = .waitingForPause
+        Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+            if currentStep < steps {
+                let newVolume = initialVolume * (1.0 - Float(currentStep) / Float(steps))
+                self.player.volume = newVolume
+                currentStep += 1
+            } else {
+                self.player.volume = initialVolume // Reset volume to original after pausing
+                timer.invalidate()
+                self.pauseSimple()
+            }
+        }
+    }
+    
+    func breakForSeconds(_ seconds: Double) {
+        
+        //pauseSimple()
+        /*
+        // Использование DispatchQueue для задержки
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            self.playSimple()
+        }
+        */
+        
+        //pauseTimer?.invalidate()
+        //pauseTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
+        //    self?.playSimple()
+        //}
+        
+        self.pauseSimple()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.playSimple()
+        }
+    }
+    
+    // MARK: перемотка
+    func sliderEditingChanged(editingStarted: Bool) { // private
+        
+        if editingStarted {
+            // Tell the PlayerTimeObserver to stop publishing updates while the user is interacting with the slider
+            // (otherwise it would keep jumping from where they've moved it to, back to where the player is currently at)
+            self.timeObserver.pause(true)
+        }
+        else {
+            // Editing finished, start the seek
+            let targetTime = CMTime(seconds: currentTime, preferredTimescale: 600)
+            player.seek(to: targetTime) { _ in
+                // Now the (async) seek is completed, resume normal operation
+                self.timeObserver.pause(false)
+            }
+            if currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
+                stopAtEnd = false
+            }
+        }
+    }
+    
+    func restart() {
+        if state == .playing || state == .pausing {
+            stopAtEnd = true
+            player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
+        }
+    }
+    
+    func previousVerse() {
+        if state == .playing && currentVerseIndex > 0 {
+            setCurrentVerseIndex(currentVerseIndex - 1)
+            
+            let begin = audioVerses[currentVerseIndex].begin
+            player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+            currentTime = begin
+        }
+    }
+    
+    func nextVerse() {
+        if state == .playing && currentVerseIndex+1 < audioVerses.count {
+            setCurrentVerseIndex(currentVerseIndex + 1)
+            let begin = audioVerses[currentVerseIndex].begin
+            player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+            currentTime = begin
+        }
+    }
+    
+    // MARK: скорость
+    func changeSpeed() {
+        if currentSpeed >= 2 || currentSpeed < 0.6 {
+            currentSpeed = 0.6
+        }
+        else {
+            currentSpeed += 0.2
+        }
+        
+        player.defaultRate = currentSpeed
+        if state == .playing {
+            player.rate = currentSpeed
+            //player.setRate(currentSpeed, time: .invalid, atHostTime: .invalid)
+        }
+    }
+    
 }
