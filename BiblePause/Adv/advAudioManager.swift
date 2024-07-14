@@ -119,7 +119,6 @@ class PlayerModel: ObservableObject {
     private var oldState = PlaybackState.waitingForSelection
     private var audioVerses: [BibleAudioVerseFull] = []
     private var currentVerseIndex: Int = -1
-    private var interverse: Bool = false // сейчас играет между стихами
     private var stopAtEnd = true
     
     var onStartVerse: ((Int) -> Void)? // устанавливается снаружи, поэтому без private
@@ -139,8 +138,6 @@ class PlayerModel: ObservableObject {
         self.onStartVerse = onStartVerse
         self.onEndVerse = onEndVerse
         
-        //self.player.automaticallyWaitsToMinimizeStalling = false
-
         // наблюдаем, когда подгрузится песня и определится ее длина
         durationObserver.publisher
             .receive(on: DispatchQueue.main)
@@ -150,7 +147,6 @@ class PlayerModel: ObservableObject {
                 if self?.state == .buffering {
                     self?.state = .waitingForPlay
                     self?.player.seek(to: CMTimeMake(value: Int64(self!.periodFrom*100), timescale: 100))
-                    //self?.currentTime = CMTimeGetSeconds(self?.player.currentTime() ?? .zero)
                     self?.currentTime = self?.periodFrom ?? 0
                     self?.findAndSetCurrentVerseIndex()
                 }
@@ -168,39 +164,6 @@ class PlayerModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] time in
                 self?.currentTime = time
-                print("time", time)
-         /*
-                // остановка при достижении конца отрывка
-                if self!.periodTo > 0 && time > Double(self!.periodTo) && self!.stopAtEnd {
-                    self?.state = .pausing
-                    self?.player.pause()
-                }
-                
-                // ищем стих, в который точно попадает текущее положение
-                var cur = -1
-                for (index, verse) in self!.audioVerses.enumerated() {
-                    if time >= verse.begin && time < verse.end {
-                        if index != self!.currentVerseIndex { print("cur changed from", self!.currentVerseIndex, "to", index) }
-                        cur = index
-                        self?.interverse = false
-                        
-                        break
-                    }
-                }
-                
-                // стих не нашелся (например, в самом начале, или если один стих закончился, а другой еще не начался,
-                // или проигрывается за пределами отрывка)
-                if cur == -1 {
-                    if !self!.interverse && self!.currentVerseIndex >= 0 {
-                        self?.interverse = true
-                        print("onEndVerse")
-                        self?.onEndVerse?()
-                    }
-                }
-                else {
-                    self?.setCurrentVerseIndex(cur)
-                }
-          */
             }
             .store(in: &cancellables)
         
@@ -218,7 +181,6 @@ class PlayerModel: ObservableObject {
         self.periodTo = periodTo
         
         self.audioVerses = audioVerses
-        self.interverse = false
         self.currentVerseIndex = -1
         
         self.state = .buffering
@@ -266,44 +228,26 @@ class PlayerModel: ObservableObject {
         // наблюдаем за концом стиха, чтобы делать паузы
         boundaryObserverEnd = player.addBoundaryTimeObserver(forTimes: timesEnd, queue: .main) {
             print("Reached verse END")
-            
-            self.player.pause()
-            self.state = .autopausing
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                //self.player.play()
-                //self.player.automaticallyWaitsToMinimizeStalling = false
-                //self.player.setRate(self.currentSpeed, time: .invalid, atHostTime: .invalid)
-                
-                //self.player.rate = self.currentSpeed
-                self.playSimple()
+            // остановка при достижении конца отрывка
+            if self.stopAtEnd && self.currentVerseIndex == self.audioVerses.count - 1 {
+                self.pauseSimple()
             }
-            
-            //self.breakForSeconds(3)
+            else {
+                self.onEndVerse?()
+            }
         }
     }
     
     // ищем стих, в который точно попадает текущее положение
     private func findAndSetCurrentVerseIndex() {
-        
         for (index, verse) in audioVerses.enumerated() {
-            
-            //print("verse \(index)", verse.begin, "-", verse.end)
-            
             // +0.1, т.к. позиционирование не точное, может сработать чуть раньше
             if currentTime + 0.1 >= verse.begin && currentTime < verse.end {
                 if index != currentVerseIndex { print("cur changed from", currentVerseIndex, "to", index) }
                 setCurrentVerseIndex(index)
-                interverse = false
                 break
             }
         }
-        interverse = true
-        
-        //print("currentTime", currentTime)
-        //for (index, verse) in audioVerses.enumerated() {
-        //    print("verse \(index)", verse.begin, "-", verse.end)
-        //}
     }
     
     private func setCurrentVerseIndex(_ cur: Int) { //
@@ -331,13 +275,9 @@ class PlayerModel: ObservableObject {
     }
     
     private func playSimple() {
+        //self.timeObserver.pause(false)
         self.player.play()
         self.state = .playing
-        //self.player.rate = self.currentSpeed
-        //self.timeObserver.pause(false)
-        
-        //self.player.automaticallyWaitsToMinimizeStalling = false
-        //self.player.setRate(self.currentSpeed, time: .invalid, atHostTime: .invalid)
     }
     
     private func pauseSimple() {
@@ -362,28 +302,21 @@ class PlayerModel: ObservableObject {
                 self.player.volume = initialVolume // Reset volume to original after pausing
                 timer.invalidate()
                 self.pauseSimple()
+                let to = CMTimeGetSeconds(self.player.currentTime()) - duration
+                self.player.seek(to: CMTimeMake(value: Int64(to*100), timescale: 100))
             }
         }
     }
     
     func breakForSeconds(_ seconds: Double) {
+        self.player.pause()
+        self.state = .autopausing
         
-        //pauseSimple()
-        /*
-        // Использование DispatchQueue для задержки
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
-            self.playSimple()
-        }
-        */
-        
-        //pauseTimer?.invalidate()
-        //pauseTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
-        //    self?.playSimple()
-        //}
-        
-        self.pauseSimple()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.playSimple()
+            // проверим, а то вдруг уже совсем остановили
+            if self.state == .autopausing {
+                self.playSimple()
+            }
         }
     }
     
@@ -405,6 +338,7 @@ class PlayerModel: ObservableObject {
             if currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
                 stopAtEnd = false
             }
+            findAndSetCurrentVerseIndex()
         }
     }
     

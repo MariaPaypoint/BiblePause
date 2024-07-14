@@ -164,6 +164,7 @@ struct PageReadView: View {
         self.currentVerseId = -1
     }
     
+    // MARK: Обработчики
     func onStartVerse(_ cur: Int) {
         self.currentVerseId = cur
         
@@ -178,47 +179,35 @@ struct PageReadView: View {
     }
     
     func onEndVerse() {
-        // если нужна пауза - сделать ее
-        ///player.pause()
-        //if settingsManager.pauseType == .time {
-        //    audiopleer.breakForSeconds(settingsManager.pauseLength)
-        //}
+        // если нужна пауза - сделать ее (это событие не вызывается после последнего стиха и полной остановки)
+        if settingsManager.pauseBlock == .verse {
+            if settingsManager.pauseType == .time {
+                audiopleer.breakForSeconds(settingsManager.pauseLength)
+            }
+            else if settingsManager.pauseType == .full {
+                audiopleer.doPlayOrPause()
+            }
+        }
     }
     
     // MARK: Панель с плеером
     @ViewBuilder private func viewAudioPanel() -> some View {
         
-        VStack {
-            // сворачивание/разворачивание панельки
-            Button {
-                withAnimation {
-                    showAudioPanel.toggle()
-                }
-            } label: {
-                VStack {
-                    Image(systemName: showAudioPanel ? "chevron.compact.down" : "chevron.compact.up")
-                        .font(.system(size: 36))
-                        .padding(.top, 7)
-                        .padding(.bottom, 7)
-                        .foregroundColor(Color("DarkGreen"))
-                }
-                .frame(maxWidth: .infinity)
+        VStack(spacing: 0) {
+            viewAudioHide()
+            
+            VStack {
+                viewAudioInfo()
+                viewAudioTimeline()
+                viewAudioButtons()
             }
-            
-            // информация
-            viewAudioInfo()
-                .frame(height: showAudioPanel ? nil : 0)
-                .opacity(showAudioPanel ? 1 : 0)
-            
-            viewAudioTimeline()
-            
-            viewAudioButtons()
+            .frame(height: showAudioPanel ? nil : 0)
+            .opacity(showAudioPanel ? 1 : 0)
             
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: showAudioPanel ? 265 : 45)
-        //.padding(.top, globalBasePadding)
+        .frame(height: showAudioPanel ? 240 : 45)
         .padding(.horizontal, globalBasePadding)
         .background(Color("DarkGreen-light"))
         .clipShape(
@@ -229,6 +218,25 @@ struct PageReadView: View {
                 topTrailingRadius: 25
             )
         )
+    }
+    
+    // MARK: Панель - сворачивание/разворачивание
+    @ViewBuilder private func viewAudioHide() -> some View {
+        Button {
+            withAnimation {
+                showAudioPanel.toggle()
+            }
+        } label: {
+            VStack {
+                Image(systemName: showAudioPanel ? "chevron.compact.down" : "chevron.compact.up")
+                    .font(.system(size: 36))
+                    .padding(.top, 7)
+                    .padding(.bottom, 7)
+                    .foregroundColor(Color("DarkGreen"))
+            }
+            .frame(maxWidth: .infinity)
+        }
+        
     }
     
     // MARK: Панель - информация
@@ -270,60 +278,78 @@ struct PageReadView: View {
     
     // MARK: Панель - Timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
-        ZStack {
-            Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
-                .accentColor(Color("localAccentColor"))
-                .onAppear {
-                    let progressCircleConfig = UIImage.SymbolConfiguration(scale: .small)
-                    UISlider.appearance()
-                        .setThumbImage(UIImage(systemName: "circle.fill",
-                                               withConfiguration: progressCircleConfig), for: .normal)
+        VStack(spacing: 0) {
+            ZStack {
+                Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
+                    .accentColor(Color("localAccentColor"))
+                    .onAppear {
+                        let progressCircleConfig = UIImage.SymbolConfiguration(scale: .small)
+                        UISlider.appearance()
+                            .setThumbImage(UIImage(systemName: "circle.fill",
+                                                   withConfiguration: progressCircleConfig), for: .normal)
+                        
+                    }
+                    .disabled(audiopleer.state == .waitingForSelection || audiopleer.state == .buffering)
+                
+                // подсветка текущего отрывка
+                if audiopleer.periodTo > 0 {
                     
-                }
-                .disabled(audiopleer.state == .waitingForSelection || audiopleer.state == .buffering)
-            
-            // подсветка текущего отрывка
-            if audiopleer.periodTo > 0 {
-                
-                // https://stackoverflow.com/a/62641399
-                let frameWidth: Double = UIScreen.main.bounds.size.width - globalBasePadding*2
-                let point: Double = frameWidth / audiopleer.currentDuration
-                
-                let pointStart: Double = Double(audiopleer.periodFrom) * point
-                let pointCenter: Double = audiopleer.currentTime * point
-                let pointEnd: Double = Double(audiopleer.periodTo == 0 ? audiopleer.currentDuration : audiopleer.periodTo) * point
-                
-                let circleLeftSpace: Double = 13 * audiopleer.currentTime / audiopleer.currentDuration
-                let circleRightSpace: Double = 13 - circleLeftSpace
-                
-                let firstLeading: Double = pointStart
-                let firstTrailing: Double = frameWidth - (pointEnd > pointCenter - circleLeftSpace ? pointCenter - circleLeftSpace : pointEnd)
-                
-                let secondLeading: Double = (pointCenter + circleRightSpace > pointStart ? pointCenter + circleRightSpace : pointStart)
-                let secondTrailing: Double = frameWidth - pointEnd
-                
-                if pointCenter > pointStart {
-                    Rectangle()
-                        .fill(Color("localAccentColor"))
-                        .padding(.leading, firstLeading)
-                        .padding(.trailing, firstTrailing)
-                        .frame(width: frameWidth, height: 4)
-                        .padding(.top, -0.9)
+                    // https://stackoverflow.com/a/62641399
+                    let frameWidth: Double = UIScreen.main.bounds.size.width - globalBasePadding*2
+                    let point: Double = frameWidth / audiopleer.currentDuration
+                    
+                    let pointStart: Double = Double(audiopleer.periodFrom) * point
+                    let pointCenter: Double = audiopleer.currentTime * point
+                    let pointEnd: Double = Double(audiopleer.periodTo == 0 ? audiopleer.currentDuration : audiopleer.periodTo) * point
+                    
+                    let circleLeftSpace: Double = 13 * audiopleer.currentTime / audiopleer.currentDuration
+                    let circleRightSpace: Double = 13 - circleLeftSpace
+                    
+                    let firstLeading: Double = pointStart
+                    let firstTrailing: Double = frameWidth - (pointEnd > pointCenter - circleLeftSpace ? pointCenter - circleLeftSpace : pointEnd)
+                    
+                    let secondLeading: Double = (pointCenter + circleRightSpace > pointStart ? pointCenter + circleRightSpace : pointStart)
+                    let secondTrailing: Double = frameWidth - pointEnd
+                    
+                    if pointCenter > pointStart {
+                        Rectangle()
+                            .fill(Color("localAccentColor"))
+                            .padding(.leading, firstLeading)
+                            .padding(.trailing, firstTrailing)
+                            .frame(width: frameWidth, height: 4)
+                            .padding(.top, -0.9)
                         //.blendMode(.multiply)
-                }
-                
-                if pointEnd > pointCenter {
-                    Rectangle()
-                        .fill(Color("localAccentColor").opacity(0.2))
-                        .padding(.leading, secondLeading)
-                        .padding(.trailing, secondTrailing)
-                        .frame(width: frameWidth, height: 4)
-                        .padding(.top, -0.9)
+                    }
+                    
+                    if pointEnd > pointCenter {
+                        Rectangle()
+                            .fill(Color("localAccentColor").opacity(0.2))
+                            .padding(.leading, secondLeading)
+                            .padding(.trailing, secondTrailing)
+                            .frame(width: frameWidth, height: 4)
+                            .padding(.top, -0.9)
                         //.blendMode(.multiply)
+                    }
                 }
             }
+            HStack {
+                // время
+                Text("\(formatTime(audiopleer.currentTime))")
+                    .foregroundStyle(Color("Mustard"))
+                Spacer()
+                Text("\(formatTime(audiopleer.currentDuration))")
+                    .foregroundStyle(Color("localAccentColor").opacity(0.4))
+            }
+            .font(.subheadline)
         }
         .padding(.top, globalBasePadding)
+        
+    }
+    
+    func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
     
     // MARK: Панель - AudioButtons
