@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: Auidio
 
-struct VoiсeAudioHeader {
+struct VoiсeHeader {
     let code: String
     let reader: String
     let translationCode: String
@@ -17,15 +17,15 @@ struct VoiсeAudioHeader {
 
 class BibleAudio {
     
-    let favoriteVoiceHeaders: [VoiсeAudioHeader] = [
-        VoiсeAudioHeader(code: "bondarenko", reader: "Александр Бодаренко", translationCode: "syn"),
-        VoiсeAudioHeader(code: "prozorovsky", reader: "Н.Семёнов-Прозоровский", translationCode: "bti")
+    let favoriteVoiceHeaders: [VoiсeHeader] = [
+        VoiсeHeader(code: "bondarenko", reader: "Александр Бодаренко", translationCode: "syn"),
+        VoiсeHeader(code: "prozorovsky", reader: "Н.Семёнов-Прозоровский", translationCode: "bti")
     ]
     
-    private var activeVoices: [String: BibleAudioVoice] = [:]
+    private var activeVoices: [String: BibleAcousticalVoice] = [:]
     
     private var currentVoiceIndex: Int = 0
-    private var currentVoice: BibleAudioVoice
+    private var currentVoice: BibleAcousticalVoice
     
     init() {
         let code = favoriteVoiceHeaders[currentVoiceIndex].code
@@ -35,7 +35,7 @@ class BibleAudio {
         currentVoice = activeVoices[code]!
     }
     
-    func getCurrentVoice() -> BibleAudioVoice {
+    func getCurrentVoice() -> BibleAcousticalVoice {
         return currentVoice;
     }
     
@@ -57,10 +57,10 @@ class BibleText {
         TranslationTextHeader(code: "bti", shortName: "BTI")
     ]
     
-    private var activeTranslations: [String: BibleTextTranslation] = [:]
+    private var activeTranslations: [String: BibleTextualTranslation] = [:]
     
     private var currentTranslationIndex: Int = 0
-    private var currentTranslation: BibleTextTranslation
+    private var currentTranslation: BibleTextualTranslation
     
     init() {
         let code = favoriteTranslationHeaders[currentTranslationIndex].code
@@ -94,7 +94,7 @@ class BibleText {
         currentTranslation = activeTranslations[code]!
     }
     
-    func getCurrentTranslation() -> BibleTextTranslation {
+    func getCurrentTranslation() -> BibleTextualTranslation {
         return currentTranslation;
     }
 }

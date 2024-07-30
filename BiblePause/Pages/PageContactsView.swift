@@ -8,6 +8,24 @@
 import SwiftUI
 import AVFoundation
 import Combine
+//import OpenAPIClient
+
+/*
+class API {
+    let apiClient = APIClient()
+    
+    func fetchItems(completion: @escaping ([String]?, Error?) -> Void) {
+        apiClient.getItems { response, error in
+            if let error = error {
+                completion(nil, error)
+                return
+            }
+            
+            completion(response?.data, nil)
+        }
+    }
+}
+*/
 
 struct PageContactsView: View {
     

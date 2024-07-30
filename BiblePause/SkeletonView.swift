@@ -16,7 +16,7 @@ class WindowsDataManager: ObservableObject {
     @Published var currentExcerpt: String = "mat 3:2-3"
     @Published var currentExcerptTitle: String = "Евангелие от Матфея"
     @Published var currentExcerptSubtitle: String = "Глава 3:2-3"
-    @Published var currentExcerptIsSingleChapter: Bool = true
+    //@Published var currentExcerptIsSingleChapter: Bool = true
     @Published var currentBookId: Int = 0
     @Published var currentChapterId: Int = 0
 }

@@ -1,43 +1,39 @@
-//
-//  typeBook.swift
-//  23234234
-//
-//  Created by Maria Novikova on 05.07.2022.
-//
+// Необходимые типы: стихи, главы, книги, варианты
 
 import Foundation
 
 // MARK: Text
 
-struct BibleTextVerse: Hashable, Codable {
+struct BibleTextualVerse: Hashable, Codable {
     var id: Int
     var text: String
 }
 
-struct BibleTextChapter: Hashable, Codable, Identifiable {
+struct BibleTextualChapter: Hashable, Codable, Identifiable {
     var id: Int
-    var verses: [BibleTextVerse]
+    var verses: [BibleTextualVerse]
 }
 
-struct BibleTextBook: Hashable, Codable, Identifiable {
+struct BibleTextualBook: Hashable, Codable, Identifiable {
     let id: Int
     let code: String
     let shortName: String
     let fullName: String
-    var chapters: [BibleTextChapter]
+    var chapters: [BibleTextualChapter]
 }
 
-struct BibleTextTranslation: Hashable, Codable {
+// BibleTextualTranslation
+struct BibleTextualTranslation: Hashable, Codable {
     var code: String
     var lang: String
     var shortName: String
     var fullName: String
-    var books: [BibleTextBook]
+    var books: [BibleTextualBook]
 }
 
 // MARK: Audio
 
-struct BibleAudioVerse: Hashable, Codable {
+struct BibleAcousticalVerse: Hashable, Codable {
     let id: Int
     //let begin: String
     //let end: String
@@ -45,27 +41,28 @@ struct BibleAudioVerse: Hashable, Codable {
     let end: Double
 }
 
-struct BibleAudioChapter: Hashable, Codable, Identifiable {
+struct BibleAcousticalChapter: Hashable, Codable, Identifiable {
     let id: Int
-    let verses: [BibleAudioVerse]
+    let verses: [BibleAcousticalVerse]
 }
 
-struct BibleAudioBook: Hashable, Codable, Identifiable {
+struct BibleAcousticalBook: Hashable, Codable, Identifiable {
     let id: Int
-    let chapters: [BibleAudioChapter]
+    let chapters: [BibleAcousticalChapter]
 }
 
-struct BibleAudioVoice: Hashable, Codable {
+// BibleAcousticalVoice
+struct BibleAcousticalVoice: Hashable, Codable {
     let code: String
     let translation: String
-    let books: [BibleAudioBook]
+    let books: [BibleAcousticalBook]
 }
 
 // MARK: Advanced
 
 // более полная версия стиха, с указанием главы и книги
 
-struct BibleTextVerseFull: Hashable {
+struct BibleTextualVerseFull: Hashable {
     let id: Int
     let text: String
     var bookDigitCode: Int = 0
@@ -76,7 +73,7 @@ struct BibleTextVerseFull: Hashable {
     var skippedVerses = false
 }
 
-struct BibleAudioVerseFull: Hashable {
+struct BibleAcousticalVerseFull: Hashable {
     let id: Int
     let text: String
     let begin: Double

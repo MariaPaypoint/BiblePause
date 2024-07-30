@@ -63,7 +63,7 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
  */
 
 // MARK: Готовое отображение
-@ViewBuilder func viewExcerpt(verses: [BibleTextVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
+@ViewBuilder func viewExcerpt(verses: [BibleTextualVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
     
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
         partialResult

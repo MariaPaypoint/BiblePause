@@ -23,7 +23,7 @@ struct PageReadView: View {
     
     @State private var errorDescription: String = ""
     
-    @State private var textVerses: [BibleTextVerseFull] = []
+    @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
     @State private var currentVerseId = 0
     
@@ -128,7 +128,7 @@ struct PageReadView: View {
     
     // MARK: После выбора
     func updateExcerpt(proxy: ScrollViewProxy) {
-        let (thistextVerses, isSingleChapter) = getExcerptTextVerses(excerpts: windowsDataManager.currentExcerpt)
+        let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: windowsDataManager.currentExcerpt)
         
         textVerses = thistextVerses
         
@@ -143,6 +143,7 @@ struct PageReadView: View {
         let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
         
         //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
+        //let address = "http://500:3490205720348012725@192.168.130.169:8055/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
         let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
         
         guard let url = URL(string: address) else {

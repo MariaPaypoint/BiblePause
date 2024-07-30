@@ -117,7 +117,7 @@ class PlayerModel: ObservableObject {
     @Published var currentSpeed: Float = 1.0
     
     private var oldState = PlaybackState.waitingForSelection
-    private var audioVerses: [BibleAudioVerseFull] = []
+    private var audioVerses: [BibleAcousticalVerseFull] = []
     private var currentVerseIndex: Int = -1
     private var stopAtEnd = true
     
@@ -170,7 +170,7 @@ class PlayerModel: ObservableObject {
     }
     
     // MARK: установка параметров новой композиции
-    func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAudioVerseFull]) {
+    func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAcousticalVerseFull]) {
         
         self.oldState = self.state
         if self.state == .playing {
