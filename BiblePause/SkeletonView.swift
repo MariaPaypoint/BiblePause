@@ -54,6 +54,7 @@ struct SkeletonView: View {
             
             else if windowsDataManager.selectedMenuItem == .contacts {
                 PageContactsView(windowsDataManager: windowsDataManager)
+                //PageContactsView()
             }
             
             // слой меню
