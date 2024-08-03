@@ -14,11 +14,34 @@ import OpenAPIURLSession
 
 struct PageContactsView: View {
     
+    @State private var greeting: String = "Hello, Stranger!"
+    
     @ObservedObject var windowsDataManager: WindowsDataManager
+    let client: any APIProtocol
+    
+    init(windowsDataManager: WindowsDataManager) {
+        self.windowsDataManager = windowsDataManager
+        self.client = Client(serverURL: URL(string: "http://helper-vm-maria:8000")!, transport: URLSessionTransport())
+    }
+    
+    func updateGreeting() async {
+            do {
+                let response = try await client.root_hello_get()
+                
+                greeting = "\(String(describing: try response.ok.body.json.value))"
+            } catch { greeting = "Error: \(error.localizedDescription)" }
+        }
     
     var body: some View {
         
-        Text("dsdf")
+        Text(greeting)
+        
+        Button {
+            Task { await updateGreeting() }
+        } label: {
+            Text("print 123")
+        }
+        
         
         //let greeting = GreetingClient().getGreeting(name: "App")
         
@@ -28,6 +51,7 @@ struct PageContactsView: View {
     
 }
 
+/*
 public struct GreetingClient {
 
 
@@ -51,6 +75,7 @@ public struct GreetingClient {
         }
     }
 }
+*/
 
 struct TestPageContactsView: View {
     

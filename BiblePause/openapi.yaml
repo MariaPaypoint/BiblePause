@@ -2,9 +2,6 @@ openapi: 3.1.0
 info:
   title: FastAPI
   version: 0.1.0
-servers:
-  - url: http://192.168.130.169:8000/
-    description: Example service deployment.
 paths:
   /languages:
     get:
@@ -27,10 +24,9 @@ paths:
       parameters:
       - name: language
         in: query
-        required: false
+        required: true
         schema:
-          anyOf:
-          - type: string
+          type: string
           title: Language
       responses:
         '200':
@@ -48,6 +44,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /hello:
+    get:
+      summary: Root
+      operationId: root_hello_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
 components:
   schemas:
     HTTPValidationError:
