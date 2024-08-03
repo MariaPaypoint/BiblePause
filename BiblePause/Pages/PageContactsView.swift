@@ -26,9 +26,9 @@ struct PageContactsView: View {
     
     func updateGreeting() async {
             do {
-                let response = try await client.root_hello_get()
+                let response = try await client.read_languages_languages_get()
                 
-                greeting = "\(String(describing: try response.ok.body.json.value))"
+                greeting = "\(String(describing: try response.ok.body.json))"
             } catch { greeting = "Error: \(error.localizedDescription)" }
         }
     
