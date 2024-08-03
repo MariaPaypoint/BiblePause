@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -36,6 +36,7 @@
 		4C99F3762C023FD400879594 /* advUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3752C023FD400879594 /* advUtility.swift */; };
 		4C99F3782C02660C00879594 /* advExcerpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3772C02660C00879594 /* advExcerpt.swift */; };
 		4C99F37A2C0266C900879594 /* advGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3792C0266C900879594 /* advGlobals.swift */; };
+		4CFC921F2C5EA903005AFAA5 /* OpenAPIClient in Frameworks */ = {isa = PBXBuildFile; productRef = 4CFC921E2C5EA903005AFAA5 /* OpenAPIClient */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CFC921F2C5EA903005AFAA5 /* OpenAPIClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,6 +255,7 @@
 			);
 			mainGroup = 4C7691172BECEA1300C66FDC;
 			packageReferences = (
+				4CFC921D2C5EA903005AFAA5 /* XCLocalSwiftPackageReference "../LibApi" */,
 			);
 			productRefGroup = 4C7691212BECEA1300C66FDC /* Products */;
 			projectDirPath = "";
@@ -512,6 +515,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4CFC921D2C5EA903005AFAA5 /* XCLocalSwiftPackageReference "../LibApi" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../LibApi;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4CFC921E2C5EA903005AFAA5 /* OpenAPIClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenAPIClient;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4C7691182BECEA1300C66FDC /* Project object */;
 }
