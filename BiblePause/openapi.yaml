@@ -5,8 +5,8 @@ info:
 paths:
   /languages:
     get:
-      summary: Read Languages
-      operationId: read_languages_languages_get
+      summary: Get Languages
+      operationId: get_languages
       responses:
         '200':
           description: Successful Response
@@ -16,7 +16,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/LanguageModel'
                 type: array
-                title: Response Read Languages Languages Get
+                title: Response Get Languages
   /translations:
     get:
       summary: Read Translations

@@ -46,6 +46,7 @@
 		047B3BC42BEEB626009DEC11 /* SkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonView.swift; sourceTree = "<group>"; };
 		047B3BC62BEEBADD009DEC11 /* PageReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReadView.swift; sourceTree = "<group>"; };
 		047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectView.swift; sourceTree = "<group>"; };
+		0497A9592C6AC3EC008A5D7F /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		4C141A032BED275000412C60 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "bti-prozorovsky.json"; sourceTree = "<group>"; };
 		4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko-nopause.json"; sourceTree = "<group>"; };
@@ -180,6 +181,7 @@
 		4C7691172BECEA1300C66FDC = {
 			isa = PBXGroup;
 			children = (
+				0497A9592C6AC3EC008A5D7F /* .gitignore */,
 				4CFC91F02C59A844005AFAA5 /* readme.md */,
 				4C7691222BECEA1300C66FDC /* BiblePause */,
 				4C7691212BECEA1300C66FDC /* Products */,

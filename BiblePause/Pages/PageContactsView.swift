@@ -12,9 +12,11 @@ import SwiftUI
 import OpenAPIRuntime
 import OpenAPIURLSession
 
+
 struct PageContactsView: View {
     
     @State private var greeting: String = "Hello, Stranger!"
+    @State private var languages: [Components.Schemas.LanguageModel] = []
     
     @ObservedObject var windowsDataManager: WindowsDataManager
     let client: any APIProtocol
@@ -26,9 +28,11 @@ struct PageContactsView: View {
     
     func updateGreeting() async {
             do {
-                let response = try await client.read_languages_languages_get()
+                let response = try await client.get_languages()
+                let json = try response.ok.body.json
+                self.languages = json
+                greeting = "\(String(describing: json[0].alias))"
                 
-                greeting = "\(String(describing: try response.ok.body.json))"
             } catch { greeting = "Error: \(error.localizedDescription)" }
         }
     
@@ -38,9 +42,17 @@ struct PageContactsView: View {
         
         Button {
             Task { await updateGreeting() }
+            
+            
         } label: {
             Text("print 123")
         }
+        
+        List {
+                            ForEach(languages, id: \.alias) { language in
+                                Text("\(language.name_national) (\(language.name_en))")
+                            }
+                        }
         
         
         //let greeting = GreetingClient().getGreeting(name: "App")
