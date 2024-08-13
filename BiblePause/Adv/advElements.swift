@@ -67,7 +67,8 @@ func viewGroupHeader(text: String) -> some View {
 
 // выбор из листа
 @ViewBuilder
-func viewSelectList(texts: [String], keys: [String], userDefaultsKeyName: String, selectedKey: Binding<String>) -> some View {
+func viewSelectList(texts: [String], keys: [String], userDefaultsKeyName: String, selectedKey: Binding<String>,
+                    onSelect: @escaping (String) -> Void = { _ in }) -> some View {
     LazyVStack(alignment: .leading, spacing: 0) {
         ForEach(Array(zip(texts, keys)), id: \.1) { text, key in
             HStack {
@@ -85,6 +86,7 @@ func viewSelectList(texts: [String], keys: [String], userDefaultsKeyName: String
             .onTapGesture {
                 selectedKey.wrappedValue = key
                 UserDefaults.standard.set(key, forKey: userDefaultsKeyName)
+                onSelect(key)
             }
         }
     }

@@ -27,14 +27,14 @@ struct PageContactsView: View {
     }
     
     func updateGreeting() async {
-            do {
-                let response = try await client.get_languages()
-                let json = try response.ok.body.json
-                self.languages = json
-                greeting = "\(String(describing: json[0].alias))"
-                
-            } catch { greeting = "Error: \(error.localizedDescription)" }
-        }
+        do {
+            let response = try await client.get_languages()
+            let json = try response.ok.body.json
+            self.languages = json
+            //greeting = "\(String(describing: json[0].alias))"
+            
+        } catch { greeting = "Error: \(error.localizedDescription)" }
+    }
     
     var body: some View {
         

@@ -19,15 +19,15 @@ paths:
                 title: Response Get Languages
   /translations:
     get:
-      summary: Read Translations
-      operationId: read_translations_translations_get
+      summary: Get Translations
+      operationId: get_translations
       parameters:
-      - name: language
+      - name: languagess
         in: query
         required: true
         schema:
           type: string
-          title: Language
+          title: Languagess
       responses:
         '200':
           description: Successful Response
@@ -37,7 +37,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TranslationModel'
-                title: Response Read Translations Translations Get
+                title: Response Get Translations
         '422':
           description: Validation Error
           content:

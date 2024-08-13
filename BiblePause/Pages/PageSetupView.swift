@@ -6,8 +6,13 @@
 //
 
 import SwiftUI
+import OpenAPIURLSession
 
 struct PageSetupView: View {
+    
+    let client: any APIProtocol
+    
+    @State private var toast: FancyToast? = nil
     
     @ObservedObject var settingsManager = SettingsManager()
     @ObservedObject var windowsDataManager: WindowsDataManager
@@ -15,9 +20,14 @@ struct PageSetupView: View {
     @Binding var showFromRead: Bool
     
     // MARK: Языки и переводы
-    let languageTexts = ["Английский", "Русский", "Украинский"]
-    let languageKeys  = ["en",         "ru",      "ua"]
+    
+    @State private var isLanguagesLoading: Bool = true
+    @State private var languageTexts: [String] = []
+    @State private var languageKeys: [String]  = []
     @State private var languageKey: String = UserDefaults.standard.string(forKey: "languageKey") ?? "en"
+    
+    @State private var isTranslationsLoading: Bool = true
+    
     
     let translateTexts = ["SYNO (Русский Синодальный)", "НРП (Новый Русский)", "BTI (под редакцией Кулаковых)"]
     let translateKeys  = ["syno",                       "nrp",                 "bti"]
@@ -26,6 +36,13 @@ struct PageSetupView: View {
     let audioTexts = ["Александр Бондаренко", "''Свет на востоке''"]
     let audioKeys  = ["bondarenko",           "eastlight"]
     @State private var audioKey = "bondarenko"
+    
+    
+    init(windowsDataManager: WindowsDataManager, showFromRead: Binding<Bool>) {
+        self.windowsDataManager = windowsDataManager
+        self._showFromRead = showFromRead
+        self.client = Client(serverURL: URL(string: "http://helper-vm-maria:8000")!, transport: URLSessionTransport())
+    }
     
     var body: some View {
         ZStack {
@@ -182,8 +199,17 @@ struct PageSetupView: View {
                         
                         // MARK: Языки
                         viewGroupHeader(text: "Язык Библии")
-                        viewSelectList(texts: languageTexts, keys: languageKeys, userDefaultsKeyName: "languageKey", selectedKey: $languageKey)
-                            .padding(.vertical, -5)
+                        if isLanguagesLoading {
+                            Text("Loading languages...")
+                        }
+                        else {
+                            viewSelectList(texts: languageTexts, keys: languageKeys,
+                                           userDefaultsKeyName: "languageKey", selectedKey: $languageKey,
+                                           onSelect: { selectedLanguageKey in
+                                                print("Selected language key: \(selectedLanguageKey)")
+                            })
+                                .padding(.vertical, -5)
+                        }
                         
                         viewGroupHeader(text: "Перевод")
                         viewSelectList(texts: translateTexts, keys: translateKeys, userDefaultsKeyName: "translateKey", selectedKey: $translateKey)
@@ -197,16 +223,59 @@ struct PageSetupView: View {
                 }
                 .foregroundColor(.white)
             }
-            
             // слой меню
             MenuView(windowsDataManager: windowsDataManager)
                 .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
             
         }
+        
         // подложка
         .background(
             Color("DarkGreen")
         )
+        .toastView(toast: $toast)
+        .onAppear {
+            fetchLanguages()
+        }
+    }
+    
+    func fetchLanguages() {
+        Task {
+            do {
+                let response = try await client.get_languages()
+                let languages = try response.ok.body.json
+                
+                for language in languages {
+                    self.languageKeys.append(language.alias)
+                    self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+                }
+                
+                self.isLanguagesLoading = false
+            } catch {
+                self.isLanguagesLoading = false
+                toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+            }
+        }
+    }
+    
+    func fetchTranslations() {
+        Task {
+            do {
+                let response = try await client.get_translations(query: .init(languagess: "ru"))
+                let translations = try response.ok.body.json
+                
+                for translation in translations {
+                    //self.languageKeys.append(language.alias)
+                    //self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+                    //translation.alias
+                }
+                
+                self.isTranslationsLoading = false
+            } catch {
+                self.isTranslationsLoading = false
+                toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+            }
+        }
     }
 }
 
