@@ -27,14 +27,13 @@ struct PageSetupView: View {
     @State private var languageKey: String = UserDefaults.standard.string(forKey: "languageKey") ?? "en"
     
     @State private var isTranslationsLoading: Bool = true
-    
-    
-    let translateTexts = ["SYNO (Русский Синодальный)", "НРП (Новый Русский)", "BTI (под редакцией Кулаковых)"]
-    let translateKeys  = ["syno",                       "nrp",                 "bti"]
+    @State private var translateTexts: [String] = []
+    @State private var translateKeys: [String]  = []
     @State private var translateKey: String = UserDefaults.standard.string(forKey: "translateKey") ?? "syno"
     
-    let audioTexts = ["Александр Бондаренко", "''Свет на востоке''"]
-    let audioKeys  = ["bondarenko",           "eastlight"]
+    @State private var translateResponse: [Components.Schemas.TranslationModel] = []
+    @State private var audioTexts: [String] = []
+    @State private var audioKeys: [String]  = []
     @State private var audioKey = "bondarenko"
     
     
@@ -203,16 +202,24 @@ struct PageSetupView: View {
                             Text("Loading languages...")
                         }
                         else {
-                            viewSelectList(texts: languageTexts, keys: languageKeys,
-                                           userDefaultsKeyName: "languageKey", selectedKey: $languageKey,
+                            viewSelectList(texts: languageTexts,
+                                           keys: languageKeys,
+                                           userDefaultsKeyName: "languageKey",
+                                           selectedKey: $languageKey,
                                            onSelect: { selectedLanguageKey in
-                                                print("Selected language key: \(selectedLanguageKey)")
+                                                fetchTranslations()
                             })
-                                .padding(.vertical, -5)
+                            .padding(.vertical, -5)
                         }
                         
                         viewGroupHeader(text: "Перевод")
-                        viewSelectList(texts: translateTexts, keys: translateKeys, userDefaultsKeyName: "translateKey", selectedKey: $translateKey)
+                        viewSelectList(texts: translateTexts,
+                                       keys: translateKeys,
+                                       userDefaultsKeyName: "translateKey",
+                                       selectedKey: $translateKey,
+                                       onSelect: { selectedTranslateKey in
+                                            showAudios()
+                            })
                             .padding(.vertical, -5)
                         
                         viewGroupHeader(text: "Читает")
@@ -245,11 +252,13 @@ struct PageSetupView: View {
                 let response = try await client.get_languages()
                 let languages = try response.ok.body.json
                 
+                self.languageKeys = []
+                self.languageTexts = []
                 for language in languages {
                     self.languageKeys.append(language.alias)
                     self.languageTexts.append("\(language.name_national) (\(language.name_en))")
                 }
-                
+                fetchTranslations()
                 self.isLanguagesLoading = false
             } catch {
                 self.isLanguagesLoading = false
@@ -261,19 +270,37 @@ struct PageSetupView: View {
     func fetchTranslations() {
         Task {
             do {
-                let response = try await client.get_translations(query: .init(languagess: "ru"))
-                let translations = try response.ok.body.json
+                self.isTranslationsLoading = true
                 
-                for translation in translations {
-                    //self.languageKeys.append(language.alias)
-                    //self.languageTexts.append("\(language.name_national) (\(language.name_en))")
-                    //translation.alias
+                let response = try await client.get_translations(query: .init(language: self.languageKey))
+                self.translateResponse = try response.ok.body.json
+                
+                self.translateKeys = []
+                self.translateTexts = []
+                for translation in self.translateResponse {
+                    self.translateKeys.append("\(translation.code)")
+                    self.translateTexts.append("\(String(describing: translation.description)) (\(translation.name))")
                 }
-                
+                showAudios()
                 self.isTranslationsLoading = false
             } catch {
                 self.isTranslationsLoading = false
                 toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+            }
+        }
+    }
+    
+    func showAudios() {
+        
+        self.audioKeys = []
+        self.audioTexts = []
+        for translation in self.translateResponse {
+            if "\(translation.code)" == self.translateKey {
+                for voice in translation.voices {
+                    self.audioKeys.append("\(voice.code)")
+                    self.audioTexts.append("\(voice.name)")
+                }
+                break
             }
         }
     }
