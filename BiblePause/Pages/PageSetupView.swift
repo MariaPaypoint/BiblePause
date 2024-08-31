@@ -6,16 +6,13 @@
 //
 
 import SwiftUI
-import OpenAPIURLSession
 
 struct PageSetupView: View {
-    
-    let client: any APIProtocol
     
     @State private var toast: FancyToast? = nil
     
     @ObservedObject var settingsManager = SettingsManager()
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     @Binding var showFromRead: Bool
     
@@ -37,10 +34,8 @@ struct PageSetupView: View {
     @State private var audioKey = "bondarenko"
     
     
-    init(windowsDataManager: WindowsDataManager, showFromRead: Binding<Bool>) {
-        self.windowsDataManager = windowsDataManager
+    init(showFromRead: Binding<Bool>) {
         self._showFromRead = showFromRead
-        self.client = Client(serverURL: URL(string: "http://helper-vm-maria:8000")!, transport: URLSessionTransport())
     }
     
     var body: some View {
@@ -60,7 +55,8 @@ struct PageSetupView: View {
                         .foregroundColor(Color.white.opacity(0.5))
                     }
                     else {
-                        MenuButtonView(windowsDataManager: windowsDataManager)
+                        MenuButtonView()
+                            .environmentObject(windowsDataManager)
                     }
                     Spacer()
                     
@@ -73,165 +69,24 @@ struct PageSetupView: View {
                 }
                 .padding(.horizontal, globalBasePadding)
                 
-                ScrollView() {
-                    VStack {
-                        // MARK: Шрифт
+                ScrollViewReader { proxy in
+                    ScrollView() {
                         VStack {
-                            viewGroupHeader(text: "Шрифт")
                             
-                            HStack {
-                                Text("\(Int(settingsManager.fontIncreasePercent))%")
-                                    .foregroundColor(.white)
-                                    .frame(width: 70)
-                                
-                                Spacer()
-                                
-                                HStack(spacing: 0) {
-                                    Button(action: {
-                                        if settingsManager.fontIncreasePercent > 10 {
-                                            settingsManager.fontIncreasePercent = settingsManager.fontIncreasePercent - 10
-                                        }
-                                    }) {
-                                        Text("A")
-                                            .font(.title3)
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.clear)
-                                            .foregroundColor(.white)
-                                    }
-                                    
-                                    Divider() // Разделительная линия между кнопками
-                                        .background(Color.white)
-                                    
-                                    Button(action: {
-                                        if settingsManager.fontIncreasePercent < 500 {
-                                            settingsManager.fontIncreasePercent = settingsManager.fontIncreasePercent + 10
-                                        }
-                                    }) {
-                                        Text("A")
-                                            .font(.title)
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.clear)
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                                .background(
-                                    RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white, lineWidth: 1)
-                                )
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.clear)
-                                )
-                                .frame(maxWidth: 200)
-                                .frame(maxHeight: 42)
-                                .padding()
-                                
-                                Spacer()
-                                Button {
-                                    settingsManager.fontIncreasePercent = 100.0
-                                } label: {
-                                    Text("Сброс")
-                                        .foregroundColor(Color("Mustard"))
-                                        .frame(width: 70)
-                                }
-                            }
+                            ViewFont()
                             
-                            Text("Пример:")
-                                .foregroundColor(.white.opacity(0.5))
-                            ScrollView() {
-                                let (textVerses, _) = getExcerptTextualVerses(excerpts: "jhn 1:1-3")
-                                viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
-                                    .padding(.bottom, 20)
-                                    .id("top")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .frame(maxHeight: 158)
-                        }
-                        
-                        // MARK: Пауза
-                        viewGroupHeader(text: "Пауза")
-                        VStack(spacing: 15) {
-                            viewEnumPicker(title: settingsManager.pauseType.displayName, selection: $settingsManager.pauseType)
+                            ViewPause()
                             
-                            if settingsManager.pauseType != .none {
-                                // время
-                                if settingsManager.pauseType == .time {
-                                    HStack {
-                                        Text("Делать паузу")
-                                            .frame(width: 140, alignment: .leading)
-                                        Spacer()
-                                        TextField("", text: Binding(
-                                            get: {
-                                                String(settingsManager.pauseLength)
-                                            },
-                                            set: { newValue in
-                                                if let value = Double(newValue) {
-                                                    settingsManager.pauseLength = value
-                                                }
-                                            }
-                                        ))
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 12)
-                                            .background(Color("DarkGreen-light").opacity(0.6))
-                                            .cornerRadius(5)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 5)
-                                                    .stroke(.white.opacity(0.25), lineWidth: 1)
-                                            )
-                                            .multilineTextAlignment(.center)
-                                        
-                                        Text("сек.")
-                                    }
-                                }
-                                
-                                // после чего
-                                HStack {
-                                    Text("После каждого")
-                                        .frame(width: 140, alignment: .leading)
-                                    Spacer()
-                                    
-                                    viewEnumPicker(title: settingsManager.pauseBlock.displayName, selection: $settingsManager.pauseBlock)
-                                }
-                            }
+                            ViewLangTranslateAudio(proxy: proxy)
                         }
-                        .padding(1)
-                        
-                        // MARK: Языки
-                        viewGroupHeader(text: "Язык Библии")
-                        if isLanguagesLoading {
-                            Text("Loading languages...")
-                        }
-                        else {
-                            viewSelectList(texts: languageTexts,
-                                           keys: languageKeys,
-                                           userDefaultsKeyName: "languageKey",
-                                           selectedKey: $languageKey,
-                                           onSelect: { selectedLanguageKey in
-                                                fetchTranslations()
-                            })
-                            .padding(.vertical, -5)
-                        }
-                        
-                        viewGroupHeader(text: "Перевод")
-                        viewSelectList(texts: translateTexts,
-                                       keys: translateKeys,
-                                       userDefaultsKeyName: "translateKey",
-                                       selectedKey: $translateKey,
-                                       onSelect: { selectedTranslateKey in
-                                            showAudios()
-                            })
-                            .padding(.vertical, -5)
-                        
-                        viewGroupHeader(text: "Читает")
-                        viewSelectList(texts: audioTexts, keys: audioKeys, userDefaultsKeyName: "audioKey", selectedKey: $audioKey)
-                            .padding(.vertical, -5)
+                        .padding(.horizontal, globalBasePadding)
                     }
-                    .padding(.horizontal, globalBasePadding)
+                    .foregroundColor(.white)
                 }
-                .foregroundColor(.white)
             }
             // слой меню
-            MenuView(windowsDataManager: windowsDataManager)
+            MenuView()
+                .environmentObject(windowsDataManager)
                 .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
             
         }
@@ -242,18 +97,267 @@ struct PageSetupView: View {
         )
         .toastView(toast: $toast)
         .onAppear {
+            self.languageKey = settingsManager.language
+            self.translateKey = String(settingsManager.translation)
+            self.audioKey = String(settingsManager.voice)
             fetchLanguages()
         }
     }
     
+    // MARK: Шрифт
+    @ViewBuilder private func ViewFont() -> some View {
+        VStack {
+            viewGroupHeader(text: "Шрифт")
+            
+            HStack {
+                Text("\(Int(settingsManager.fontIncreasePercent))%")
+                    .foregroundColor(.white)
+                    .frame(width: 70)
+                
+                Spacer()
+                
+                HStack(spacing: 0) {
+                    Button(action: {
+                        if settingsManager.fontIncreasePercent > 10 {
+                            settingsManager.fontIncreasePercent = settingsManager.fontIncreasePercent - 10
+                        }
+                    }) {
+                        Text("A")
+                            .font(.title3)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.clear)
+                            .foregroundColor(.white)
+                    }
+                    
+                    Divider() // Разделительная линия между кнопками
+                        .background(Color.white)
+                    
+                    Button(action: {
+                        if settingsManager.fontIncreasePercent < 500 {
+                            settingsManager.fontIncreasePercent = settingsManager.fontIncreasePercent + 10
+                        }
+                    }) {
+                        Text("A")
+                            .font(.title)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.clear)
+                            .foregroundColor(.white)
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(Color.white, lineWidth: 1)
+                )
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.clear)
+                )
+                .frame(maxWidth: 200)
+                .frame(maxHeight: 42)
+                .padding()
+                
+                Spacer()
+                Button {
+                    settingsManager.fontIncreasePercent = 100.0
+                } label: {
+                    Text("Сброс")
+                        .foregroundColor(Color("Mustard"))
+                        .frame(width: 70)
+                }
+            }
+            
+            Text("Пример:")
+                .foregroundColor(.white.opacity(0.5))
+            ScrollView() {
+                let (textVerses, _) = getExcerptTextualVerses(excerpts: "jhn 1:1-3")
+                viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
+                    .padding(.bottom, 20)
+                    .id("top")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxHeight: 158)
+        }
+        
+    }
+    
+    // MARK: Пауза
+    @ViewBuilder private func ViewPause() -> some View {
+        viewGroupHeader(text: "Пауза")
+        VStack(spacing: 15) {
+            viewEnumPicker(title: settingsManager.pauseType.displayName, selection: $settingsManager.pauseType)
+            
+            if settingsManager.pauseType != .none {
+                // время
+                if settingsManager.pauseType == .time {
+                    HStack {
+                        Text("Делать паузу")
+                            .frame(width: 140, alignment: .leading)
+                        Spacer()
+                        TextField("", text: Binding(
+                            get: {
+                                String(settingsManager.pauseLength)
+                            },
+                            set: { newValue in
+                                if let value = Double(newValue) {
+                                    settingsManager.pauseLength = value
+                                }
+                            }
+                        ))
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(Color("DarkGreen-light").opacity(0.6))
+                        .cornerRadius(5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(.white.opacity(0.25), lineWidth: 1)
+                        )
+                        .multilineTextAlignment(.center)
+                        
+                        Text("сек.")
+                    }
+                }
+                
+                // после чего
+                HStack {
+                    Text("После каждого")
+                        .frame(width: 140, alignment: .leading)
+                    Spacer()
+                    
+                    viewEnumPicker(title: settingsManager.pauseBlock.displayName, selection: $settingsManager.pauseBlock)
+                }
+            }
+        }
+        .padding(1)
+    }
+    
+    // MARK: Языки трио
+    @ViewBuilder private func ViewLangTranslateAudio(proxy: ScrollViewProxy) -> some View {
+        
+        viewGroupHeader(text: "Язык Библии")
+        if isLanguagesLoading {
+            Text("Loading languages...")
+        }
+        else {
+            viewSelectList(texts: languageTexts,
+                           keys: languageKeys,
+                           userDefaultsKeyName: "languageKey",
+                           selectedKey: $languageKey,
+                           onSelect: { selectedLanguageKey in
+                                self.translateKey = ""
+                                self.audioKey = ""
+                                fetchTranslations()
+                                scrollToBottom(proxy: proxy)
+                           }
+            )
+            .padding(.vertical, -5)
+        }
+        
+        viewGroupHeader(text: "Перевод")
+        viewSelectList(texts: translateTexts,
+                       keys: translateKeys,
+                       userDefaultsKeyName: "translateKey",
+                       selectedKey: $translateKey,
+                       onSelect: { selectedTranslateKey in
+                            self.audioKey = ""
+                            showAudios()
+                            scrollToBottom(proxy: proxy)
+                       }
+        )
+        .padding(.vertical, -5)
+        
+        viewGroupHeader(text: "Читает")
+        viewSelectList(texts: audioTexts,
+                       keys: audioKeys,
+                       userDefaultsKeyName: "audioKey",
+                       selectedKey: $audioKey,
+                       onSelect: { selectedTranslateKey in
+                            scrollToBottom(proxy: proxy)
+                       }
+        )
+        .padding(.vertical, -5)
+        
+        
+        // кнопки
+        if settingsManager.language != self.languageKey || String(settingsManager.translation) != self.translateKey || String(settingsManager.voice) != self.audioKey {
+            
+            let saveEnabled =  self.languageKey != "" && self.translateKey != "" && self.audioKey != ""
+            
+            Button {
+                if saveEnabled {
+                    settingsManager.language = self.languageKey
+                    settingsManager.translation = Int(self.translateKey) ?? 0
+                    settingsManager.voice = Int(self.audioKey) ?? 0
+                    
+                    toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
+                }
+                else {
+                    toast = FancyToast(type: .warning, title: "Внимание!", message: self.translateKey == "" ? "Выберите перевод" : "Выберите кто читает")
+                }
+            } label: {
+                VStack {
+                    Text("Сохранить выбор")
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(5)
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(saveEnabled ? Color("Marigold") : .white.opacity(0.2))
+            .padding(.top, 25)
+            //.disabled(saveDisabled)
+            
+            
+            Button {
+                self.languageKey = settingsManager.language
+                self.translateKey = String(settingsManager.translation)
+                self.audioKey = String(settingsManager.voice)
+                fetchLanguages()
+                showAudios()
+                //scrollToBottom(proxy: proxy)
+                //toast = FancyToast(type: .info, title: "OK", message: "Значения восстановлены")
+            } label: {
+                VStack {
+                    Text("Отменить выбор")
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(5)
+                }
+            }
+            //.buttonStyle(PlainButtonStyle())
+            //.background(Color.clear)
+            .buttonStyle(.borderedProminent)
+            .tint(Color("DarkGreen"))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white, lineWidth: 1) // Рамка вокруг кнопки
+            )
+            .padding(.top, 5)
+        }
+        
+        Spacer()
+            .id("bottom")
+    }
+    
+    func scrollToBottom(proxy: ScrollViewProxy) {
+        print("scrollToBottom")
+        DispatchQueue.main.async {
+            withAnimation {
+                proxy.scrollTo("bottom", anchor: .bottom)
+            }
+        }
+    }
+    
+    // MARK: Api-запросы
+    
     func fetchLanguages() {
         Task {
             do {
-                let response = try await client.get_languages()
-                let languages = try response.ok.body.json
-                
                 self.languageKeys = []
                 self.languageTexts = []
+                
+                let response = try await windowsDataManager.client.get_languages()
+                let languages = try response.ok.body.json
+                
                 for language in languages {
                     self.languageKeys.append(language.alias)
                     self.languageTexts.append("\(language.name_national) (\(language.name_en))")
@@ -272,14 +376,14 @@ struct PageSetupView: View {
             do {
                 self.isTranslationsLoading = true
                 
-                let response = try await client.get_translations(query: .init(language: self.languageKey))
+                let response = try await windowsDataManager.client.get_translations(query: .init(language: self.languageKey))
                 self.translateResponse = try response.ok.body.json
                 
                 self.translateKeys = []
                 self.translateTexts = []
                 for translation in self.translateResponse {
                     self.translateKeys.append("\(translation.code)")
-                    self.translateTexts.append("\(String(describing: translation.description)) (\(translation.name))")
+                    self.translateTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
                 }
                 showAudios()
                 self.isTranslationsLoading = false
@@ -312,8 +416,8 @@ struct TestPageSetupView: View {
     @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageSetupView(windowsDataManager: windowsDataManager,
-                      showFromRead: $showFromRead)
+        PageSetupView(showFromRead: $showFromRead)
+            .environmentObject(windowsDataManager)
     }
 }
 

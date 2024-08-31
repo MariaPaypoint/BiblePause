@@ -8,10 +8,11 @@
 import SwiftUI
 import AVFoundation
 import Combine
+import OpenAPIRuntime
 
 struct PageReadView: View {
     
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     @StateObject var audiopleer = PlayerModel()
     @ObservedObject var settingsManager = SettingsManager()
@@ -31,6 +32,9 @@ struct PageReadView: View {
     
     @State private var scrollViewProxy: ScrollViewProxy? = nil
     
+    @State private var isTextLoading: Bool = true
+    @State private var toast: FancyToast? = nil
+    
     var body: some View {
         ScrollViewReader { proxy in
             ZStack {
@@ -38,7 +42,8 @@ struct PageReadView: View {
                     
                     // MARK: Шапка
                     HStack(alignment: .center) {
-                        MenuButtonView(windowsDataManager: windowsDataManager)
+                        MenuButtonView()
+                            .environmentObject(windowsDataManager)
                         
                         Spacer()
                         
@@ -79,11 +84,20 @@ struct PageReadView: View {
                     .padding(.bottom, 5)
                     
                     // MARK: Текст
+                    
                     ScrollView() {
-                        viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent, selectedId: currentVerseId)
-                            .padding(.horizontal, globalBasePadding)
-                            .padding(.vertical, 20)
-                            .id("top")
+                        if isTextLoading {
+                            Spacer()
+                            Text("Текст загружается...")
+                                .foregroundColor(.white)
+                            Spacer()
+                        }
+                        else {
+                            viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent, selectedId: currentVerseId)
+                                .padding(.horizontal, globalBasePadding)
+                                .padding(.vertical, 20)
+                                .id("top")
+                        }
                     }
                     .frame(maxHeight: .infinity)
                     .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
@@ -93,6 +107,7 @@ struct PageReadView: View {
                     Spacer()
                     
                     viewAudioPanel()
+                    
                 }
                 
                 // подложка
@@ -101,68 +116,88 @@ struct PageReadView: View {
                 )
                 
                 // слой меню
-                MenuView(windowsDataManager: windowsDataManager)
+                MenuView()
+                    .environmentObject(windowsDataManager)
                     .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
             }
+            .toastView(toast: $toast)
             .fullScreenCover(isPresented: $showSelection, onDismiss: {
-                updateExcerpt(proxy: proxy)
+                Task {
+                    await updateExcerpt(proxy: proxy)
+                }
             })
             {
-                PageSelectView(windowsDataManager: windowsDataManager, showFromRead: $showSelection)
+                PageSelectView(showFromRead: $showSelection)
+                    .environmentObject(windowsDataManager)
             }
             .fullScreenCover(isPresented: $showSetup, onDismiss: {
                 //
             })
             {
-                PageSetupView(windowsDataManager: windowsDataManager, showFromRead: $showSetup)
+                PageSetupView(showFromRead: $showSetup)
+                    .environmentObject(windowsDataManager)
             }
             .onAppear {
-                updateExcerpt(proxy: proxy)
-                audiopleer.onEndVerse = onEndVerse
-                audiopleer.onStartVerse = onStartVerse
-                self.scrollViewProxy = proxy
+                Task {
+                    await updateExcerpt(proxy: proxy)
+                    audiopleer.onEndVerse = onEndVerse
+                    audiopleer.onStartVerse = onStartVerse
+                    self.scrollViewProxy = proxy
+                }
             }
             .edgesIgnoringSafeArea(.bottom)
         }
     }
     
     // MARK: После выбора
-    func updateExcerpt(proxy: ScrollViewProxy) {
-        let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: windowsDataManager.currentExcerpt)
-        
-        textVerses = thistextVerses
-        
-        let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
-        let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
-        
-        
-        ///self.audioVerses = audioVerses
-        self.errorDescription = err
-        
-        let voice = globalBibleAudio.getCurrentVoice()
-        let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
-        
-        //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
-        //let address = "http://500:3490205720348012725@192.168.130.169:8055/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
-        let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
-        
-        guard let url = URL(string: address) else {
-            self.errorDescription = "URL not found: \(address)"
-            return
+    func updateExcerpt(proxy: ScrollViewProxy) async {
+        do {
+            self.isTextLoading = true
+            
+            //let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: windowsDataManager.currentExcerpt)
+            
+            let translateKey = UserDefaults.standard.integer(forKey: "translateKey")
+            
+            let (thistextVerses, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: windowsDataManager.currentExcerpt, client: windowsDataManager.client, translation: translateKey)
+            
+            textVerses = thistextVerses
+            
+            let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
+            let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
+            
+            
+            ///self.audioVerses = audioVerses
+            self.errorDescription = err
+            
+            let voice = globalBibleAudio.getCurrentVoice()
+            let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
+            
+            //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
+            //let address = "http://500:3490205720348012725@192.168.130.169:8055/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
+            let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
+            
+            guard let url = URL(string: address) else {
+                self.errorDescription = "URL not found: \(address)"
+                return
+            }
+            
+            let playerItem = AVPlayerItem(url: url)
+            audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses)
+            
+            // листание наверх
+            withAnimation {
+                proxy.scrollTo("top", anchor: .top)
+            }
+            
+            windowsDataManager.currentBookId = textVerses[0].bookDigitCode
+            windowsDataManager.currentChapterId = textVerses[0].chapterDigitCode
+            
+            self.currentVerseId = -1
+        } catch {
+            print("Ошибка: \(error)")
+            toast = FancyToast(type: .error, title: "Ошибка загрузки данных", message: error.localizedDescription)
         }
-        
-        let playerItem = AVPlayerItem(url: url)
-        audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses)
-        
-        // листание наверх
-        withAnimation {
-            proxy.scrollTo("top", anchor: .top)
-        }
-        
-        windowsDataManager.currentBookId = textVerses[0].bookDigitCode
-        windowsDataManager.currentChapterId = textVerses[0].chapterDigitCode
-        
-        self.currentVerseId = -1
+        self.isTextLoading = false
     }
     
     // MARK: Обработчики
@@ -444,7 +479,8 @@ struct TestPageReadView: View {
     @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageReadView(windowsDataManager: windowsDataManager)
+        PageReadView()
+            .environmentObject(windowsDataManager)
     }
 }
 

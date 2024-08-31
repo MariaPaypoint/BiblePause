@@ -20,7 +20,7 @@ struct MenuView: View{
     //@Binding var showMenu: Bool
     //@Binding var selectedMenuItem: MenuItem
     
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     var body: some View{
         
@@ -163,7 +163,7 @@ struct MenuShape: Shape{
 // MARK: Кнопка меню др.окон
 struct MenuButtonView: View {
     
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     var body: some View {
         Button {
@@ -234,7 +234,8 @@ struct TestView: View {
     var body: some View {
         
         ZStack{
-            MenuView(windowsDataManager: windowsDataManager)
+            MenuView()
+                .environmentObject(windowsDataManager)
                 .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
         }
         .background(

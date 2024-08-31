@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import OpenAPIURLSession
 
 class WindowsDataManager: ObservableObject {
     @Published var showMenu: Bool = false
     @Published var selectedMenuItem: MenuItem = .main
     
-    @Published var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
+    //@Published var currentTranslationIndex: Int = globalBibleText.getCurrentTranslationIndex()
     
     @Published var currentExcerpt: String = "mat 3:2-3"
     @Published var currentExcerptTitle: String = "Евангелие от Матфея"
@@ -19,11 +20,17 @@ class WindowsDataManager: ObservableObject {
     //@Published var currentExcerptIsSingleChapter: Bool = true
     @Published var currentBookId: Int = 0
     @Published var currentChapterId: Int = 0
+    
+    let client: any APIProtocol
+    
+    init() {
+        self.client = Client(serverURL: URL(string: "http://helper-vm-maria:8000")!, transport: URLSessionTransport())
+    }
 }
 
 struct SkeletonView: View {
     
-    @StateObject var windowsDataManager = WindowsDataManager()
+    @StateObject private var windowsDataManager = WindowsDataManager()
     
     // не имеет значения здесь
     @State private var showAsPartOfRead: Bool = false
@@ -35,30 +42,33 @@ struct SkeletonView: View {
                 .edgesIgnoringSafeArea(.all)
             
             if windowsDataManager.selectedMenuItem == .main {
-                PageMainView(windowsDataManager: windowsDataManager)
+                PageMainView()
+                    .environmentObject(windowsDataManager)
             }
             
             else if windowsDataManager.selectedMenuItem == .read {
-                PageReadView(windowsDataManager: windowsDataManager)
+                PageReadView()
+                    .environmentObject(windowsDataManager)
             }
             
             else if windowsDataManager.selectedMenuItem == .select {
-                PageSelectView(windowsDataManager: windowsDataManager,
-                               showFromRead: $showAsPartOfRead)
+                PageSelectView(showFromRead: $showAsPartOfRead)
+                    .environmentObject(windowsDataManager)
             }
             
             else if windowsDataManager.selectedMenuItem == .setup {
-                PageSetupView(windowsDataManager: windowsDataManager,
-                              showFromRead: $showAsPartOfRead)
+                PageSetupView(showFromRead: $showAsPartOfRead)
+                    .environmentObject(windowsDataManager)
             }
             
             else if windowsDataManager.selectedMenuItem == .contacts {
-                PageContactsView(windowsDataManager: windowsDataManager)
-                //PageContactsView()
+                PageContactsView()
+                    .environmentObject(windowsDataManager)
             }
             
             // слой меню
-            MenuView(windowsDataManager: windowsDataManager)
+            MenuView()
+                .environmentObject(windowsDataManager)
                 .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
         }
         

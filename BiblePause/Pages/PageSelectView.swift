@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PageSelectView: View {
     
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     @Binding var showFromRead: Bool
     
@@ -37,7 +37,8 @@ struct PageSelectView: View {
                             .foregroundColor(Color.white.opacity(0.5))
                         }
                         else {
-                            MenuButtonView(windowsDataManager: windowsDataManager)
+                            MenuButtonView()
+                                .environmentObject(windowsDataManager)
                         }
                         Spacer()
                         
@@ -161,8 +162,9 @@ struct PageSelectView: View {
             
             
             // слой меню
-            MenuView(windowsDataManager: windowsDataManager)
-            .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
+            MenuView()
+                .environmentObject(windowsDataManager)
+                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
             
         }
     }
@@ -175,7 +177,8 @@ struct TestPageSelectView: View {
     @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageSelectView(windowsDataManager: windowsDataManager, showFromRead: $showFromRead)
+        PageSelectView(showFromRead: $showFromRead)
+            .environmentObject(windowsDataManager)
     }
 }
 

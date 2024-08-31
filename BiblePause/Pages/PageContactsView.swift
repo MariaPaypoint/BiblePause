@@ -18,11 +18,10 @@ struct PageContactsView: View {
     @State private var greeting: String = "Hello, Stranger!"
     @State private var languages: [Components.Schemas.LanguageModel] = []
     
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     let client: any APIProtocol
     
-    init(windowsDataManager: WindowsDataManager) {
-        self.windowsDataManager = windowsDataManager
+    init() {
         self.client = Client(serverURL: URL(string: "http://helper-vm-maria:8000")!, transport: URLSessionTransport())
     }
     
@@ -94,7 +93,8 @@ struct TestPageContactsView: View {
     @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageContactsView(windowsDataManager: windowsDataManager)
+        PageContactsView()
+            .environmentObject(windowsDataManager)
     }
 }
 

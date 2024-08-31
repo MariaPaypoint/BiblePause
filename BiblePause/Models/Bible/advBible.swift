@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OpenAPIURLSession
 
 
 // MARK: Отрывок - массив строк (возвращает список стихов и информацию, является ли отрывок одной единственной целой главой)
@@ -99,6 +100,50 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
     }
     
     return (resVerses, resSingleChapter)
+}
+
+func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, translation: Int) async throws -> ([BibleTextualVerseFull], Bool) {
+    do {
+        let response = try await client.get_excerpt_with_alignment(query: .init(translation: translation, excerpt: excerpts))
+        
+        if let unprocessableContent = try? response.unprocessableContent {
+            let detail = try unprocessableContent.body.json.detail
+            throw NSError(domain: "", code: 422, userInfo: [NSLocalizedDescriptionKey: detail])
+        }
+        
+        let parts = try response.ok.body.json.parts
+        
+        var resVerses: [BibleTextualVerseFull] = []
+        let resSingleChapter = parts.count > 1
+        
+        var oldBook: Int = 0
+        var oldChapter: Int = 0
+        var oldVerse: Int = 0
+        
+        for part in parts {
+            
+            for verse in part.verses {
+                resVerses.append(BibleTextualVerseFull(
+                    id: verse.number,
+                    text: verse.text,
+                    bookDigitCode: part.book_number,
+                    chapterDigitCode: part.chapter_number,
+                    changedBook: !(oldBook == part.book_number || oldBook == 0),
+                    changedChapter: !(oldChapter == part.chapter_number || oldChapter == 0),
+                    skippedVerses: !(verse.number - oldVerse == 1 || oldVerse == 0)
+                ))
+                
+                oldBook =  part.book_number
+                oldChapter = part.chapter_number
+                oldVerse = verse.number
+            }
+        }
+        
+        return (resVerses, resSingleChapter)
+    } catch {
+        
+        throw error
+    }
 }
 
 // MARK: Audio

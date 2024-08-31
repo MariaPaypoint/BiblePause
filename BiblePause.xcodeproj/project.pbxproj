@@ -98,6 +98,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		042268EE2C70F4F000B194A0 /* Res */ = {
+			isa = PBXGroup;
+			children = (
+				4C3F9EA72C14874B00EA807C /* text */,
+				4C3F9E9D2C14874B00EA807C /* audio */,
+			);
+			path = Res;
+			sourceTree = "<group>";
+		};
 		0497A95E2C6BFD40008A5D7F /* FancyToast */ = {
 			isa = PBXGroup;
 			children = (
@@ -106,15 +115,6 @@
 				0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */,
 			);
 			path = FancyToast;
-			sourceTree = "<group>";
-		};
-		4C2C74BD2C147BAA005AA3A7 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				4C3F9EA82C14874B00EA807C /* Bible */,
-			);
-			name = Resources;
-			path = "../../../cep-ios/cep/Resources";
 			sourceTree = "<group>";
 		};
 		4C3F9E9D2C14874B00EA807C /* audio */ = {
@@ -138,16 +138,6 @@
 			);
 			path = text;
 			sourceTree = "<group>";
-		};
-		4C3F9EA82C14874B00EA807C /* Bible */ = {
-			isa = PBXGroup;
-			children = (
-				4C3F9E9D2C14874B00EA807C /* audio */,
-				4C3F9EA72C14874B00EA807C /* text */,
-			);
-			name = Bible;
-			path = BiblePause/Resources/Bible;
-			sourceTree = SOURCE_ROOT;
 		};
 		4C3F9EB32C148DB200EA807C /* Adv */ = {
 			isa = PBXGroup;
@@ -197,10 +187,11 @@
 		4C7691172BECEA1300C66FDC = {
 			isa = PBXGroup;
 			children = (
+				4C7691222BECEA1300C66FDC /* BiblePause */,
 				0497A9592C6AC3EC008A5D7F /* .gitignore */,
 				4CFC91F02C59A844005AFAA5 /* readme.md */,
-				4C7691222BECEA1300C66FDC /* BiblePause */,
 				0497A95E2C6BFD40008A5D7F /* FancyToast */,
+				042268EE2C70F4F000B194A0 /* Res */,
 				4C7691212BECEA1300C66FDC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -226,7 +217,6 @@
 				4C749DFE2C14ABC000CF4234 /* Models */,
 				4C7691272BECEA1800C66FDC /* Assets.xcassets */,
 				4C7691292BECEA1800C66FDC /* Preview Content */,
-				4C2C74BD2C147BAA005AA3A7 /* Resources */,
 			);
 			path = BiblePause;
 			sourceTree = "<group>";
@@ -490,6 +480,7 @@
 				DEVELOPMENT_TEAM = Y57NU6QCRQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -521,6 +512,7 @@
 				DEVELOPMENT_TEAM = Y57NU6QCRQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

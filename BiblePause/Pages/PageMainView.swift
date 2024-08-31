@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PageMainView: View {
     
-    @ObservedObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     //@Binding var showMenu: Bool
     //@Binding var selectedMenuItem: MenuItem
@@ -19,8 +19,9 @@ struct PageMainView: View {
         ZStack {
             VStack(spacing: 20) {
                 HStack {
-                    MenuButtonView(windowsDataManager: windowsDataManager)
-                    .padding(.bottom, 50)
+                    MenuButtonView()
+                        .environmentObject(windowsDataManager)
+                        .padding(.bottom, 50)
                     Spacer()
                 }
                 // заголовок
@@ -57,8 +58,9 @@ struct PageMainView: View {
             )
             
             // слой меню
-            MenuView(windowsDataManager: windowsDataManager)
-            .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
+            MenuView()
+                .environmentObject(windowsDataManager)
+                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
         }
     }
 }
@@ -68,7 +70,8 @@ struct TestPageMainView: View {
     @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
-        PageMainView(windowsDataManager: windowsDataManager)
+        PageMainView()
+            .environmentObject(windowsDataManager)
     }
 }
 
