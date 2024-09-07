@@ -43,17 +43,3 @@ enum PauseBlock: String, CaseIterable, Identifiable, DisplayNameProvider {
     }
 }
 
-// MARK: SettingsManager
-class SettingsManager: ObservableObject {
-    
-    @AppStorage("fontIncreasePercent") var fontIncreasePercent: Double = 100.0
-    
-    @AppStorage("pauseType") var pauseType: PauseType = .none
-    @AppStorage("pauseLength") var pauseLength: Double = 3.0
-    @AppStorage("pauseBlock") var pauseBlock: PauseBlock = .verse
-    
-    @AppStorage("language") var language: String = "ru"
-    @AppStorage("translation") var translation: Int = 1
-    @AppStorage("voice") var voice: Int = 1
-    
-}

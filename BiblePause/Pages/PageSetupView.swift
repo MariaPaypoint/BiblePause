@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+let constLanguageKey = "languageKey"
+let constTranslationKey = "translationKey"
+let constVoiceKey = "voiceKey"
+
+let constLanguageDefault = "ru"
+let constTranslationDefault = "1"
+let constVoiceDefault = "1"
+
 struct PageSetupView: View {
     
     @State private var toast: FancyToast? = nil
@@ -21,17 +29,17 @@ struct PageSetupView: View {
     @State private var isLanguagesLoading: Bool = true
     @State private var languageTexts: [String] = []
     @State private var languageKeys: [String]  = []
-    @State private var languageKey: String = UserDefaults.standard.string(forKey: "languageKey") ?? "en"
+    @State private var languageKey: String = UserDefaults.standard.string(forKey: constLanguageKey) ?? constLanguageDefault
     
     @State private var isTranslationsLoading: Bool = true
     @State private var translateTexts: [String] = []
     @State private var translateKeys: [String]  = []
-    @State private var translateKey: String = UserDefaults.standard.string(forKey: "translateKey") ?? "syno"
+    @State private var translateKey: String = UserDefaults.standard.string(forKey: constTranslationKey) ?? constTranslationDefault
     
     @State private var translateResponse: [Components.Schemas.TranslationModel] = []
     @State private var audioTexts: [String] = []
     @State private var audioKeys: [String]  = []
-    @State private var audioKey = "bondarenko"
+    @State private var audioKey = UserDefaults.standard.string(forKey: constVoiceKey) ?? constVoiceDefault
     
     
     init(showFromRead: Binding<Bool>) {
@@ -240,7 +248,7 @@ struct PageSetupView: View {
         else {
             viewSelectList(texts: languageTexts,
                            keys: languageKeys,
-                           userDefaultsKeyName: "languageKey",
+                           userDefaultsKeyName: constLanguageKey,
                            selectedKey: $languageKey,
                            onSelect: { selectedLanguageKey in
                                 self.translateKey = ""
@@ -255,7 +263,7 @@ struct PageSetupView: View {
         viewGroupHeader(text: "Перевод")
         viewSelectList(texts: translateTexts,
                        keys: translateKeys,
-                       userDefaultsKeyName: "translateKey",
+                       userDefaultsKeyName: constTranslationKey,
                        selectedKey: $translateKey,
                        onSelect: { selectedTranslateKey in
                             self.audioKey = ""
@@ -268,7 +276,7 @@ struct PageSetupView: View {
         viewGroupHeader(text: "Читает")
         viewSelectList(texts: audioTexts,
                        keys: audioKeys,
-                       userDefaultsKeyName: "audioKey",
+                       userDefaultsKeyName: constVoiceKey,
                        selectedKey: $audioKey,
                        onSelect: { selectedTranslateKey in
                             scrollToBottom(proxy: proxy)

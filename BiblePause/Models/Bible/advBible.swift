@@ -102,9 +102,9 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
     return (resVerses, resSingleChapter)
 }
 
-func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, translation: Int) async throws -> ([BibleTextualVerseFull], Bool) {
+func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, translation: Int, voice: Int) async throws -> ([BibleTextualVerseFull], [BibleAcousticalVerseFull], String, Bool) {
     do {
-        let response = try await client.get_excerpt_with_alignment(query: .init(translation: translation, excerpt: excerpts))
+        let response = try await client.get_excerpt_with_alignment(query: .init(translation: translation, excerpt: excerpts, voice: voice))
         
         if let unprocessableContent = try? response.unprocessableContent {
             let detail = try unprocessableContent.body.json.detail
@@ -113,7 +113,9 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
         
         let parts = try response.ok.body.json.parts
         
-        var resVerses: [BibleTextualVerseFull] = []
+        var resTextVerses: [BibleTextualVerseFull] = []
+        var resAudioVerses: [BibleAcousticalVerseFull] = []
+        var resFirstUrl: String = ""
         let resSingleChapter = parts.count > 1
         
         var oldBook: Int = 0
@@ -121,9 +123,9 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
         var oldVerse: Int = 0
         
         for part in parts {
-            
+            if resFirstUrl == "" { resFirstUrl = part.audio_link }
             for verse in part.verses {
-                resVerses.append(BibleTextualVerseFull(
+                resTextVerses.append(BibleTextualVerseFull(
                     id: verse.number,
                     text: verse.text,
                     bookDigitCode: part.book_number,
@@ -132,14 +134,19 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     changedChapter: !(oldChapter == part.chapter_number || oldChapter == 0),
                     skippedVerses: !(verse.number - oldVerse == 1 || oldVerse == 0)
                 ))
-                
+                resAudioVerses.append(BibleAcousticalVerseFull(
+                    id: verse.number,
+                    text: verse.text,
+                    begin: verse.begin,
+                    end: verse.end
+                ))
                 oldBook =  part.book_number
                 oldChapter = part.chapter_number
                 oldVerse = verse.number
             }
         }
         
-        return (resVerses, resSingleChapter)
+        return (resTextVerses, resAudioVerses, resFirstUrl, resSingleChapter)
     } catch {
         
         throw error

@@ -14,15 +14,16 @@ struct PageReadView: View {
     
     @EnvironmentObject var windowsDataManager: WindowsDataManager
     
+    @EnvironmentObject var settingsManager: SettingsManager
+    
     @StateObject var audiopleer = PlayerModel()
-    @ObservedObject var settingsManager = SettingsManager()
     
     @State private var currentTranslationIndex: Int = globalCurrentTranslationIndex
     
     @State private var showSelection = false
     @State private var showSetup = false
     
-    @State private var errorDescription: String = ""
+    //@State private var errorDescription: String = ""
     
     @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
@@ -156,29 +157,31 @@ struct PageReadView: View {
             
             //let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: windowsDataManager.currentExcerpt)
             
-            let translateKey = UserDefaults.standard.integer(forKey: "translateKey")
-            
-            let (thistextVerses, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: windowsDataManager.currentExcerpt, client: windowsDataManager.client, translation: translateKey)
+            let (thistextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: windowsDataManager.currentExcerpt, client: windowsDataManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
             
             textVerses = thistextVerses
             
-            let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
+            //let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
             let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
             
             
             ///self.audioVerses = audioVerses
-            self.errorDescription = err
+            //self.errorDescription = err
             
             let voice = globalBibleAudio.getCurrentVoice()
             let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
             
             //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
             //let address = "http://500:3490205720348012725@192.168.130.169:8055/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
-            let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
+            //let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
             
-            guard let url = URL(string: address) else {
-                self.errorDescription = "URL not found: \(address)"
-                return
+            //guard let url = URL(string: address) else {
+            //    self.errorDescription = "URL not found: \(address)"
+            //    return
+            //}
+            //let url = try URL(string: address)
+            guard let url = URL(string: firstUrl) else {
+                throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "URL not found: \(firstUrl)"])
             }
             
             let playerItem = AVPlayerItem(url: url)
@@ -477,10 +480,12 @@ struct PageReadView: View {
 struct TestPageReadView: View {
     
     @StateObject var windowsDataManager = WindowsDataManager()
+    @StateObject var settingsManager = SettingsManager()
     
     var body: some View {
         PageReadView()
             .environmentObject(windowsDataManager)
+            .environmentObject(settingsManager)
     }
 }
 
