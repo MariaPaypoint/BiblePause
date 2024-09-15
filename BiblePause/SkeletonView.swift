@@ -20,7 +20,9 @@ class WindowsDataManager: ObservableObject {
     let client: any APIProtocol
     
     init() {
-        self.client = Client(serverURL: URL(string: "http://helper-vm-maria:8000")!, transport: URLSessionTransport())
+        //let url = "http://helper-vm-maria:8000"
+        let url = "http://192.168.130.169:8000"
+        self.client = Client(serverURL: URL(string: url)!, transport: URLSessionTransport())
     }
 }
 
@@ -42,6 +44,7 @@ class SettingsManager: ObservableObject {
 struct SkeletonView: View {
     
     @StateObject private var windowsDataManager = WindowsDataManager()
+    @StateObject private var settingsManager = SettingsManager()
     
     // не имеет значения здесь
     @State private var showAsPartOfRead: Bool = false
@@ -60,6 +63,7 @@ struct SkeletonView: View {
             else if windowsDataManager.selectedMenuItem == .read {
                 PageReadView()
                     .environmentObject(windowsDataManager)
+                    .environmentObject(settingsManager)
             }
             
             else if windowsDataManager.selectedMenuItem == .select {

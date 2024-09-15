@@ -65,12 +65,17 @@ struct BibleAcousticalVoice: Hashable, Codable {
 struct BibleTextualVerseFull: Hashable {
     let id: Int
     let text: String
+    
+    // чтобы выбор книги и главы позиционировался корректно
     var bookDigitCode: Int = 0
     var chapterDigitCode: Int = 0
      
-    var changedBook = false
-    var changedChapter = false
+    //var changedBook = false
+    //var changedChapter = false
     var skippedVerses = false
+    
+    var startParagraph = false
+    
 }
 
 struct BibleAcousticalVerseFull: Hashable {

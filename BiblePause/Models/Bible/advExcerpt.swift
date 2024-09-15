@@ -7,62 +7,8 @@
 
 import SwiftUI
 
-/*
-// MARK: Отрывок - массив строк
-func getExcerptStrings(excerpts: String, translationIndex: Int) -> [Verse] {
-    
-    let currentTranslate = cTranslationsCodes[translationIndex]
-    let book = books[currentTranslate]
-    
-    var resVerses: [Verse] = []
-    
-    if excerpts == "" {
-        //Text("Этого перевода пока не существует!")
-    }
-    else {
-        for excerpt in excerpts.components(separatedBy: ",") {
-            if book == nil {
-                //Text("Этого перевода пока не существует!")
-            }
-            else {
-                let arrExcerpt = excerpt.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: " ")
-                let verses_address = arrExcerpt[1]
-                
-                let arrVersesAddress = verses_address.components(separatedBy: ":")
-                let chapter = Int(arrVersesAddress[0])!
-                let verses_interval = arrVersesAddress[1]
-                
-                let arrVersesInterval = verses_interval.components(separatedBy: "-")
-                let verse_first = Int(arrVersesInterval[0])!
-                let verse_last = arrVersesInterval.count > 1 ? Int(arrVersesInterval[1])! : Int(arrVersesInterval[0])!
-                
-                for verse_index in verse_first...verse_last {
-                    resVerses.append(Verse(id: verse_index, text: (book!.chapters.first(where: {element in element.id == chapter})?.verses.first(where: {element in element.id == verse_index})!.text)!))
-                }
-            }
-        }
-    }
-    return resVerses
-}
- */
-
-/*
-// MARK: Отрывок - 1 строка
-func getExcerptText(excerpts: String, translationIndex: Int) -> String {
-    
-    let verses = getExcerptStrings(excerpts: excerpts, translationIndex: translationIndex)
-    
-    var resText = ""
-    
-    for (verse) in verses {
-        resText = resText + verse.text + " "
-    }
-    
-    return resText.trimmingCharacters(in: CharacterSet(charactersIn: " ,"))
-}
- */
-
 // MARK: Готовое отображение
+
 @ViewBuilder func viewExcerpt(verses: [BibleTextualVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
     
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
@@ -84,4 +30,91 @@ func getExcerptText(excerpts: String, translationIndex: Int) -> String {
         formattedText
             .lineSpacing(10.0)
     }
+}
+
+func getCSSColor(named colorName: String) -> String {
+    if let selectedUIColor = UIColor(named: colorName) {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        if selectedUIColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return String(format: "rgba(%d, %d, %d, %.2f)", Int(red * 255), Int(green * 255), Int(blue * 255), alpha)
+        }
+    }
+    return "yellow" // Значение по умолчанию
+}
+
+
+func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: Double) -> String {
+    let fontSize = 10 * (1 + fontIncreasePercent / 100)
+    let selectedColor = getCSSColor(named: "DarkGreen-accent")
+    let jesusColor = getCSSColor(named: "Jesus")
+    
+    var htmlString = """
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <style>
+                html {
+                    font-size: \(fontSize)px; /* Базовый размер шрифта */
+                    scroll-behavior: smooth;
+                }
+
+                body {
+                    background-color: transparent;
+                    color: #ffffff;
+                    font-family: -apple-system, Helvetica, Arial, sans-serif;
+                    line-height: 1.6;
+                }
+
+                h1 {
+                    font-size: 1.3rem; 
+                }
+
+                p {
+                    margin-bottom: 1rem;
+                    font-size: 1rem; 
+                }
+
+                .verse-number {
+                    font-size: 0.7rem; 
+                    color: gray;
+                    margin-right: 0.3rem;
+                }
+                                    
+                .quote {
+                    display: block;
+                    padding-left: 1rem;
+                }
+                .jesus {
+                    color: \(jesusColor);
+                }
+                .highlighted-verse {
+                    color: \(selectedColor);
+                }
+                .highlighted-verse .jesus {
+                    color: \(selectedColor);
+                    font-weight: bold;
+                }
+            </style>
+        </head>
+        <body>
+    """
+
+    for verse in verses {
+        let elem = verse.startParagraph ? "p" : "span"
+        
+        htmlString += """
+            <\(elem) id="verse-\(verse.id)"><span class="verse-number">\(verse.id).</span>\(verse.text)</\(elem)>
+        """
+    }
+
+    htmlString += """
+        </body>
+        </html>
+    """
+
+    return htmlString
 }

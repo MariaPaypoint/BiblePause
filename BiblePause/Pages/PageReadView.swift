@@ -27,7 +27,7 @@ struct PageReadView: View {
     
     @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
-    @State private var currentVerseId = 0
+    @State private var currentVerseId: Int? // = 0
     
     @State private var showAudioPanel = true
     
@@ -35,6 +35,8 @@ struct PageReadView: View {
     
     @State private var isTextLoading: Bool = true
     @State private var toast: FancyToast? = nil
+    
+    @State var scrollToVerseId: Int?
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -86,7 +88,7 @@ struct PageReadView: View {
                     
                     // MARK: Текст
                     
-                    ScrollView() {
+                    //ScrollView() {
                         if isTextLoading {
                             Spacer()
                             Text("Текст загружается...")
@@ -94,18 +96,28 @@ struct PageReadView: View {
                             Spacer()
                         }
                         else {
+                            /*
                             viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent, selectedId: currentVerseId)
                                 .padding(.horizontal, globalBasePadding)
                                 .padding(.vertical, 20)
                                 .id("top")
+                            */
+                            HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent),
+                                         scrollToVerse: $currentVerseId)
+                            //.frame(maxHeight: .infinity)
+                            .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                                                 startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
+                                                 endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
+                            )
+                            .padding(12)
                         }
-                    }
-                    .frame(maxHeight: .infinity)
-                    .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                                         startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 80% высоты
-                                         endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
-                    )
-                    Spacer()
+                    //}
+                    //.frame(maxHeight: .infinity)
+                    //.mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                    //                     startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 80% высоты
+                    //                     endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
+                    //)
+                    //Spacer()
                     
                     viewAudioPanel()
                     
@@ -145,6 +157,8 @@ struct PageReadView: View {
                     audiopleer.onStartVerse = onStartVerse
                     self.scrollViewProxy = proxy
                 }
+                
+                scrollToVerseId = nil
             }
             .edgesIgnoringSafeArea(.bottom)
         }
@@ -156,21 +170,12 @@ struct PageReadView: View {
             self.isTextLoading = true
             
             //let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: windowsDataManager.currentExcerpt)
-            
-            let (thistextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: windowsDataManager.currentExcerpt, client: windowsDataManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
-            
-            textVerses = thistextVerses
-            
+            // textVerses = thistextVerses
             //let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
-            let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
-            
-            
             ///self.audioVerses = audioVerses
             //self.errorDescription = err
-            
-            let voice = globalBibleAudio.getCurrentVoice()
-            let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
-            
+            //let voice = globalBibleAudio.getCurrentVoice()
+            //let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
             //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
             //let address = "http://500:3490205720348012725@192.168.130.169:8055/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
             //let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
@@ -180,6 +185,12 @@ struct PageReadView: View {
             //    return
             //}
             //let url = try URL(string: address)
+            
+            let (thisTextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: windowsDataManager.currentExcerpt, client: windowsDataManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
+            textVerses = thisTextVerses
+            //print(isSingleChapter)
+            let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
+            
             guard let url = URL(string: firstUrl) else {
                 throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "URL not found: \(firstUrl)"])
             }

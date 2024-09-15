@@ -13,6 +13,8 @@
 		0497A9652C6BFEA6008A5D7F /* FancyToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A95F2C6BFD4B008A5D7F /* FancyToastView.swift */; };
 		0497A9662C6BFEA6008A5D7F /* FancyToastStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A9602C6BFD60008A5D7F /* FancyToastStyle.swift */; };
 		0497A9672C6BFEA6008A5D7F /* FancyToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */; };
+		04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */; };
+		04BC330E2C95F3BB004D8E65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */; };
 		4C141A042BED275000412C60 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C141A032BED275000412C60 /* MenuView.swift */; };
 		4C3F9EA92C14874B00EA807C /* bti-prozorovsky.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */; };
 		4C3F9EAA2C14874B00EA807C /* syn-bondarenko-nopause.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */; };
@@ -53,6 +55,8 @@
 		0497A95F2C6BFD4B008A5D7F /* FancyToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastView.swift; sourceTree = "<group>"; };
 		0497A9602C6BFD60008A5D7F /* FancyToastStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastStyle.swift; sourceTree = "<group>"; };
 		0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastModifier.swift; sourceTree = "<group>"; };
+		04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advHTMLTextView.swift; sourceTree = "<group>"; };
+		04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4C141A032BED275000412C60 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "bti-prozorovsky.json"; sourceTree = "<group>"; };
 		4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko-nopause.json"; sourceTree = "<group>"; };
@@ -142,6 +146,7 @@
 		4C3F9EB32C148DB200EA807C /* Adv */ = {
 			isa = PBXGroup;
 			children = (
+				04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */,
 				4C99F3792C0266C900879594 /* advGlobals.swift */,
 				4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */,
 				4C3F9EB42C148DCD00EA807C /* advElements.swift */,
@@ -207,6 +212,7 @@
 		4C7691222BECEA1300C66FDC /* BiblePause */ = {
 			isa = PBXGroup;
 			children = (
+				04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */,
 				4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */,
 				4CFC91FE2C59AB26005AFAA5 /* openapi-generator-config.yml */,
 				4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */,
@@ -327,11 +333,13 @@
 				4C99F3742C023F4300879594 /* advAudioManager.swift in Sources */,
 				4C141A042BED275000412C60 /* MenuView.swift in Sources */,
 				4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */,
+				04BC330E2C95F3BB004D8E65 /* AppDelegate.swift in Sources */,
 				4C99F3782C02660C00879594 /* advExcerpt.swift in Sources */,
 				4C749E0D2C1F690100CF4234 /* advSettings.swift in Sources */,
 				4C749E072C1A133800CF4234 /* advExtensions.swift in Sources */,
 				4C749E092C1D804A00CF4234 /* PageSetupView.swift in Sources */,
 				4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */,
+				04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */,
 				047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */,
 				4C7691242BECEA1300C66FDC /* BiblePauseApp.swift in Sources */,
 				4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */,
@@ -474,6 +482,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BiblePause/Preview Content\"";
@@ -493,6 +502,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = BiblePause;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -506,6 +516,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BiblePause/Preview Content\"";
@@ -525,6 +536,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = BiblePause;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;

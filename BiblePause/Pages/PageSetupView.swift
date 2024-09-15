@@ -177,11 +177,13 @@ struct PageSetupView: View {
             Text("Пример:")
                 .foregroundColor(.white.opacity(0.5))
             ScrollView() {
+                
                 let (textVerses, _) = getExcerptTextualVerses(excerpts: "jhn 1:1-3")
                 viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
                     .padding(.bottom, 20)
                     .id("top")
                     .frame(maxWidth: .infinity, alignment: .leading)
+                 
             }
             .frame(maxHeight: 158)
         }

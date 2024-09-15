@@ -10,6 +10,7 @@ import OpenAPIURLSession
 
 
 // MARK: Отрывок - массив строк (возвращает список стихов и информацию, является ли отрывок одной единственной целой главой)
+
 func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool) {
     
     var resVerses: [BibleTextualVerseFull] = []
@@ -86,8 +87,8 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
                 text: text,
                 bookDigitCode: book!.id,
                 chapterDigitCode: chapter!.id,
-                changedBook: !(oldBook == book!.id || oldBook == 0),
-                changedChapter: !(oldChapter == chapter!.id || oldChapter == 0),
+                //changedBook: !(oldBook == book!.id || oldBook == 0),
+                //changedChapter: !(oldChapter == chapter!.id || oldChapter == 0),
                 skippedVerses: !(verse!.id - oldVerse == 1 || oldVerse == 0)
             ))
             
@@ -102,6 +103,7 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
     return (resVerses, resSingleChapter)
 }
 
+
 func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, translation: Int, voice: Int) async throws -> ([BibleTextualVerseFull], [BibleAcousticalVerseFull], String, Bool) {
     do {
         let response = try await client.get_excerpt_with_alignment(query: .init(translation: translation, excerpt: excerpts, voice: voice))
@@ -111,15 +113,16 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
             throw NSError(domain: "", code: 422, userInfo: [NSLocalizedDescriptionKey: detail])
         }
         
-        let parts = try response.ok.body.json.parts
+        let answer = try response.ok.body.json
+        let parts = answer.parts
         
         var resTextVerses: [BibleTextualVerseFull] = []
         var resAudioVerses: [BibleAcousticalVerseFull] = []
         var resFirstUrl: String = ""
-        let resSingleChapter = parts.count > 1
+        let resSingleChapter = answer.is_single_chapter
         
-        var oldBook: Int = 0
-        var oldChapter: Int = 0
+        //var oldBook: Int = 0
+        //var oldChapter: Int = 0
         var oldVerse: Int = 0
         
         for part in parts {
@@ -130,9 +133,10 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     text: verse.text,
                     bookDigitCode: part.book_number,
                     chapterDigitCode: part.chapter_number,
-                    changedBook: !(oldBook == part.book_number || oldBook == 0),
-                    changedChapter: !(oldChapter == part.chapter_number || oldChapter == 0),
-                    skippedVerses: !(verse.number - oldVerse == 1 || oldVerse == 0)
+                    //changedBook: !(oldBook == part.book_number || oldBook == 0),
+                    //changedChapter: !(oldChapter == part.chapter_number || oldChapter == 0),
+                    skippedVerses: !(verse.number - oldVerse == 1 || oldVerse == 0),
+                    startParagraph: verse.start_paragraph
                 ))
                 resAudioVerses.append(BibleAcousticalVerseFull(
                     id: verse.number,
@@ -140,8 +144,8 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     begin: verse.begin,
                     end: verse.end
                 ))
-                oldBook =  part.book_number
-                oldChapter = part.chapter_number
+                //oldBook =  part.book_number
+                //oldChapter = part.chapter_number
                 oldVerse = verse.number
             }
         }
@@ -249,6 +253,7 @@ func getExcerptPeriod(audioVerses: [BibleAcousticalVerseFull]) -> (Double, Doubl
 }
 
 // MARK: Отрывок в 1 строку
+/*
 func getExcerptText(excerpts: String) -> String {
     
     let (verses, _) = getExcerptTextualVerses(excerpts: excerpts)
@@ -261,3 +266,4 @@ func getExcerptText(excerpts: String) -> String {
     
     return resText.trimmingCharacters(in: CharacterSet(charactersIn: " ,"))
 }
+*/
