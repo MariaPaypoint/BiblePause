@@ -12,6 +12,7 @@ struct PageSelectView: View {
     @EnvironmentObject var windowsDataManager: WindowsDataManager
     
     @Binding var showFromRead: Bool
+    @State private var scrollToTop = false
     
     @State private var selectedBiblePartIndex: Int = -1 // 0 - ВЗ, 1 - НЗ
     @State private var expandedBook: Int = 0
@@ -64,6 +65,7 @@ struct PageSelectView: View {
                         else {
                             selectedBiblePartIndex = selectedIndex
                         }
+                        scrollToTop.toggle()
                     }
                     .padding(.vertical, 15)
                     .font(.title)
@@ -72,6 +74,10 @@ struct PageSelectView: View {
                     ScrollViewReader { proxy in
                         ScrollView() {
                             VStack(alignment: .leading) {
+                                Color.clear
+                                    .frame(height: 0)
+                                    .id("top")
+
                                 let books = globalBibleText.getCurrentTranslation().books
                                 ForEach(Array(books.enumerated()), id: \.element.id) { index, book in
                                     if (selectedBiblePartIndex == 0 && index < 39) || (selectedBiblePartIndex == 1 && index >= 39) || selectedBiblePartIndex == -1 {
@@ -87,14 +93,14 @@ struct PageSelectView: View {
                                                     needSelectedBookOpen = false
                                                 }
                                                 
-                                                proxy.scrollTo("top_\(book.id)", anchor: .top)
+                                                proxy.scrollTo("book_\(book.id)", anchor: .top)
                                             }
                                         } label: {
                                             Text(book.fullName)
                                                 .frame(maxWidth: .infinity, alignment: .leading)
                                                 //.frame(width: .infinity)
                                                 .padding(.vertical, 10)
-                                                .id("top_\(book.id)")
+                                                .id("book_\(book.id)")
                                         }
                                         
                                         if expandedBook == book.id || (windowsDataManager.currentBookId == book.id && needSelectedBookOpen) {
@@ -148,7 +154,16 @@ struct PageSelectView: View {
                         }
                         .frame(maxHeight: .infinity)
                         .onAppear {
-                            proxy.scrollTo("top_\(windowsDataManager.currentBookId)", anchor: .top)
+                            proxy.scrollTo("book_\(windowsDataManager.currentBookId)", anchor: .top)
+                        }
+                        .onChange(of: scrollToTop) { oldValue, newValue in
+                            if newValue {
+                                withAnimation {
+                                    proxy.scrollTo("top", anchor: .top)
+                                }
+                                // Сбрасываем флаг после прокрутки
+                                scrollToTop = false
+                            }
                         }
                         //Spacer()
                     }
