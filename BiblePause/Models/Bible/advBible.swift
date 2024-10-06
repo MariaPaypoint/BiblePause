@@ -131,6 +131,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                 resTextVerses.append(BibleTextualVerseFull(
                     id: verse.number,
                     text: verse.text,
+                    join: verse.join,
                     bookDigitCode: part.book_number,
                     chapterDigitCode: part.chapter_number,
                     //changedBook: !(oldBook == part.book_number || oldBook == 0),

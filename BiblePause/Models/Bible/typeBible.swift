@@ -65,6 +65,7 @@ struct BibleAcousticalVoice: Hashable, Codable {
 struct BibleTextualVerseFull: Hashable {
     let id: Int
     let text: String
+    var join: Int = 0
     
     // чтобы выбор книги и главы позиционировался корректно
     var bookDigitCode: Int = 0

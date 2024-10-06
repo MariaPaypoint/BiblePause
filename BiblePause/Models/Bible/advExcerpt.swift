@@ -91,6 +91,12 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 .jesus {
                     color: \(jesusColor);
                 }
+                .e {
+                    opacity: 0.7;
+                }
+                .gray {
+                    opacity: 0.5;
+                }
                 .highlighted-verse {
                     color: \(selectedColor);
                 }
@@ -106,8 +112,10 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     for verse in verses {
         let elem = verse.startParagraph ? "p" : "span"
         
+        let id_info = verse.join == 0 ? "\(verse.id)" : "\(verse.id)-\(verse.id+verse.join)"
+        
         htmlString += """
-            <\(elem) id="verse-\(verse.id)"><span class="verse-number">\(verse.id).</span>\(verse.text)</\(elem)>
+            <\(elem) id="verse-\(verse.id)"><span class="verse-number">\(id_info).</span>\(verse.text)</\(elem)>
         """
     }
 
