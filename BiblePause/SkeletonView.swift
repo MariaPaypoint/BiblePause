@@ -36,8 +36,8 @@ class SettingsManager: ObservableObject {
     @AppStorage("pauseBlock") var pauseBlock: PauseBlock = .verse
     
     @AppStorage("language") var language: String = "ru"
-    @AppStorage("translation") var translation: Int = 1
-    @AppStorage("voice") var voice: Int = 1
+    @AppStorage("translation") var translation: Int = 10 // bti
+    @AppStorage("voice") var voice: Int = 4 // prozorovsky
     
 }
 

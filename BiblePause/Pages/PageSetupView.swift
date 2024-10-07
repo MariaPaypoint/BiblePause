@@ -7,14 +7,6 @@
 
 import SwiftUI
 
-let constLanguageKey = "languageKey"
-let constTranslationKey = "translationKey"
-let constVoiceKey = "voiceKey"
-
-let constLanguageDefault = "ru"
-let constTranslationDefault = "1"
-let constVoiceDefault = "1"
-
 struct PageSetupView: View {
     
     @State private var toast: FancyToast? = nil
@@ -26,20 +18,21 @@ struct PageSetupView: View {
     
     // MARK: Языки и переводы
     
+    // отдельные настройки нужны для того, чтобы не соохранять некорректные данные
     @State private var isLanguagesLoading: Bool = true
     @State private var languageTexts: [String] = []
     @State private var languageKeys: [String]  = []
-    @State private var languageKey: String = UserDefaults.standard.string(forKey: constLanguageKey) ?? constLanguageDefault
+    @State private var language: String = "" // инициализируется в onAppear
     
     @State private var isTranslationsLoading: Bool = true
     @State private var translateTexts: [String] = []
     @State private var translateKeys: [String]  = []
-    @State private var translateKey: String = UserDefaults.standard.string(forKey: constTranslationKey) ?? constTranslationDefault
+    @State private var translate: String = "" // инициализируется в onAppear
     
     @State private var translateResponse: [Components.Schemas.TranslationModel] = []
     @State private var audioTexts: [String] = []
     @State private var audioKeys: [String]  = []
-    @State private var audioKey = UserDefaults.standard.string(forKey: constVoiceKey) ?? constVoiceDefault
+    @State private var audio: String = "" // инициализируется в onAppear
     
     
     init(showFromRead: Binding<Bool>) {
@@ -105,9 +98,9 @@ struct PageSetupView: View {
         )
         .toastView(toast: $toast)
         .onAppear {
-            self.languageKey = settingsManager.language
-            self.translateKey = String(settingsManager.translation)
-            self.audioKey = String(settingsManager.voice)
+            self.language = settingsManager.language
+            self.translate = String(settingsManager.translation)
+            self.audio = String(settingsManager.voice)
             fetchLanguages()
         }
     }
@@ -250,11 +243,11 @@ struct PageSetupView: View {
         else {
             viewSelectList(texts: languageTexts,
                            keys: languageKeys,
-                           userDefaultsKeyName: constLanguageKey,
-                           selectedKey: $languageKey,
+                           selectedKey: $language,
                            onSelect: { selectedLanguageKey in
-                                self.translateKey = ""
-                                self.audioKey = ""
+                                settingsManager.language = selectedLanguageKey
+                                self.translate = ""
+                                self.audio = ""
                                 fetchTranslations()
                                 scrollToBottom(proxy: proxy)
                            }
@@ -265,10 +258,10 @@ struct PageSetupView: View {
         viewGroupHeader(text: "Перевод")
         viewSelectList(texts: translateTexts,
                        keys: translateKeys,
-                       userDefaultsKeyName: constTranslationKey,
-                       selectedKey: $translateKey,
+                       selectedKey: $translate,
                        onSelect: { selectedTranslateKey in
-                            self.audioKey = ""
+                            settingsManager.translation = Int(selectedTranslateKey)!
+                            self.audio = ""
                             showAudios()
                             scrollToBottom(proxy: proxy)
                        }
@@ -278,9 +271,9 @@ struct PageSetupView: View {
         viewGroupHeader(text: "Читает")
         viewSelectList(texts: audioTexts,
                        keys: audioKeys,
-                       userDefaultsKeyName: constVoiceKey,
-                       selectedKey: $audioKey,
+                       selectedKey: $audio,
                        onSelect: { selectedTranslateKey in
+                            settingsManager.voice = Int(selectedTranslateKey)!
                             scrollToBottom(proxy: proxy)
                        }
         )
@@ -288,20 +281,20 @@ struct PageSetupView: View {
         
         
         // кнопки
-        if settingsManager.language != self.languageKey || String(settingsManager.translation) != self.translateKey || String(settingsManager.voice) != self.audioKey {
+        if settingsManager.language != self.language || String(settingsManager.translation) != self.translate || String(settingsManager.voice) != self.audio {
             
-            let saveEnabled =  self.languageKey != "" && self.translateKey != "" && self.audioKey != ""
+            let saveEnabled =  self.language != "" && self.translate != "" && self.audio != ""
             
             Button {
                 if saveEnabled {
-                    settingsManager.language = self.languageKey
-                    settingsManager.translation = Int(self.translateKey) ?? 0
-                    settingsManager.voice = Int(self.audioKey) ?? 0
+                    settingsManager.language = self.language
+                    settingsManager.translation = Int(self.translate) ?? 0
+                    settingsManager.voice = Int(self.audio) ?? 0
                     
                     toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
                 }
                 else {
-                    toast = FancyToast(type: .warning, title: "Внимание!", message: self.translateKey == "" ? "Выберите перевод" : "Выберите кто читает")
+                    toast = FancyToast(type: .warning, title: "Внимание!", message: self.translate == "" ? "Выберите перевод" : "Выберите кто читает")
                 }
             } label: {
                 VStack {
@@ -318,9 +311,9 @@ struct PageSetupView: View {
             
             
             Button {
-                self.languageKey = settingsManager.language
-                self.translateKey = String(settingsManager.translation)
-                self.audioKey = String(settingsManager.voice)
+                self.language = settingsManager.language
+                self.translate = String(settingsManager.translation)
+                self.audio = String(settingsManager.voice)
                 fetchLanguages()
                 showAudios()
                 //scrollToBottom(proxy: proxy)
@@ -386,7 +379,7 @@ struct PageSetupView: View {
             do {
                 self.isTranslationsLoading = true
                 
-                let response = try await windowsDataManager.client.get_translations(query: .init(language: self.languageKey))
+                let response = try await windowsDataManager.client.get_translations(query: .init(language: self.language))
                 self.translateResponse = try response.ok.body.json
                 
                 self.translateKeys = []
@@ -409,7 +402,7 @@ struct PageSetupView: View {
         self.audioKeys = []
         self.audioTexts = []
         for translation in self.translateResponse {
-            if "\(translation.code)" == self.translateKey {
+            if "\(translation.code)" == self.translate {
                 for voice in translation.voices {
                     self.audioKeys.append("\(voice.code)")
                     self.audioTexts.append("\(voice.name)")
