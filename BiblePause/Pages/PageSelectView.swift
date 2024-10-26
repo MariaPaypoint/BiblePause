@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PageSelectView: View {
     
-    @EnvironmentObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var settingsManager: SettingsManager
     
     @Binding var showFromRead: Bool
     @State private var scrollToTop = false
@@ -39,7 +39,7 @@ struct PageSelectView: View {
                         }
                         else {
                             MenuButtonView()
-                                .environmentObject(windowsDataManager)
+                                .environmentObject(settingsManager)
                         }
                         Spacer()
                         
@@ -89,7 +89,7 @@ struct PageSelectView: View {
                                             withAnimation {
                                                 expandedBook = book.id
                                                 
-                                                if book.id != windowsDataManager.currentBookId {
+                                                if book.id != settingsManager.currentBookId {
                                                     needSelectedBookOpen = false
                                                 }
                                                 
@@ -103,21 +103,21 @@ struct PageSelectView: View {
                                                 .id("book_\(book.id)")
                                         }
                                         
-                                        if expandedBook == book.id || (windowsDataManager.currentBookId == book.id && needSelectedBookOpen) {
+                                        if expandedBook == book.id || (settingsManager.currentBookId == book.id && needSelectedBookOpen) {
                                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
                                                 ForEach(book.chapters) { chapter in
                                                     Button(action: {
                                                         // MARK: Действие при нажатии на кнопку главы
-                                                        windowsDataManager.currentExcerpt = "\(book.code) \(chapter.id)"
-                                                        windowsDataManager.currentExcerptTitle = book.fullName
-                                                        windowsDataManager.currentExcerptSubtitle = "Глава \(chapter.id)"
-                                                        windowsDataManager.selectedMenuItem = .read
+                                                        settingsManager.currentExcerpt = "\(book.code) \(chapter.id)"
+                                                        settingsManager.currentExcerptTitle = book.fullName
+                                                        settingsManager.currentExcerptSubtitle = "Глава \(chapter.id)"
+                                                        settingsManager.selectedMenuItem = .read
                                                         withAnimation(Animation.easeInOut(duration: 1)) {
                                                             showFromRead = false
                                                         }
                                                         
                                                     }) {
-                                                        if windowsDataManager.currentBookId == book.id && windowsDataManager.currentChapterId == chapter.id {
+                                                        if settingsManager.currentBookId == book.id && settingsManager.currentChapterId == chapter.id {
                                                             Text("\(chapter.id)").frame(maxWidth: .infinity)
                                                                 .padding(.vertical, 10)
                                                             //.foregroundColor(Color("DarkGreen"))
@@ -154,7 +154,7 @@ struct PageSelectView: View {
                         }
                         .frame(maxHeight: .infinity)
                         .onAppear {
-                            proxy.scrollTo("book_\(windowsDataManager.currentBookId)", anchor: .top)
+                            proxy.scrollTo("book_\(settingsManager.currentBookId)", anchor: .top)
                         }
                         .onChange(of: scrollToTop) { oldValue, newValue in
                             if newValue {
@@ -178,8 +178,8 @@ struct PageSelectView: View {
             
             // слой меню
             MenuView()
-                .environmentObject(windowsDataManager)
-                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
+                .environmentObject(settingsManager)
+                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
             
         }
     }
@@ -189,11 +189,10 @@ struct PageSelectView: View {
 struct TestPageSelectView: View {
     
     @State private var showFromRead: Bool = true
-    @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
         PageSelectView(showFromRead: $showFromRead)
-            .environmentObject(windowsDataManager)
+            .environmentObject(SettingsManager())
     }
 }
 

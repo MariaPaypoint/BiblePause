@@ -68,9 +68,11 @@ func viewGroupHeader(text: String) -> some View {
 // выбор из листа
 @ViewBuilder
 func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String>,
-                    onSelect: @escaping (String) -> Void = { _ in }) -> some View {
+                    onSelect: @escaping (Int) -> Void = { _ in }) -> some View {
     LazyVStack(alignment: .leading, spacing: 0) {
-        ForEach(Array(zip(texts, keys)), id: \.1) { text, key in
+        ForEach(texts.indices, id: \.self) { index in
+            let text = texts[index]
+            let key = keys[index]
             HStack {
                 Text(text)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,7 +87,7 @@ func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String
             .background(Color("DarkGreen"))
             .onTapGesture {
                 selectedKey.wrappedValue = key
-                onSelect(key)
+                onSelect(index)
             }
         }
     }

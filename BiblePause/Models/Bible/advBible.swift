@@ -24,8 +24,6 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
         return (resVerses, resSingleChapter)
     }
     
-    var oldBook: Int = 0
-    var oldChapter: Int = 0
     var oldVerse: Int = 0
     
     let arrClearExcerpts = clear_excerpts.components(separatedBy: ",")
@@ -92,8 +90,6 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
                 skippedVerses: !(verse!.id - oldVerse == 1 || oldVerse == 0)
             ))
             
-            oldBook =  book!.id
-            oldChapter = chapter!.id
             oldVerse = verse!.id
             
         }

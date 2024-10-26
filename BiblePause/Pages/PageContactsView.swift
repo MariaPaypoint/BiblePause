@@ -83,11 +83,9 @@ struct PageContactsView: View {
 
 struct TestPageContactsView: View {
     
-    @StateObject var windowsDataManager = WindowsDataManager()
-    
     var body: some View {
         PageContactsView()
-            .environmentObject(windowsDataManager)
+            .environmentObject(SettingsManager())
     }
 }
 

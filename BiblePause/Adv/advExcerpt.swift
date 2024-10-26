@@ -51,6 +51,8 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     let fontSize = 10 * (1 + fontIncreasePercent / 100)
     let selectedColor = getCSSColor(named: "DarkGreen-accent")
     let jesusColor = getCSSColor(named: "Jesus")
+    let jesusSelectedColor = getCSSColor(named: "JesusSelected")
+    //let jesusSelectedColor = getCSSColor(named: "Mustard")
     
     var htmlString = """
         <html>
@@ -101,8 +103,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     color: \(selectedColor);
                 }
                 .highlighted-verse .jesus {
-                    color: \(selectedColor);
-                    font-weight: bold;
+                    color: \(jesusSelectedColor);
                 }
             </style>
         </head>

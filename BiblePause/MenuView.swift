@@ -20,7 +20,7 @@ struct MenuView: View{
     //@Binding var showMenu: Bool
     //@Binding var selectedMenuItem: MenuItem
     
-    @EnvironmentObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var settingsManager: SettingsManager
     
     var body: some View{
         
@@ -49,11 +49,11 @@ struct MenuView: View{
                 .padding(.bottom, 15)
 
                 // MARK: Menu Buttons
-                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (windowsDataManager.selectedMenuItem == .main)) }
-                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (windowsDataManager.selectedMenuItem == .read)) }
-                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (windowsDataManager.selectedMenuItem == .select)) }
-                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (windowsDataManager.selectedMenuItem == .setup)) }
-                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (windowsDataManager.selectedMenuItem == .contacts)) }
+                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (settingsManager.selectedMenuItem == .main)) }
+                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (settingsManager.selectedMenuItem == .read)) }
+                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (settingsManager.selectedMenuItem == .select)) }
+                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (settingsManager.selectedMenuItem == .setup)) }
+                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (settingsManager.selectedMenuItem == .contacts)) }
                 
                 Spacer(minLength: 10)
                 
@@ -96,14 +96,14 @@ struct MenuView: View{
     
     func toggleWithAnimation() {
         withAnimation(.spring().delay(0.1)){
-            windowsDataManager.showMenu.toggle()
+            settingsManager.showMenu.toggle()
         }
     }
     
     // MARK: Закрытие меню по выбору пункта
     func changeSelected(selected: MenuItem) {
         toggleWithAnimation()
-        windowsDataManager.selectedMenuItem = selected
+        settingsManager.selectedMenuItem = selected
         
     }
     
@@ -163,12 +163,12 @@ struct MenuShape: Shape{
 // MARK: Кнопка меню др.окон
 struct MenuButtonView: View {
     
-    @EnvironmentObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var settingsManager: SettingsManager
     
     var body: some View {
         Button {
             withAnimation(.spring()){
-                windowsDataManager.showMenu.toggle()
+                settingsManager.showMenu.toggle()
             }
         } label: {
             /*
@@ -229,14 +229,14 @@ struct BlurView: UIViewRepresentable {
 // MARK: Preview
 struct TestView: View {
     
-    @ObservedObject var windowsDataManager = WindowsDataManager()
+    @StateObject var settingsManager = SettingsManager()
     
     var body: some View {
         
         ZStack{
             MenuView()
-                .environmentObject(windowsDataManager)
-                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
+                .environmentObject(settingsManager)
+                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
         }
         .background(
             Image("Forest")
@@ -246,7 +246,6 @@ struct TestView: View {
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
         )
     }
-    
 }
 
 #Preview {

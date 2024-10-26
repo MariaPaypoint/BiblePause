@@ -11,8 +11,7 @@ struct PageSetupView: View {
     
     @State private var toast: FancyToast? = nil
     
-    @ObservedObject var settingsManager = SettingsManager()
-    @EnvironmentObject var windowsDataManager: WindowsDataManager
+    @EnvironmentObject var settingsManager: SettingsManager
     
     @Binding var showFromRead: Bool
     
@@ -25,14 +24,15 @@ struct PageSetupView: View {
     @State private var language: String = "" // инициализируется в onAppear
     
     @State private var isTranslationsLoading: Bool = true
-    @State private var translateTexts: [String] = []
-    @State private var translateKeys: [String]  = []
-    @State private var translate: String = "" // инициализируется в onAppear
+    @State private var translationKeys: [String]  = []
+    @State private var translationTexts: [String] = []
+    @State private var translationNames: [String] = []
+    @State private var translation: String = "" // инициализируется в onAppear
     
     @State private var translateResponse: [Components.Schemas.TranslationModel] = []
     @State private var audioTexts: [String] = []
     @State private var audioKeys: [String]  = []
-    @State private var audio: String = "" // инициализируется в onAppear
+    @State private var voice: String = "" // инициализируется в onAppear
     
     
     init(showFromRead: Binding<Bool>) {
@@ -57,7 +57,7 @@ struct PageSetupView: View {
                     }
                     else {
                         MenuButtonView()
-                            .environmentObject(windowsDataManager)
+                            .environmentObject(settingsManager)
                     }
                     Spacer()
                     
@@ -87,8 +87,8 @@ struct PageSetupView: View {
             }
             // слой меню
             MenuView()
-                .environmentObject(windowsDataManager)
-                .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
+                .environmentObject(settingsManager)
+                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
             
         }
         
@@ -99,8 +99,8 @@ struct PageSetupView: View {
         .toastView(toast: $toast)
         .onAppear {
             self.language = settingsManager.language
-            self.translate = String(settingsManager.translation)
-            self.audio = String(settingsManager.voice)
+            self.translation = String(settingsManager.translation)
+            self.voice = String(settingsManager.voice)
             fetchLanguages()
         }
     }
@@ -244,10 +244,11 @@ struct PageSetupView: View {
             viewSelectList(texts: languageTexts,
                            keys: languageKeys,
                            selectedKey: $language,
-                           onSelect: { selectedLanguageKey in
-                                settingsManager.language = selectedLanguageKey
-                                self.translate = ""
-                                self.audio = ""
+                           onSelect: { selectedLanguageIndex in
+                                settingsManager.language = languageKeys[selectedLanguageIndex]
+                                self.language = languageKeys[selectedLanguageIndex]
+                                self.translation = ""
+                                self.voice = ""
                                 fetchTranslations()
                                 scrollToBottom(proxy: proxy)
                            }
@@ -256,12 +257,14 @@ struct PageSetupView: View {
         }
         
         viewGroupHeader(text: "Перевод")
-        viewSelectList(texts: translateTexts,
-                       keys: translateKeys,
-                       selectedKey: $translate,
-                       onSelect: { selectedTranslateKey in
-                            settingsManager.translation = Int(selectedTranslateKey)!
-                            self.audio = ""
+        viewSelectList(texts: translationTexts,
+                       keys: translationKeys,
+                       selectedKey: $translation,
+                       onSelect: { selectedTranslateIndex in
+                            settingsManager.translation = Int(translationKeys[selectedTranslateIndex])!
+                            settingsManager.translationName = translationNames[selectedTranslateIndex]
+                            self.translation = translationKeys[selectedTranslateIndex]
+                            self.voice = ""
                             showAudios()
                             scrollToBottom(proxy: proxy)
                        }
@@ -271,9 +274,11 @@ struct PageSetupView: View {
         viewGroupHeader(text: "Читает")
         viewSelectList(texts: audioTexts,
                        keys: audioKeys,
-                       selectedKey: $audio,
-                       onSelect: { selectedTranslateKey in
-                            settingsManager.voice = Int(selectedTranslateKey)!
+                       selectedKey: $voice,
+                       onSelect: { selectedTranslateIndex in
+                            settingsManager.voice = Int(audioKeys[selectedTranslateIndex])!
+                            settingsManager.voiceName = audioTexts[selectedTranslateIndex]
+                            self.voice = audioKeys[selectedTranslateIndex]
                             scrollToBottom(proxy: proxy)
                        }
         )
@@ -281,20 +286,20 @@ struct PageSetupView: View {
         
         
         // кнопки
-        if settingsManager.language != self.language || String(settingsManager.translation) != self.translate || String(settingsManager.voice) != self.audio {
+        if settingsManager.language != self.language || String(settingsManager.translation) != self.translation || String(settingsManager.voice) != self.voice {
             
-            let saveEnabled =  self.language != "" && self.translate != "" && self.audio != ""
+            let saveEnabled =  self.language != "" && self.translation != "" && self.voice != ""
             
             Button {
                 if saveEnabled {
                     settingsManager.language = self.language
-                    settingsManager.translation = Int(self.translate) ?? 0
-                    settingsManager.voice = Int(self.audio) ?? 0
+                    settingsManager.translation = Int(self.translation) ?? 0
+                    settingsManager.voice = Int(self.voice) ?? 0
                     
                     toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
                 }
                 else {
-                    toast = FancyToast(type: .warning, title: "Внимание!", message: self.translate == "" ? "Выберите перевод" : "Выберите кто читает")
+                    toast = FancyToast(type: .warning, title: "Внимание!", message: self.translation == "" ? "Выберите перевод" : "Выберите кто читает")
                 }
             } label: {
                 VStack {
@@ -312,8 +317,8 @@ struct PageSetupView: View {
             
             Button {
                 self.language = settingsManager.language
-                self.translate = String(settingsManager.translation)
-                self.audio = String(settingsManager.voice)
+                self.translation = String(settingsManager.translation)
+                self.voice = String(settingsManager.voice)
                 fetchLanguages()
                 showAudios()
                 //scrollToBottom(proxy: proxy)
@@ -358,7 +363,7 @@ struct PageSetupView: View {
                 self.languageKeys = []
                 self.languageTexts = []
                 
-                let response = try await windowsDataManager.client.get_languages()
+                let response = try await settingsManager.client.get_languages()
                 let languages = try response.ok.body.json
                 
                 for language in languages {
@@ -379,14 +384,15 @@ struct PageSetupView: View {
             do {
                 self.isTranslationsLoading = true
                 
-                let response = try await windowsDataManager.client.get_translations(query: .init(language: self.language))
+                let response = try await settingsManager.client.get_translations(query: .init(language: self.language))
                 self.translateResponse = try response.ok.body.json
                 
-                self.translateKeys = []
-                self.translateTexts = []
+                self.translationKeys = []
+                self.translationTexts = []
                 for translation in self.translateResponse {
-                    self.translateKeys.append("\(translation.code)")
-                    self.translateTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
+                    self.translationKeys.append("\(translation.code)")
+                    self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
+                    self.translationNames.append(translation.name)
                 }
                 showAudios()
                 self.isTranslationsLoading = false
@@ -402,7 +408,7 @@ struct PageSetupView: View {
         self.audioKeys = []
         self.audioTexts = []
         for translation in self.translateResponse {
-            if "\(translation.code)" == self.translate {
+            if "\(translation.code)" == self.translation {
                 for voice in translation.voices {
                     self.audioKeys.append("\(voice.code)")
                     self.audioTexts.append("\(voice.name)")
@@ -416,11 +422,10 @@ struct PageSetupView: View {
 struct TestPageSetupView: View {
     
     @State private var showFromRead: Bool = true
-    @StateObject var windowsDataManager = WindowsDataManager()
     
     var body: some View {
         PageSetupView(showFromRead: $showFromRead)
-            .environmentObject(windowsDataManager)
+            .environmentObject(SettingsManager())
     }
 }
 

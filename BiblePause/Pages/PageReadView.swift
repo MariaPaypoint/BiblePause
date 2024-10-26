@@ -12,8 +12,6 @@ import OpenAPIRuntime
 
 struct PageReadView: View {
     
-    @EnvironmentObject var windowsDataManager: WindowsDataManager
-    
     @EnvironmentObject var settingsManager: SettingsManager
     
     @StateObject var audiopleer = PlayerModel()
@@ -46,7 +44,7 @@ struct PageReadView: View {
                     // MARK: Шапка
                     HStack(alignment: .center) {
                         MenuButtonView()
-                            .environmentObject(windowsDataManager)
+                            .environmentObject(settingsManager)
                         
                         Spacer()
                         
@@ -60,9 +58,9 @@ struct PageReadView: View {
                             }
                         } label: {
                             VStack(spacing: 0) {
-                                Text(windowsDataManager.currentExcerptTitle)
+                                Text(settingsManager.currentExcerptTitle)
                                     .fontWeight(.bold)
-                                Text(windowsDataManager.currentExcerptSubtitle.uppercased())
+                                Text(settingsManager.currentExcerptSubtitle.uppercased())
                                     .foregroundColor(Color("Mustard"))
                                     .font(.footnote)
                                     .fontWeight(.bold)
@@ -88,37 +86,23 @@ struct PageReadView: View {
                     
                     // MARK: Текст
                     
-                    //ScrollView() {
-                        if isTextLoading {
-                            Spacer()
-                            Text("Текст загружается...")
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
-                        else {
-                            /*
-                            viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent, selectedId: currentVerseId)
-                                .padding(.horizontal, globalBasePadding)
-                                .padding(.vertical, 20)
-                                .id("top")
-                            */
-                            HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent),
-                                         scrollToVerse: $currentVerseId)
-                            //.frame(maxHeight: .infinity)
-                            .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                                                 startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
-                                                 endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
-                            )
-                            .padding(12)
-                        }
-                    //}
-                    //.frame(maxHeight: .infinity)
-                    //.mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                    //                     startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 80% высоты
-                    //                     endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
-                    //)
-                    //Spacer()
+                    if isTextLoading {
+                        Spacer()
+                        Text("Текст загружается...")
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                    else {
+                        HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent),
+                                     scrollToVerse: $currentVerseId)
+                        .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                                             startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
+                                             endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
+                        )
+                        .padding(12)
+                    }
                     
+                    // MARK: Аудио-панель
                     viewAudioPanel()
                     
                 }
@@ -130,10 +114,11 @@ struct PageReadView: View {
                 
                 // слой меню
                 MenuView()
-                    .environmentObject(windowsDataManager)
-                    .offset(x: windowsDataManager.showMenu ? 0 : -getRect().width)
+                    .environmentObject(settingsManager)
+                    .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
             }
             .toastView(toast: $toast)
+            
             .fullScreenCover(isPresented: $showSelection, onDismiss: {
                 Task {
                     await updateExcerpt(proxy: proxy)
@@ -141,15 +126,19 @@ struct PageReadView: View {
             })
             {
                 PageSelectView(showFromRead: $showSelection)
-                    .environmentObject(windowsDataManager)
+                    .environmentObject(settingsManager)
             }
+            
             .fullScreenCover(isPresented: $showSetup, onDismiss: {
-                //
+                Task {
+                    await updateExcerpt(proxy: proxy)
+                }
             })
             {
                 PageSetupView(showFromRead: $showSetup)
-                    .environmentObject(windowsDataManager)
+                    .environmentObject(settingsManager)
             }
+            
             .onAppear {
                 Task {
                     await updateExcerpt(proxy: proxy)
@@ -169,7 +158,7 @@ struct PageReadView: View {
         do {
             self.isTextLoading = true
             
-            //let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: windowsDataManager.currentExcerpt)
+            //let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: settingsManager.currentExcerpt)
             // textVerses = thistextVerses
             //let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
             ///self.audioVerses = audioVerses
@@ -186,7 +175,7 @@ struct PageReadView: View {
             //}
             //let url = try URL(string: address)
             
-            let (thisTextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: windowsDataManager.currentExcerpt, client: windowsDataManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
+            let (thisTextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
             textVerses = thisTextVerses
             //print(isSingleChapter)
             let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
@@ -203,8 +192,8 @@ struct PageReadView: View {
                 proxy.scrollTo("top", anchor: .top)
             }
             
-            windowsDataManager.currentBookId = textVerses[0].bookDigitCode
-            windowsDataManager.currentChapterId = textVerses[0].chapterDigitCode
+            settingsManager.currentBookId = textVerses[0].bookDigitCode
+            settingsManager.currentChapterId = textVerses[0].chapterDigitCode
             
             self.currentVerseId = -1
         } catch {
@@ -292,7 +281,7 @@ struct PageReadView: View {
     // MARK: Панель - информация
     @ViewBuilder private func viewAudioInfo() -> some View {
         HStack {
-            Text("SYNO")
+            Text(settingsManager.translationName)
                 .foregroundColor(Color("DarkGreen"))
                 .font(.footnote)
                 .padding(4)
@@ -306,7 +295,7 @@ struct PageReadView: View {
                 Text("ЧИТАЕТ:")
                     .foregroundStyle(Color("localAccentColor").opacity(0.5))
                     .font(.caption2)
-                Text("Александр Бондаренко")
+                Text(settingsManager.voiceName)
                     .foregroundStyle(Color("localAccentColor"))
                     .font(.footnote)
             }
@@ -490,13 +479,9 @@ struct PageReadView: View {
 
 struct TestPageReadView: View {
     
-    @StateObject var windowsDataManager = WindowsDataManager()
-    @StateObject var settingsManager = SettingsManager()
-    
     var body: some View {
         PageReadView()
-            .environmentObject(windowsDataManager)
-            .environmentObject(settingsManager)
+            .environmentObject(SettingsManager())
     }
 }
 

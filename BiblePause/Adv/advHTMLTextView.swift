@@ -10,6 +10,22 @@ import WebKit
 
 struct HTMLTextView: UIViewRepresentable {
     let htmlContent: String
+    let jsTemplate = """
+        // Удаляем класс выделения с предыдущего стиха
+        var previous = document.querySelector('.highlighted-verse');
+        if (previous) {
+            previous.classList.remove('highlighted-verse');
+        }
+    
+        // Прокручиваем к текущему стиху
+        var target = document.getElementById('verse-{verse}');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+    
+            // Добавляем класс выделения к текущему стиху
+            target.classList.add('highlighted-verse');
+        }
+    """
     @Binding var scrollToVerse: Int?
 
     func makeCoordinator() -> Coordinator {
@@ -41,23 +57,8 @@ struct HTMLTextView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         // If scrollToVerse changes and webView is loaded, execute JavaScript
         if let verse = scrollToVerse, context.coordinator.webViewLoaded {
-            let js = """
-                // Удаляем класс выделения с предыдущего стиха
-                var previous = document.querySelector('.highlighted-verse');
-                if (previous) {
-                    previous.classList.remove('highlighted-verse');
-                }
 
-                // Прокручиваем к текущему стиху
-                var target = document.getElementById('verse-\(verse)');
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-
-                    // Добавляем класс выделения к текущему стиху
-                    target.classList.add('highlighted-verse');
-                }
-            """
-            webView.evaluateJavaScript(js, completionHandler: nil)
+            webView.evaluateJavaScript(jsTemplate.replacingOccurrences(of: "{verse}", with: "\(verse)"), completionHandler: nil)
 
             // Reset scrollToVerse to nil to prevent repeated scrolling
             DispatchQueue.main.async {
@@ -80,23 +81,7 @@ struct HTMLTextView: UIViewRepresentable {
 
             // If scrollToVerse is set, execute JavaScript to scroll
             if let verse = parent.scrollToVerse {
-                let js = """
-                    // Удаляем класс выделения с предыдущего стиха
-                    var previous = document.querySelector('.highlighted-verse');
-                    if (previous) {
-                        previous.classList.remove('highlighted-verse');
-                    }
-
-                    // Прокручиваем к текущему стиху
-                    var target = document.getElementById('verse-\(verse)');
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth' });
-
-                        // Добавляем класс выделения к текущему стиху
-                        target.classList.add('highlighted-verse');
-                    }
-                """
-                webView.evaluateJavaScript(js, completionHandler: nil)
+                webView.evaluateJavaScript(parent.jsTemplate.replacingOccurrences(of: "{verse}", with: "\(verse)"), completionHandler: nil)
 
                 DispatchQueue.main.async {
                     self.parent.scrollToVerse = nil

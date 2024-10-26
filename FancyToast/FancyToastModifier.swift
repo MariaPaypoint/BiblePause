@@ -33,7 +33,7 @@ struct FancyToastModifier: ViewModifier {
                 .animation(.spring(), value: toast)
                 //.animation(.interpolatingSpring(mass: 1, stiffness: 50, damping: 10, initialVelocity: 0), value: toast)
             )
-            .onChange(of: toast) { value in
+            .onChange(of: toast) {
                 showToast()
             }
     }
