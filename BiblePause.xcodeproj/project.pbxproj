@@ -212,12 +212,12 @@
 		4C7691222BECEA1300C66FDC /* BiblePause */ = {
 			isa = PBXGroup;
 			children = (
-				04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */,
+				047B3BC42BEEB626009DEC11 /* SkeletonView.swift */,
 				4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */,
 				4CFC91FE2C59AB26005AFAA5 /* openapi-generator-config.yml */,
-				4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */,
-				047B3BC42BEEB626009DEC11 /* SkeletonView.swift */,
 				4C141A032BED275000412C60 /* MenuView.swift */,
+				4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */,
+				04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */,
 				4C3F9EB62C148EA200EA807C /* Pages */,
 				4C3F9EB32C148DB200EA807C /* Adv */,
 				4C749DFE2C14ABC000CF4234 /* Models */,

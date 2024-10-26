@@ -26,14 +26,14 @@ struct PageMainView: View {
                 
                 // кнопка
                 Button {
-                    
+                    settingsManager.selectedMenuItem = .read
                 } label: {
                     VStack {
                         Text("Продолжить чтение")
                             .foregroundColor(Color("ForestGreen"))
                             .frame(maxWidth: .infinity)
                             .font(.system(.body, weight: .heavy))
-                        Text("Евангелие от Иоанна, Глава 1")
+                        Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
                             .foregroundColor(Color("Chocolate"))
                             .font(.system(.subheadline))
                     }

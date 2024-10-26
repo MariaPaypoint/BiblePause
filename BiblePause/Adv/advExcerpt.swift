@@ -14,13 +14,13 @@ import SwiftUI
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
         partialResult
         +
-        Text("\(verse.id). ") // Номер стиха
+        Text("\(verse.number). ") // Номер стиха
             .font(.system(size: 7 * (1 + fontIncreasePercent / 100)))
             .foregroundColor(.white.opacity(0.5))
             //.id("verse_number_\(verse.id)")
         +
         Text(verse.text) // Текст стиха
-            .foregroundColor(selectedId == verse.id ? Color("DarkGreen-accent") : .white)
+            .foregroundColor(selectedId == verse.number ? Color("DarkGreen-accent") : .white)
             .font(.system(size: 10 * (1 + fontIncreasePercent / 100)))
         +
         Text(" ")
@@ -111,12 +111,13 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     """
 
     for verse in verses {
-        let elem = verse.startParagraph ? "p" : "span"
+        let id_info = verse.join == 0 ? "\(verse.number)" : "\(verse.number)-\(verse.number+verse.join)"
         
-        let id_info = verse.join == 0 ? "\(verse.id)" : "\(verse.id)-\(verse.id+verse.join)"
-        
+        if verse.startParagraph {
+            htmlString += "<p>"
+        }
         htmlString += """
-            <\(elem) id="verse-\(verse.id)"><span class="verse-number">\(id_info).</span>\(verse.text)</\(elem)>
+            <span id="verse-\(verse.number)"><span class="verse-number">\(id_info).</span>\(verse.text)</span>
         """
     }
 
@@ -124,6 +125,6 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
         </body>
         </html>
     """
-
+    
     return htmlString
 }

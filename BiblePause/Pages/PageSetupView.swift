@@ -196,25 +196,52 @@ struct PageSetupView: View {
                         Text("Делать паузу")
                             .frame(width: 140, alignment: .leading)
                         Spacer()
-                        TextField("", text: Binding(
-                            get: {
-                                String(settingsManager.pauseLength)
-                            },
-                            set: { newValue in
-                                if let value = Double(newValue) {
-                                    settingsManager.pauseLength = value
+                        
+                        HStack(spacing: 0) {
+                            Button(action: {
+                                if settingsManager.pauseLength >= 1 {
+                                    settingsManager.pauseLength -= 1
                                 }
+                            }) {
+                                Image(systemName: "minus")
+                                    .padding(10)
+                                    .foregroundColor(.white.opacity(0.5))
                             }
-                        ))
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color("DarkGreen-light").opacity(0.6))
-                        .cornerRadius(5)
-                        .overlay(
+                            
+                            TextField("", text: Binding(
+                                get: {
+                                    String(settingsManager.pauseLength)
+                                },
+                                set: { newValue in
+                                    if let value = Double(newValue) {
+                                        settingsManager.pauseLength = value
+                                    }
+                                }
+                            ))
+                            .padding(.vertical, 8)
+                            .background(Color("DarkGreen-light").opacity(0.6))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(.white.opacity(0.25), lineWidth: 1)
+                            )
+                            .multilineTextAlignment(.center)
+                            
+                            Button(action: {
+                                settingsManager.pauseLength += 1
+                            }) {
+                                Image(systemName: "plus")
+                                    .padding(10)
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                        }
+                        .background(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(.white.opacity(0.25), lineWidth: 1)
+                                .stroke(.white.opacity(0.4), lineWidth: 1)
                         )
-                        .multilineTextAlignment(.center)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.clear)
+                        )
                         
                         Text("сек.")
                     }

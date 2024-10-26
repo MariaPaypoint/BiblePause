@@ -41,5 +41,13 @@ enum PauseBlock: String, CaseIterable, Identifiable, DisplayNameProvider {
             case .fragment: return "отрывка"
         }
     }
+    
+    var shortName: String {
+        switch self {
+            case .verse: return "стих"
+            case .paragraph: return "абзац"
+            case .fragment: return "отр."
+        }
+    }
 }
 

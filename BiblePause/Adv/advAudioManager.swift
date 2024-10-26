@@ -253,7 +253,7 @@ class PlayerModel: ObservableObject {
     private func setCurrentVerseIndex(_ cur: Int) { //
         if cur != self.currentVerseIndex {
             self.currentVerseIndex = cur
-            self.onStartVerse?(audioVerses[cur].id)
+            self.onStartVerse?(cur)
         }
     }
     

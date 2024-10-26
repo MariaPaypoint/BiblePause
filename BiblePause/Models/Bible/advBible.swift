@@ -20,7 +20,7 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
     //let clear_excerpts = "dfdfg, mfodd; 3:3, mf 18, mf 18:kk, mk kk:4, mk 6:4-uu, mk 6:w-4, mk 7:4-5, mk 7:14, , mk 70:14, mk 7:140, mf 5:47-50" // check correct/incorrect values
     
     guard clear_excerpts != "" else {
-        if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "EMPTY EXCERPT")) }
+        if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "EMPTY EXCERPT")) }
         return (resVerses, resSingleChapter)
     }
     
@@ -31,7 +31,7 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
     for excerpt in arrClearExcerpts {
         let arrExcerpt = excerpt.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: " ")
         guard arrExcerpt.count == 2 else {
-            if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT EXCERPT: \(excerpt)")) }
+            if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT EXCERPT: \(excerpt)")) }
             continue
         }
         let book_name = arrExcerpt[0] // for example: mf
@@ -39,34 +39,34 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
         
         let book = (globalBibleText.getCurrentTranslation().books.first(where: {$0.code == book_name}))
         guard book != nil else {
-            if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT BOOK: \(book_name)")) }
+            if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT BOOK: \(book_name)")) }
             continue
         }
         
         let arrChapterAndVerses = chapter_and_verses.components(separatedBy: ":")
         guard arrChapterAndVerses.count == 1 || arrChapterAndVerses.count == 2 else {
-            if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT CHAPTER AND VERSES: \(chapter_and_verses)")) }
+            if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT CHAPTER AND VERSES: \(chapter_and_verses)")) }
             continue
         }
         guard Int(arrChapterAndVerses[0]) != nil else {
-            resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT CHAPTER (NOT INT): \(arrChapterAndVerses[0])"))
+            resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT CHAPTER (NOT INT): \(arrChapterAndVerses[0])"))
             continue
         }
         let chapter_index = Int(arrChapterAndVerses[0])!
         let chapter = book!.chapters.first(where: {element in element.id == chapter_index})
         guard chapter != nil else {
-            if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "NONEXISTENT CHAPTER: \(chapter_index)")) }
+            if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "NONEXISTENT CHAPTER: \(chapter_index)")) }
             continue
         }
         let verses_interval = arrChapterAndVerses.count == 1 ? "1-\(chapter!.verses.count)" : arrChapterAndVerses[1]
         
         let arrVersesInterval = verses_interval.components(separatedBy: "-")
         guard Int(arrVersesInterval[0]) != nil else {
-            if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT INTERVAL (NOT INT): \(arrVersesInterval[0])")) }
+            if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT INTERVAL (NOT INT): \(arrVersesInterval[0])")) }
             continue
         }
         guard arrVersesInterval.count == 1 || (arrVersesInterval.count == 2 && Int(arrVersesInterval[1]) != nil) else {
-            if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT INTERVAL (NOT INT): \(arrVersesInterval[1])")) }
+            if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT INTERVAL (NOT INT): \(arrVersesInterval[1])")) }
             continue
         }
         
@@ -76,12 +76,12 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
         for verse_index in verse_first...verse_last {
             let verse = chapter!.verses.first(where: {element in element.id == verse_index})
             guard verse != nil else {
-                if globalDebug { resVerses.append(BibleTextualVerseFull(id: 0, text: "INCORRECT VERSE: \(verse_index)")) }
+                if globalDebug { resVerses.append(BibleTextualVerseFull(number: 0, text: "INCORRECT VERSE: \(verse_index)")) }
                 break
             }
             let text = verse!.text
             resVerses.append(BibleTextualVerseFull(
-                id: verse_index,
+                number: verse_index,
                 text: text,
                 bookDigitCode: book!.id,
                 chapterDigitCode: chapter!.id,
@@ -125,7 +125,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
             if resFirstUrl == "" { resFirstUrl = part.audio_link }
             for verse in part.verses {
                 resTextVerses.append(BibleTextualVerseFull(
-                    id: verse.number,
+                    number: verse.number,
                     text: verse.text,
                     join: verse.join,
                     bookDigitCode: part.book_number,
@@ -136,7 +136,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     startParagraph: verse.start_paragraph
                 ))
                 resAudioVerses.append(BibleAcousticalVerseFull(
-                    id: verse.number,
+                    number: verse.number,
                     text: verse.text,
                     begin: verse.begin,
                     end: verse.end
@@ -171,7 +171,7 @@ func getExcerptAudioVerses(textVerses: [BibleTextualVerseFull]) -> ([BibleAcoust
     
     for textVerse in textVerses {
         
-        guard textVerse.id != 0 else { continue } // ошибка стиха, но может он один такой
+        guard textVerse.number != 0 else { continue } // ошибка стиха, но может он один такой
         
         if chapterDigitCode == 0 {
             // для первого стиха находим и проверяем книгу/главу
@@ -202,13 +202,13 @@ func getExcerptAudioVerses(textVerses: [BibleTextualVerseFull]) -> ([BibleAcoust
         
         // находим и проверяем стих
         
-        let audioVerse = audioChapter!.verses.first(where: {element in element.id == textVerse.id})
+        let audioVerse = audioChapter!.verses.first(where: {element in element.id == textVerse.number})
         guard audioVerse != nil else {
-            return (resVerses, "Verse (\(textVerse.id)) not found in chapter(\(textVerse.chapterDigitCode)) in book (\(textVerse.bookDigitCode)) in current voice")
+            return (resVerses, "Verse (\(textVerse.number)) not found in chapter(\(textVerse.chapterDigitCode)) in book (\(textVerse.bookDigitCode)) in current voice")
         }
         
         resVerses.append(BibleAcousticalVerseFull(
-            id: textVerse.id,
+            number: textVerse.number,
             text: textVerse.text,
             begin: audioVerse!.begin,
             end: audioVerse!.end))
@@ -225,7 +225,7 @@ func getExcerptBookChapterDigitCode(verses: [BibleTextualVerseFull]) -> (String,
     
     guard !resVerses.isEmpty else { return ("","") }
     
-    guard resVerses[0].id != 0 else { return ("","") }
+    guard resVerses[0].number != 0 else { return ("","") }
     
     return (
         String(format: "%02d", resVerses[0].bookDigitCode),

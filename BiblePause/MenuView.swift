@@ -50,7 +50,7 @@ struct MenuView: View{
 
                 // MARK: Menu Buttons
                 Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (settingsManager.selectedMenuItem == .main)) }
-                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "Евангелие от Иоанна, Глава 1", selected: (settingsManager.selectedMenuItem == .read)) }
+                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
                 Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (settingsManager.selectedMenuItem == .select)) }
                 Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (settingsManager.selectedMenuItem == .setup)) }
                 Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (settingsManager.selectedMenuItem == .contacts)) }

@@ -23,7 +23,7 @@ struct PageReadView: View {
     
     @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
-    @State private var currentVerseId: Int? // = 0
+    @State private var currentVerseNumber: Int? // = 0
     
     @State private var showAudioPanel = true
     
@@ -99,7 +99,7 @@ struct PageReadView: View {
                     }
                     else {
                         HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent),
-                                     scrollToVerse: $currentVerseId)
+                                     scrollToVerse: $currentVerseNumber)
                         .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
                                              startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
                                              endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
@@ -204,7 +204,7 @@ struct PageReadView: View {
             settingsManager.currentBookId = textVerses[0].bookDigitCode
             settingsManager.currentChapterId = textVerses[0].chapterDigitCode
             
-            self.currentVerseId = -1
+            self.currentVerseNumber = -1
         } catch {
             print("Ошибка: \(error)")
             toast = FancyToast(type: .error, title: "Ошибка загрузки данных", message: error.localizedDescription)
@@ -214,7 +214,7 @@ struct PageReadView: View {
     
     // MARK: Обработчики
     func onStartVerse(_ cur: Int) {
-        self.currentVerseId = cur
+        //print(cur)
         
         //guard let proxy = scrollViewProxy else {
         //    return
@@ -223,6 +223,24 @@ struct PageReadView: View {
         //withAnimation {
             //proxy.scrollTo("verse_number_\(cur)", anchor: .top)
         //}
+        
+        if settingsManager.pauseBlock == .paragraph {
+            if settingsManager.pauseType == .time {
+                if textVerses[cur].startParagraph && cur > 0 {
+                    audiopleer.breakForSeconds(settingsManager.pauseLength)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + settingsManager.pauseLength) {
+                        self.currentVerseNumber = textVerses[cur].number
+                    }
+                    return
+                }
+            }
+            else if settingsManager.pauseType == .full {
+                audiopleer.doPlayOrPause()
+                return
+            }
+        }
+        
+        self.currentVerseNumber = textVerses[cur].number
         
     }
     
@@ -236,6 +254,8 @@ struct PageReadView: View {
                 audiopleer.doPlayOrPause()
             }
         }
+        
+        
     }
     
     // MARK: Панель с плеером
@@ -313,7 +333,7 @@ struct PageReadView: View {
                 Text("ПАУЗА:")
                     .foregroundStyle(Color("localAccentColor").opacity(0.5))
                     .font(.caption2)
-                Text("3 сек./стих")
+                Text("\(String(format: "%g", settingsManager.pauseLength)) сек./\(settingsManager.pauseBlock.shortName)")
                     .foregroundStyle(Color("localAccentColor"))
                     .font(.footnote)
             }
