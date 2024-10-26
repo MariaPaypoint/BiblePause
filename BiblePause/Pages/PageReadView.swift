@@ -16,8 +16,6 @@ struct PageReadView: View {
     
     @StateObject var audiopleer = PlayerModel()
     
-    @State private var currentTranslationIndex: Int = globalCurrentTranslationIndex
-    
     @State private var showSelection = false
     @State private var showSetup = false
     
@@ -35,6 +33,10 @@ struct PageReadView: View {
     @State private var toast: FancyToast? = nil
     
     @State var scrollToVerseId: Int?
+    
+    @State var oldExcerpt: String = "" // значение до клика на выбор
+    @State var oldTranslation: Int = 0
+    @State var oldFontIncreasePercent: Double = 0
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -54,6 +56,7 @@ struct PageReadView: View {
                             
                             withAnimation(Animation.easeInOut(duration: 1)) {
                                 //selectedMenuItem = .select
+                                oldExcerpt = settingsManager.currentExcerpt
                                 showSelection = true
                             }
                         } label: {
@@ -73,6 +76,8 @@ struct PageReadView: View {
                         // кнопка настроек
                         Button {
                             withAnimation(Animation.easeInOut(duration: 1)) {
+                                oldTranslation = settingsManager.translation
+                                oldFontIncreasePercent = settingsManager.fontIncreasePercent
                                 showSetup = true
                             }
                         } label: {
@@ -121,7 +126,9 @@ struct PageReadView: View {
             
             .fullScreenCover(isPresented: $showSelection, onDismiss: {
                 Task {
-                    await updateExcerpt(proxy: proxy)
+                    if oldExcerpt != settingsManager.currentExcerpt {
+                        await updateExcerpt(proxy: proxy)
+                    }
                 }
             })
             {
@@ -131,7 +138,9 @@ struct PageReadView: View {
             
             .fullScreenCover(isPresented: $showSetup, onDismiss: {
                 Task {
-                    await updateExcerpt(proxy: proxy)
+                    if oldTranslation != settingsManager.translation || oldFontIncreasePercent != settingsManager.fontIncreasePercent {
+                        await updateExcerpt(proxy: proxy)
+                    }
                 }
             })
             {
