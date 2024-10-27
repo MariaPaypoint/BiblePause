@@ -153,6 +153,7 @@ struct PageReadView: View {
                     await updateExcerpt(proxy: proxy)
                     audiopleer.onEndVerse = onEndVerse
                     audiopleer.onStartVerse = onStartVerse
+                    audiopleer.setSpeed(speed: Float(self.settingsManager.currentSpeed))
                     self.scrollViewProxy = proxy
                 }
                 
@@ -485,6 +486,7 @@ struct PageReadView: View {
             // Speed
             Button {
                 audiopleer.changeSpeed()
+                settingsManager.currentSpeed = Double(audiopleer.currentSpeed)
             } label: {
                 Text(audiopleer.currentSpeed == 1 ? "x1" : String(format: "%.1f", audiopleer.currentSpeed))
                     .font(.system(size: 20))

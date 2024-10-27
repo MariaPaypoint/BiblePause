@@ -26,12 +26,13 @@ class SettingsManager: ObservableObject {
     @AppStorage("voice") var voice: Int = 4 // prozorovsky
     @AppStorage("voiceName") var voiceName: String = "Н. Семёнов-Прозоровский"
     
-    
     @AppStorage("currentExcerpt") var currentExcerpt: String = "mat 1"
     @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "Евангелие от Матфея"
     @AppStorage("currentExcerptSubtitle") var currentExcerptSubtitle: String = "Глава 1"
     @AppStorage("currentBookId") var currentBookId: Int = 0
     @AppStorage("currentChapterId") var currentChapterId: Int = 0
+    
+    @AppStorage("currentSpeed") var currentSpeed: Double = 1.0
     
     let client: any APIProtocol
     

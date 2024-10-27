@@ -114,7 +114,7 @@ class PlayerModel: ObservableObject {
     @Published var periodTo: Double = 0 // 0 означает отсутствие конца отрывка, но оно потом перекроется
     @Published var currentDuration: TimeInterval = 0
     @Published var currentTime: TimeInterval = 0
-    @Published var currentSpeed: Float = 1.0
+    @Published private(set) var currentSpeed: Float = 1.0
     
     private var oldState = PlaybackState.waitingForSelection
     private var audioVerses: [BibleAcousticalVerseFull] = []
@@ -127,16 +127,13 @@ class PlayerModel: ObservableObject {
     private var pauseTimer: Timer?
     
     // MARK: init
-    init(onStartVerse: ((Int) -> Void)? = nil, onEndVerse: (() -> Void)? = nil) {
+    init() {
         
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
         
         self.player = AVPlayer()
         self.durationObserver = PlayerDurationObserver(player: self.player)
         self.timeObserver = PlayerTimeObserver(player: self.player)
-        
-        self.onStartVerse = onStartVerse
-        self.onEndVerse = onEndVerse
         
         // наблюдаем, когда подгрузится песня и определится ее длина
         durationObserver.publisher
@@ -383,5 +380,11 @@ class PlayerModel: ObservableObject {
             //player.setRate(currentSpeed, time: .invalid, atHostTime: .invalid)
         }
     }
+    
+    func setSpeed(speed: Float) {
+        currentSpeed = speed
+        player.defaultRate = speed
+    }
+    
     
 }
