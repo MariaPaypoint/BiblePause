@@ -23,15 +23,17 @@ struct PageSetupView: View {
     @State private var languageKeys: [String]  = []
     @State private var language: String = "" // инициализируется в onAppear
     
+    @State private var translateResponse: [Components.Schemas.TranslationModel] = []
+    
     @State private var isTranslationsLoading: Bool = true
     @State private var translationKeys: [String]  = []
     @State private var translationTexts: [String] = []
     @State private var translationNames: [String] = []
     @State private var translation: String = "" // инициализируется в onAppear
     
-    @State private var translateResponse: [Components.Schemas.TranslationModel] = []
-    @State private var audioTexts: [String] = []
-    @State private var audioKeys: [String]  = []
+    @State private var voiceTexts: [String] = []
+    @State private var voiceKeys: [String]  = []
+    @State private var voiceMusics: [Bool]  = []
     @State private var voice: String = "" // инициализируется в onAppear
     
     
@@ -299,13 +301,14 @@ struct PageSetupView: View {
         .padding(.vertical, -5)
         
         viewGroupHeader(text: "Читает")
-        viewSelectList(texts: audioTexts,
-                       keys: audioKeys,
+        viewSelectList(texts: voiceTexts,
+                       keys: voiceKeys,
                        selectedKey: $voice,
                        onSelect: { selectedTranslateIndex in
-                            settingsManager.voice = Int(audioKeys[selectedTranslateIndex])!
-                            settingsManager.voiceName = audioTexts[selectedTranslateIndex]
-                            self.voice = audioKeys[selectedTranslateIndex]
+                            settingsManager.voice = Int(voiceKeys[selectedTranslateIndex])!
+                            settingsManager.voiceName = voiceTexts[selectedTranslateIndex]
+                            settingsManager.voiceMusic = voiceMusics[selectedTranslateIndex]
+                            self.voice = voiceKeys[selectedTranslateIndex]
                             scrollToBottom(proxy: proxy)
                        }
         )
@@ -432,13 +435,14 @@ struct PageSetupView: View {
     
     func showAudios() {
         
-        self.audioKeys = []
-        self.audioTexts = []
+        self.voiceKeys = []
+        self.voiceTexts = []
         for translation in self.translateResponse {
             if "\(translation.code)" == self.translation {
                 for voice in translation.voices {
-                    self.audioKeys.append("\(voice.code)")
-                    self.audioTexts.append("\(voice.name)")
+                    self.voiceKeys.append("\(voice.code)")
+                    self.voiceTexts.append("\(voice.name)")
+                    self.voiceMusics.append(voice.is_music)
                 }
                 break
             }

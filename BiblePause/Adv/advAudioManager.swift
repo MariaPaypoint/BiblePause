@@ -123,6 +123,7 @@ class PlayerModel: ObservableObject {
     
     var onStartVerse: ((Int) -> Void)? // устанавливается снаружи, поэтому без private
     var onEndVerse: (() -> Void)? // устанавливается снаружи, поэтому без private
+    var smoothPauseLength = 0.3 // устанавливается снаружи, поэтому без private
     
     private var pauseTimer: Timer?
     
@@ -257,7 +258,7 @@ class PlayerModel: ObservableObject {
     // MARK: воспр/пауза
     func doPlayOrPause() {
         if self.state == .playing {
-            pauseSmoothly(duration: 0.3)
+            pauseSmoothly(duration: smoothPauseLength)
         }
         else if state == .buffering {
             // ничего не делать

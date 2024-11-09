@@ -153,6 +153,7 @@ struct PageReadView: View {
                     await updateExcerpt(proxy: proxy)
                     audiopleer.onEndVerse = onEndVerse
                     audiopleer.onStartVerse = onStartVerse
+                    audiopleer.smoothPauseLength = settingsManager.voiceMusic ? 0.3 : 0
                     audiopleer.setSpeed(speed: Float(self.settingsManager.currentSpeed))
                     self.scrollViewProxy = proxy
                 }

@@ -25,6 +25,7 @@ class SettingsManager: ObservableObject {
     @AppStorage("translationName") var translationName: String = "BTI"
     @AppStorage("voice") var voice: Int = 4 // prozorovsky
     @AppStorage("voiceName") var voiceName: String = "Н. Семёнов-Прозоровский"
+    @AppStorage("voiceMusic") var voiceMusic: Bool = false
     
     @AppStorage("currentExcerpt") var currentExcerpt: String = "mat 1"
     @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "Евангелие от Матфея"
