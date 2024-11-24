@@ -85,11 +85,37 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     color: gray;
                     margin-right: 0.3rem;
                 }
-                                    
+                               
+                .quote-container {
+                    padding-left: 1.1rem;
+                    margin-block-start: 0.15rem;
+                    margin-block-end: 0;
+    
+                    display: flex;
+                    flex-direction: column;
+                }
                 .quote {
                     display: block;
-                    padding-left: 1rem;
+                    font-style: italic;
+                    font-size: smaller;
                 }
+                .quote-container .verse-number {
+                    position: absolute;
+                    left: 0.35rem;
+                    margin-top: 0.1rem;
+                    /*margin-left: -1rem;*/
+                }
+                .paragraph {
+                    padding-top: 1rem;
+                    display: block;
+                }
+                .quote-container .paragraph {
+                    margin-left: -1.1rem;
+                }
+                .quote-container .paragraph .quote {
+                    margin-left: 1.1rem;
+                }
+    
                 .jesus {
                     color: \(jesusColor);
                 }
@@ -113,11 +139,12 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     for verse in verses {
         let id_info = verse.join == 0 ? "\(verse.number)" : "\(verse.number)-\(verse.number+verse.join)"
         
+        let quoteContainer = verse.text.contains("class=\"quote\"") ? "quote-container" : ""
         if verse.startParagraph {
             htmlString += "<p>"
         }
         htmlString += """
-            <span id="verse-\(verse.number)"><span class="verse-number">\(id_info).</span>\(verse.text)</span>
+            <span id="verse-\(verse.number)" class="\(quoteContainer)"><span class="verse-number">\(id_info).</span>\(verse.text)</span>
         """
     }
 
