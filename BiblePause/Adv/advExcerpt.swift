@@ -19,7 +19,7 @@ import SwiftUI
             .foregroundColor(.white.opacity(0.5))
             //.id("verse_number_\(verse.id)")
         +
-        Text(verse.text) // Текст стиха
+        Text(verse.html) // Текст стиха
             .foregroundColor(selectedId == verse.number ? Color("DarkGreen-accent") : .white)
             .font(.system(size: 10 * (1 + fontIncreasePercent / 100)))
         +
@@ -96,14 +96,13 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 }
                 .quote {
                     display: block;
+                    font-family: serif;
                     font-style: italic;
-                    font-size: smaller;
                 }
                 .quote-container .verse-number {
                     position: absolute;
                     left: 0.35rem;
                     margin-top: 0.1rem;
-                    /*margin-left: -1rem;*/
                 }
                 .paragraph {
                     padding-top: 1rem;
@@ -131,20 +130,56 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 .highlighted-verse .jesus {
                     color: \(jesusSelectedColor);
                 }
+                                
+                .note-icon {
+                    width: 24px;
+                    height: 24px;
+                    background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkiIGhlaWdodD0iMTkiIHZpZXdCb3g9IjAgMCAxOSAxOSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEzLjUgMUg1QzMuOTM5MTMgMSAyLjkyMTcyIDEuNDIxNDMgMi4xNzE1NyAyLjE3MTU3QzEuNDIxNDMgMi45MjE3MiAxIDMuOTM5MTMgMSA1VjEzLjVDMSAxNC41NjA5IDEuNDIxNDMgMTUuNTc4MyAyLjE3MTU3IDE2LjMyODRDMi45MjE3MiAxNy4wNzg2IDMuOTM5MTMgMTcuNSA1IDE3LjVIMTEuODQzQzEyLjM2ODQgMTcuNSAxMi44ODg3IDE3LjM5NjUgMTMuMzc0MSAxNy4xOTU0QzEzLjg1OTUgMTYuOTk0MyAxNC4zMDA1IDE2LjY5OTYgMTQuNjcyIDE2LjMyOEwxNi4zMjggMTQuNjcyQzE2LjY5OTYgMTQuMzAwNSAxNi45OTQzIDEzLjg1OTUgMTcuMTk1NCAxMy4zNzQxQzE3LjM5NjUgMTIuODg4NyAxNy41IDEyLjM2ODQgMTcuNSAxMS44NDNWNUMxNy41IDMuOTM5MTMgMTcuMDc4NiAyLjkyMTcyIDE2LjMyODQgMi4xNzE1N0MxNS41NzgzIDEuNDIxNDMgMTQuNTYwOSAxIDEzLjUgMVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTE3LjUgMTFIMTRDMTMuMjA0NCAxMSAxMi40NDEzIDExLjMxNjEgMTEuODc4NyAxMS44Nzg3QzExLjMxNjEgMTIuNDQxMyAxMSAxMy4yMDQ0IDExIDE0VjE3LjVNNSA1SDEyLjVNNSA5SDEwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==");
+                    background-repeat: no-repeat;
+                    background-size: contain;
+                    background-position: center;
+                    display: inline-block;
+                    opacity: 0.5;
+                }
+                .note-text {
+                    background-color: rgba(255,255,0,0.2);
+                    display: block;
+                    padding: 0 0.3rem;
+                    margin: 0.2rem 0;
+                    border-radius: 0.3rem;
+                }
+                .off {
+                    display: none!important;
+                }
+    
             </style>
         </head>
         <body>
     """
 
     for verse in verses {
+        // вставка примечаний
+        var verseHTML = verse.html
+        var prevNotesOffset = 0
+        for note in verse.notes {
+            let noteHTML = """
+                <span class="note"> 
+                    <span class="note-icon" onClick="document.getElementById('note\(note.id)').classList.toggle('off');"></span>
+                    <span class="note-text off" id="note\(note.id)">\(note.text)</span>
+                </span>
+            """
+            verseHTML = insertSubstring(original: verseHTML, substring: noteHTML, at: prevNotesOffset+note.positionHtml)
+            prevNotesOffset += noteHTML.count
+        }
+        // абзацы
         let id_info = verse.join == 0 ? "\(verse.number)" : "\(verse.number)-\(verse.number+verse.join)"
         
-        let quoteContainer = verse.text.contains("class=\"quote\"") ? "quote-container" : ""
+        let quoteContainer = verse.html.contains("class=\"quote\"") ? "quote-container" : ""
         if verse.startParagraph {
             htmlString += "<p>"
         }
         htmlString += """
-            <span id="verse-\(verse.number)" class="\(quoteContainer)"><span class="verse-number">\(id_info).</span>\(verse.text)</span>
+            <span id="verse-\(verse.number)" class="\(quoteContainer)"><span class="verse-number">\(id_info).</span>\(verseHTML)</span>
         """
     }
 
@@ -154,4 +189,15 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     """
     
     return htmlString
+}
+
+func insertSubstring(original: String, substring: String, at position: Int) -> String {
+    guard position >= 0 && position <= original.count else {
+        print("Некорректная позиция.")
+        return original
+    }
+    
+    let index = original.index(original.startIndex, offsetBy: position)
+    let newString = original.prefix(upTo: index) + substring + String(original.suffix(from: index))
+    return String(newString)
 }

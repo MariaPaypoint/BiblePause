@@ -39,7 +39,9 @@ class SettingsManager: ObservableObject {
     
     init() {
         //let url = "http://helper-vm-maria:8000"
-        let url = "http://192.168.130.169:8000"
+        //let url = "http://192.168.130.169"
+        let url = "http://82.202.219.181"
+        
         self.client = Client(serverURL: URL(string: url)!, transport: URLSessionTransport())
     }
 }
