@@ -140,6 +140,11 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                         verseFull.notes.append(BibleNote(id: note.code, text: note.text, positionHtml: note.position_html))
                     }
                 }
+                for title in part.titles {
+                    if title.before_verse_code == verse.code {
+                        verseFull.beforeTitle = BibleTitle(id: title.code, text: title.text)
+                    }
+                }
                 resTextVerses.append(verseFull)
                 
                 resAudioVerses.append(BibleAcousticalVerseFull(

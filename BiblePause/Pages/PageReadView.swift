@@ -169,23 +169,6 @@ struct PageReadView: View {
         do {
             self.isTextLoading = true
             
-            //let (thistextVerses, isSingleChapter) = getExcerptTextualVerses(excerpts: settingsManager.currentExcerpt)
-            // textVerses = thistextVerses
-            //let (audioVerses, err) = getExcerptAudioVerses(textVerses: textVerses)
-            ///self.audioVerses = audioVerses
-            //self.errorDescription = err
-            //let voice = globalBibleAudio.getCurrentVoice()
-            //let (book, chapter) = getExcerptBookChapterDigitCode(verses: textVerses)
-            //let address = "https://500:3490205720348012725@assets.christedu.ru/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
-            //let address = "http://500:3490205720348012725@192.168.130.169:8055/data/translations/ru/\(voice.translation)/audio/\(voice.code)/\(book)/\(chapter).mp3"
-            //let address = "https://4bbl.ru/data/\(voice.translation)-\(voice.code)/\(book)/\(chapter).mp3"
-            
-            //guard let url = URL(string: address) else {
-            //    self.errorDescription = "URL not found: \(address)"
-            //    return
-            //}
-            //let url = try URL(string: address)
-            
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
             textVerses = thisTextVerses
             //print(isSingleChapter)

@@ -132,8 +132,8 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 }
                                 
                 .note-icon {
-                    width: 24px;
-                    height: 24px;
+                    width: 20px;
+                    height: 20px;
                     background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkiIGhlaWdodD0iMTkiIHZpZXdCb3g9IjAgMCAxOSAxOSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEzLjUgMUg1QzMuOTM5MTMgMSAyLjkyMTcyIDEuNDIxNDMgMi4xNzE1NyAyLjE3MTU3QzEuNDIxNDMgMi45MjE3MiAxIDMuOTM5MTMgMSA1VjEzLjVDMSAxNC41NjA5IDEuNDIxNDMgMTUuNTc4MyAyLjE3MTU3IDE2LjMyODRDMi45MjE3MiAxNy4wNzg2IDMuOTM5MTMgMTcuNSA1IDE3LjVIMTEuODQzQzEyLjM2ODQgMTcuNSAxMi44ODg3IDE3LjM5NjUgMTMuMzc0MSAxNy4xOTU0QzEzLjg1OTUgMTYuOTk0MyAxNC4zMDA1IDE2LjY5OTYgMTQuNjcyIDE2LjMyOEwxNi4zMjggMTQuNjcyQzE2LjY5OTYgMTQuMzAwNSAxNi45OTQzIDEzLjg1OTUgMTcuMTk1NCAxMy4zNzQxQzE3LjM5NjUgMTIuODg4NyAxNy41IDEyLjM2ODQgMTcuNSAxMS44NDNWNUMxNy41IDMuOTM5MTMgMTcuMDc4NiAyLjkyMTcyIDE2LjMyODQgMi4xNzE1N0MxNS41NzgzIDEuNDIxNDMgMTQuNTYwOSAxIDEzLjUgMVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTE3LjUgMTFIMTRDMTMuMjA0NCAxMSAxMi40NDEzIDExLjMxNjEgMTEuODc4NyAxMS44Nzg3QzExLjMxNjEgMTIuNDQxMyAxMSAxMy4yMDQ0IDExIDE0VjE3LjVNNSA1SDEyLjVNNSA5SDEwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==");
                     background-repeat: no-repeat;
                     background-size: contain;
@@ -152,12 +152,23 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     display: none!important;
                 }
     
+                .title {
+                    font-size: x-large;
+                    font-weight: bold;
+                }
+    
             </style>
         </head>
         <body>
     """
 
     for verse in verses {
+        // заголовок
+        if (verse.beforeTitle != nil) {
+            htmlString += """
+                <p id="title-\(verse.beforeTitle!.id)" class="title">\(verse.beforeTitle!.text)</p>
+            """
+        }
         // вставка примечаний
         var verseHTML = verse.html
         var prevNotesOffset = 0

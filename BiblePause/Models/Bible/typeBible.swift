@@ -79,6 +79,13 @@ struct BibleTextualVerseFull: Hashable {
     
     var notes: [BibleNote] = []
     
+    var beforeTitle: BibleTitle?
+    
+}
+
+struct BibleTitle: Hashable, Codable {
+    let id: Int
+    let text: String
 }
 
 struct BibleNote: Hashable, Codable {
