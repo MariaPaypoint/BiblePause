@@ -100,7 +100,7 @@ func getExcerptTextualVerses(excerpts: String) -> ([BibleTextualVerseFull], Bool
 }
 
 
-func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, translation: Int, voice: Int) async throws -> ([BibleTextualVerseFull], [BibleAcousticalVerseFull], String, Bool) {
+func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, translation: Int, voice: Int) async throws -> ([BibleTextualVerseFull], [BibleAcousticalVerseFull], String, Bool, Components.Schemas.PartsWithAlignmentModel?) {
     do {
         let response = try await client.get_excerpt_with_alignment(query: .init(translation: translation, excerpt: excerpts, voice: voice))
         
@@ -115,6 +115,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
         var resTextVerses: [BibleTextualVerseFull] = []
         var resAudioVerses: [BibleAcousticalVerseFull] = []
         var resFirstUrl: String = ""
+        var resPart: Components.Schemas.PartsWithAlignmentModel?
         let resSingleChapter = answer.is_single_chapter
         
         //var oldBook: Int = 0
@@ -123,6 +124,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
         
         for part in parts {
             if resFirstUrl == "" { resFirstUrl = part.audio_link }
+            resPart = part
             for verse in part.verses {
                 var verseFull = BibleTextualVerseFull(
                     number: verse.number,
@@ -159,7 +161,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
             }
         }
         
-        return (resTextVerses, resAudioVerses, resFirstUrl, resSingleChapter)
+        return (resTextVerses, resAudioVerses, resFirstUrl, resSingleChapter, resPart)
     } catch {
         
         throw error

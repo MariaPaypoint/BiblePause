@@ -24,6 +24,8 @@ struct PageReadView: View {
     @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
     @State private var currentVerseNumber: Int? // = 0
+    @State private var prevExcerpt: String = ""
+    @State private var nextExcerpt: String = ""
     
     @State private var showAudioPanel = true
     
@@ -37,6 +39,9 @@ struct PageReadView: View {
     @State var oldExcerpt: String = "" // значение до клика на выбор
     @State var oldTranslation: Int = 0
     @State var oldFontIncreasePercent: Double = 0
+    
+    //@State var currentExcerptTitle: String = ""
+    //@State var currentExcerptSubtitle: String = ""
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -108,7 +113,7 @@ struct PageReadView: View {
                     }
                     
                     // MARK: Аудио-панель
-                    viewAudioPanel()
+                    viewAudioPanel(proxy: proxy)
                     
                 }
                 
@@ -151,6 +156,9 @@ struct PageReadView: View {
             .edgesIgnoringSafeArea(.bottom)
             
             .onAppear {
+                //settingsManager.currentExcerptTitle = settingsManager.currentExcerptTitle
+                //settingsManager.currentExcerptSubtitle = settingsManager.currentExcerptSubtitle
+                
                 Task {
                     await updateExcerpt(proxy: proxy)
                     audiopleer.onEndVerse = onEndVerse
@@ -170,7 +178,7 @@ struct PageReadView: View {
         do {
             self.isTextLoading = true
             
-            let (thisTextVerses, audioVerses, firstUrl, isSingleChapter) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
+            let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
             textVerses = thisTextVerses
             //print(isSingleChapter)
             let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
@@ -191,6 +199,14 @@ struct PageReadView: View {
             settingsManager.currentChapterId = textVerses[0].chapterDigitCode
             
             self.currentVerseNumber = -1
+            if (part != nil) {
+                self.prevExcerpt = part!.prev_excerpt
+                self.nextExcerpt = part!.next_excerpt
+                settingsManager.currentExcerptTitle = part!.book.name
+                settingsManager.currentExcerptSubtitle = "Глава \(part!.chapter_number)"
+                settingsManager.currentBookId = part!.book.number
+                settingsManager.currentChapterId = part!.chapter_number
+            }
         } catch {
             print("Ошибка: \(error)")
             toast = FancyToast(type: .error, title: "Ошибка загрузки данных", message: error.localizedDescription)
@@ -243,7 +259,7 @@ struct PageReadView: View {
     }
     
     // MARK: Панель с плеером
-    @ViewBuilder private func viewAudioPanel() -> some View {
+    @ViewBuilder private func viewAudioPanel(proxy: ScrollViewProxy) -> some View {
         
         VStack(spacing: 0) {
             viewAudioHide()
@@ -251,7 +267,7 @@ struct PageReadView: View {
             VStack {
                 viewAudioInfo()
                 viewAudioTimeline()
-                viewAudioButtons()
+                viewAudioButtons(proxy: proxy)
             }
             .frame(height: showAudioPanel ? nil : 0)
             .opacity(showAudioPanel ? 1 : 0)
@@ -405,17 +421,23 @@ struct PageReadView: View {
     }
     
     // MARK: Панель - AudioButtons
-    @ViewBuilder fileprivate func viewAudioButtons() -> some View {
+    @ViewBuilder fileprivate func viewAudioButtons(proxy: ScrollViewProxy) -> some View {
         
         let buttonsColor = audiopleer.state == .buffering ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+        let prevColor =  prevExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+        let nextColor =  nextExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         
         HStack {
             
             // Previous chapter
             Button {
-                
+                Task {
+                    settingsManager.currentExcerpt = prevExcerpt
+                    await updateExcerpt(proxy: proxy)
+                }
             } label: {
                 Image(systemName: "arrow.left")
+                    .foregroundColor(prevColor)
             }
             Spacer()
             
@@ -479,9 +501,13 @@ struct PageReadView: View {
             
             // Next chapter
             Button {
-                
+                Task {
+                    settingsManager.currentExcerpt = nextExcerpt
+                    await updateExcerpt(proxy: proxy)
+                }
             } label: {
                 Image(systemName: "arrow.right")
+                    .foregroundColor(nextColor)
             }
             
         }
