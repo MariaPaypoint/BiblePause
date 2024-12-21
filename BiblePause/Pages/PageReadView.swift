@@ -415,7 +415,7 @@ struct PageReadView: View {
             Button {
                 
             } label: {
-                Image(systemName: "backward.frame.fill")
+                Image(systemName: "arrow.left")
             }
             Spacer()
             
@@ -432,7 +432,7 @@ struct PageReadView: View {
             Button {
                 audiopleer.previousVerse()
             } label: {
-                Image(systemName: "arrowshape.turn.up.left.fill")
+                Image(systemName: "arrow.turn.left.up")
                     .foregroundColor(buttonsColor)
             }
             Spacer()
@@ -461,7 +461,7 @@ struct PageReadView: View {
             Button {
                 audiopleer.nextVerse()
             } label: {
-                Image(systemName: "arrowshape.turn.up.right.fill")
+                Image(systemName: "arrow.turn.right.down")
                     .foregroundColor(buttonsColor)
             }
             Spacer()
@@ -481,7 +481,7 @@ struct PageReadView: View {
             Button {
                 
             } label: {
-                Image(systemName: "forward.frame.fill")
+                Image(systemName: "arrow.right")
             }
             
         }

@@ -128,7 +128,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     number: verse.number,
                     html: verse.html,
                     join: verse.join,
-                    bookDigitCode: part.book_number,
+                    bookDigitCode: part.book.number,
                     chapterDigitCode: part.chapter_number,
                     //changedBook: !(oldBook == part.book_number || oldBook == 0),
                     //changedChapter: !(oldChapter == part.chapter_number || oldChapter == 0),
