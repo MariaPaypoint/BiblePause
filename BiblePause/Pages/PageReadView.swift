@@ -148,6 +148,8 @@ struct PageReadView: View {
                     .environmentObject(settingsManager)
             }
             
+            .edgesIgnoringSafeArea(.bottom)
+            
             .onAppear {
                 Task {
                     await updateExcerpt(proxy: proxy)
@@ -160,7 +162,6 @@ struct PageReadView: View {
                 
                 scrollToVerseId = nil
             }
-            .edgesIgnoringSafeArea(.bottom)
         }
     }
     
@@ -239,8 +240,6 @@ struct PageReadView: View {
                 audiopleer.doPlayOrPause()
             }
         }
-        
-        
     }
     
     // MARK: Панель с плеером

@@ -23,19 +23,21 @@ struct PageSetupView: View {
     @State private var languageKeys: [String]  = []
     @State private var language: String = "" // инициализируется в onAppear
     
-    @State private var translateResponse: [Components.Schemas.TranslationModel] = []
+    @State private var translationsResponse: [Components.Schemas.TranslationModel] = []
     
     @State private var isTranslationsLoading: Bool = true
     @State private var translationKeys: [String]  = []
     @State private var translationTexts: [String] = []
     @State private var translationNames: [String] = []
     @State private var translation: String = "" // инициализируется в onAppear
+    @State private var translationName: String = ""
     
     @State private var voiceTexts: [String] = []
     @State private var voiceKeys: [String]  = []
     @State private var voiceMusics: [Bool]  = []
     @State private var voice: String = "" // инициализируется в onAppear
-    
+    @State private var voiceName: String = ""
+    @State private var voiceMusic: Bool = false
     
     init(showFromRead: Binding<Bool>) {
         self._showFromRead = showFromRead
@@ -274,7 +276,6 @@ struct PageSetupView: View {
                            keys: languageKeys,
                            selectedKey: $language,
                            onSelect: { selectedLanguageIndex in
-                                settingsManager.language = languageKeys[selectedLanguageIndex]
                                 self.language = languageKeys[selectedLanguageIndex]
                                 self.translation = ""
                                 self.voice = ""
@@ -290,9 +291,8 @@ struct PageSetupView: View {
                        keys: translationKeys,
                        selectedKey: $translation,
                        onSelect: { selectedTranslateIndex in
-                            settingsManager.translation = Int(translationKeys[selectedTranslateIndex])!
-                            settingsManager.translationName = translationNames[selectedTranslateIndex]
                             self.translation = translationKeys[selectedTranslateIndex]
+                            self.translationName = translationNames[selectedTranslateIndex]
                             self.voice = ""
                             showAudios()
                             scrollToBottom(proxy: proxy)
@@ -305,10 +305,9 @@ struct PageSetupView: View {
                        keys: voiceKeys,
                        selectedKey: $voice,
                        onSelect: { selectedTranslateIndex in
-                            settingsManager.voice = Int(voiceKeys[selectedTranslateIndex])!
-                            settingsManager.voiceName = voiceTexts[selectedTranslateIndex]
-                            settingsManager.voiceMusic = voiceMusics[selectedTranslateIndex]
                             self.voice = voiceKeys[selectedTranslateIndex]
+                            self.voiceName = voiceTexts[selectedTranslateIndex]
+                            self.voiceMusic = voiceMusics[selectedTranslateIndex]
                             scrollToBottom(proxy: proxy)
                        }
         )
@@ -322,9 +321,18 @@ struct PageSetupView: View {
             
             Button {
                 if saveEnabled {
+                    //settingsManager.language = self.language
+                    //settingsManager.translation = Int(self.translation) ?? 0
+                    //settingsManager.voice = Int(self.voice) ?? 0
                     settingsManager.language = self.language
-                    settingsManager.translation = Int(self.translation) ?? 0
-                    settingsManager.voice = Int(self.voice) ?? 0
+                    settingsManager.translation = Int(self.translation)!
+                    settingsManager.translationName = self.translationName
+                    settingsManager.voice = Int(self.voice)!
+                    settingsManager.voiceName = self.voiceName
+                    settingsManager.voiceMusic = self.voiceMusic
+                    
+                    // загрузить инфу о переводе
+                    //fetchTranslationInfo()
                     
                     toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
                 }
@@ -415,11 +423,11 @@ struct PageSetupView: View {
                 self.isTranslationsLoading = true
                 
                 let response = try await settingsManager.client.get_translations(query: .init(language: self.language))
-                self.translateResponse = try response.ok.body.json
+                self.translationsResponse = try response.ok.body.json
                 
                 self.translationKeys = []
                 self.translationTexts = []
-                for translation in self.translateResponse {
+                for translation in self.translationsResponse {
                     self.translationKeys.append("\(translation.code)")
                     self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
                     self.translationNames.append(translation.name)
@@ -433,11 +441,31 @@ struct PageSetupView: View {
         }
     }
     
+    /*
+    func fetchTranslationInfo() {
+        Task {
+            do {
+                //self.isTranslationsLoading = true
+                
+                let response = try await settingsManager.client.get_translation_info(query: .init(translation: Int(self.translation)!))
+                let translationInfoResponse = try response.ok.body.json
+                
+                settingsManager.translationInfo = translationInfoResponse
+                
+                //self.isTranslationsLoading = false
+            } catch {
+                //self.isTranslationsLoading = false
+                toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+            }
+        }
+    }
+    */
+    
     func showAudios() {
         
         self.voiceKeys = []
         self.voiceTexts = []
-        for translation in self.translateResponse {
+        for translation in self.translationsResponse {
             if "\(translation.code)" == self.translation {
                 for voice in translation.voices {
                     self.voiceKeys.append("\(voice.code)")

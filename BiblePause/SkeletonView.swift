@@ -35,6 +35,8 @@ class SettingsManager: ObservableObject {
     
     @AppStorage("currentSpeed") var currentSpeed: Double = 1.0
     
+    //var translationInfo: Components.Schemas.TranslationInfoModel?
+    
     let client: any APIProtocol
     
     init() {
@@ -43,6 +45,19 @@ class SettingsManager: ObservableObject {
         let url = "http://82.202.219.181"
         
         self.client = Client(serverURL: URL(string: url)!, transport: URLSessionTransport())
+        
+        // загрузка информации о переводе
+        /*
+        Task {
+            do {
+                let response = try await client.get_translation_info(query: .init(translation: Int(exactly: translation)!))
+                let translationInfoResponse = try response.ok.body.json
+                self.translationInfo = translationInfoResponse
+            } catch {
+                // ничего не делать
+            }
+        }
+        */
     }
 }
 
