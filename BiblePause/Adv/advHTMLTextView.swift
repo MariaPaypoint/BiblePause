@@ -18,7 +18,7 @@ struct HTMLTextView: UIViewRepresentable {
         }
     
         // Прокручиваем к текущему стиху
-        var target = document.getElementById('verse-{verse}');
+        var target = document.getElementById('{elementId}');
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
     
@@ -57,9 +57,13 @@ struct HTMLTextView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         // If scrollToVerse changes and webView is loaded, execute JavaScript
         if let verse = scrollToVerse, context.coordinator.webViewLoaded {
-
-            webView.evaluateJavaScript(jsTemplate.replacingOccurrences(of: "{verse}", with: "\(verse)"), completionHandler: nil)
-
+            print("updateUIView \(verse)")
+            if verse <= 0 {
+                webView.evaluateJavaScript(jsTemplate.replacingOccurrences(of: "{elementId}", with: "top"), completionHandler: nil)
+            }
+            else {
+                webView.evaluateJavaScript(jsTemplate.replacingOccurrences(of: "{elementId}", with: "verse-\(verse)"), completionHandler: nil)
+            }
             // Reset scrollToVerse to nil to prevent repeated scrolling
             DispatchQueue.main.async {
                 scrollToVerse = nil

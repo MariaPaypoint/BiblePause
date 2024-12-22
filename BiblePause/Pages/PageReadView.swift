@@ -43,6 +43,8 @@ struct PageReadView: View {
     //@State var currentExcerptTitle: String = ""
     //@State var currentExcerptSubtitle: String = ""
     
+    @State var skipOnePause: Bool = false
+    
     var body: some View {
         ScrollViewReader { proxy in
             ZStack {
@@ -267,21 +269,24 @@ struct PageReadView: View {
         }
     }
     
-    // MARK: Обработчики
+    // MARK: Обработчики изменения стиха
     func onStartVerse(_ cur: Int) {
-        //print(cur)
-        
-        //guard let proxy = scrollViewProxy else {
-        //    return
-        //}
-        // прокрутка до текущего стиха
-        //withAnimation {
-            //proxy.scrollTo("verse_number_\(cur)", anchor: .top)
-        //}
-        
-        if settingsManager.pauseBlock == .paragraph {
+        print("onStartVerse \(cur) - \(cur >= 0 ? textVerses[cur].html : "")")
+        if skipOnePause {
+            print("1")
+            skipOnePause = false
+        }
+        else if cur < 0 {
+            print("2")
+            self.currentVerseNumber = 0
+            return
+        }
+        else if cur > 0 && (settingsManager.pauseBlock == .paragraph || settingsManager.pauseBlock == .fragment) {
+            print("3")
             if settingsManager.pauseType == .time {
-                if textVerses[cur].startParagraph && cur > 0 {
+                if (settingsManager.pauseBlock == .paragraph && textVerses[cur].startParagraph) ||
+                   (settingsManager.pauseBlock == .fragment  && textVerses[cur].beforeTitle != nil)
+                {
                     audiopleer.breakForSeconds(settingsManager.pauseLength)
                     DispatchQueue.main.asyncAfter(deadline: .now() + settingsManager.pauseLength) {
                         self.currentVerseNumber = textVerses[cur].number
@@ -294,12 +299,17 @@ struct PageReadView: View {
                 return
             }
         }
-        
         self.currentVerseNumber = textVerses[cur].number
-        
     }
     
     func onEndVerse() {
+        //print("onEndVerse")
+        
+        if skipOnePause {
+            skipOnePause = false
+            return
+        }
+        
         // если нужна пауза - сделать ее (это событие не вызывается после последнего стиха и полной остановки)
         if settingsManager.pauseBlock == .verse {
             if settingsManager.pauseType == .time {
@@ -414,7 +424,7 @@ struct PageReadView: View {
     // MARK: Панель - Timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
         VStack(spacing: 0) {
-            // Text("\(audiopleer.state)")
+            Text("\(audiopleer.state)")
             ZStack {
                 Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
                     .accentColor(Color("localAccentColor"))
@@ -521,6 +531,7 @@ struct PageReadView: View {
             
             // Previos verse
             Button {
+                self.skipOnePause = true
                 audiopleer.previousVerse()
             } label: {
                 Image(systemName: "arrow.turn.left.up")
@@ -550,6 +561,7 @@ struct PageReadView: View {
             
             // Next verse
             Button {
+                self.skipOnePause = true
                 audiopleer.nextVerse()
             } label: {
                 Image(systemName: "arrow.turn.right.down")

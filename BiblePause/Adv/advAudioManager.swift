@@ -175,7 +175,7 @@ class PlayerModel: ObservableObject {
         ) { [weak self] notification in
             guard let self = self else { return }
             // Здесь меняем state и делаем что нужно, когда трек доиграл
-            print("Reached the absolute end of the file.")
+            //print("Reached the absolute end of the file.")
             self.state = .finished
         }
     }
@@ -237,14 +237,14 @@ class PlayerModel: ObservableObject {
         
         // наблюдаем за началом стиха, чтобы позиционировать
         boundaryObserverBegin = player.addBoundaryTimeObserver(forTimes: timesBegin, queue: .main) {
-            print("Reached verse BEGIN")
+            //print("Reached verse BEGIN")
             self.currentTime = CMTimeGetSeconds(self.player.currentTime())
             self.findAndSetCurrentVerseIndex()
         }
         
         // наблюдаем за концом стиха, чтобы делать паузы
         boundaryObserverEnd = player.addBoundaryTimeObserver(forTimes: timesEnd, queue: .main) {
-            print("Reached verse END")
+            //print("Reached verse END")
             // остановка при достижении конца отрывка
             if self.stopAtEnd && self.currentVerseIndex == self.audioVerses.count - 1 {
                 self.pauseSimple()
@@ -259,8 +259,12 @@ class PlayerModel: ObservableObject {
     private func findAndSetCurrentVerseIndex() {
         for (index, verse) in audioVerses.enumerated() {
             // +0.1, т.к. позиционирование не точное, может сработать чуть раньше
-            if currentTime + 0.1 >= verse.begin && currentTime < verse.end {
-                if index != currentVerseIndex { print("cur changed from", currentVerseIndex, "to", index) }
+            if currentTime + 0.1 >= verse.begin && currentTime + 0.1 <= verse.end {
+                //print("index \(index), currentVerseIndex \(currentVerseIndex), currentTime + 0.1 \(currentTime + 0.1), begin \(verse.begin), end \(verse.end)")
+                if index != currentVerseIndex {
+                    //print("cur changed from", currentVerseIndex, "to", index)
+                }
+                
                 setCurrentVerseIndex(index)
                 break
             }
@@ -268,7 +272,8 @@ class PlayerModel: ObservableObject {
     }
     
     private func setCurrentVerseIndex(_ cur: Int) { //
-        if cur != self.currentVerseIndex {
+        //print("setCurrentVerseIndex \(cur)")
+        if cur != self.currentVerseIndex { //  && cur != -1
             self.currentVerseIndex = cur
             self.onStartVerse?(cur)
         }
@@ -366,6 +371,7 @@ class PlayerModel: ObservableObject {
     func restart() {
         if state == .playing || state == .pausing || state == .finished {
             stopAtEnd = true
+            setCurrentVerseIndex(-1)
             player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
         }
     }

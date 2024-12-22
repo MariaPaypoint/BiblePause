@@ -166,6 +166,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
         // заголовок
         if (verse.beforeTitle != nil) {
             htmlString += """
+                <div id="top"></div>
                 <p id="title-\(verse.beforeTitle!.id)" class="title">\(verse.beforeTitle!.text)</p>
             """
         }
