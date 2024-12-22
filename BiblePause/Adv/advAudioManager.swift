@@ -100,6 +100,7 @@ class PlayerModel: ObservableObject {
         case playing
         case pausing
         case autopausing
+        case finished
     }
     
     private let player: AVPlayer
@@ -107,6 +108,7 @@ class PlayerModel: ObservableObject {
     private var timeObserver: PlayerTimeObserver
     private var boundaryObserverBegin: Any?
     private var boundaryObserverEnd: Any?
+    private var endPlayingObserver: Any?
     private var cancellables = Set<AnyCancellable>()
     
     @Published var state = PlaybackState.waitingForSelection
@@ -165,6 +167,23 @@ class PlayerModel: ObservableObject {
             }
             .store(in: &cancellables)
         
+        // Пример подписки на окончание трека
+        endPlayingObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self else { return }
+            // Здесь меняем state и делаем что нужно, когда трек доиграл
+            print("Reached the absolute end of the file.")
+            self.state = .finished
+        }
+    }
+    deinit {
+        // Важно не забыть убрать подписку
+        if let endPlayingObserver = endPlayingObserver {
+            NotificationCenter.default.removeObserver(endPlayingObserver)
+        }
     }
     
     // MARK: установка параметров новой композиции
@@ -263,6 +282,10 @@ class PlayerModel: ObservableObject {
         else if state == .buffering {
             // ничего не делать
         }
+        else if state == .finished {
+            self.restart()
+            self.playSimple()
+        }
         else {
             // если воспроизведение запущено после конца отрывка, то уже не стопаться
             if self.currentTime >= self.periodTo {
@@ -341,7 +364,7 @@ class PlayerModel: ObservableObject {
     }
     
     func restart() {
-        if state == .playing || state == .pausing {
+        if state == .playing || state == .pausing || state == .finished {
             stopAtEnd = true
             player.seek(to: CMTimeMake(value: Int64(periodFrom*100), timescale: 100))
         }

@@ -19,7 +19,7 @@ struct PageReadView: View {
     @State private var showSelection = false
     @State private var showSetup = false
     
-    //@State private var errorDescription: String = ""
+    @State private var errorDescription: String = ""
     
     @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
@@ -95,23 +95,27 @@ struct PageReadView: View {
                     .padding(.bottom, 5)
                     
                     // MARK: Текст
-                    
-                    if isTextLoading {
+                    if self.errorDescription != "" {
                         Spacer()
-                        Text("Текст загружается...")
-                            .foregroundColor(.white)
+                        Text(self.errorDescription)
+                            .foregroundColor(.pink)
+                            .padding(globalBasePadding)
+                        Spacer()
+                    }
+                    else if isTextLoading {
+                        
                         Spacer()
                     }
                     else {
-                        HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent),
-                                     scrollToVerse: $currentVerseNumber)
-                        .mask(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                                             startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
-                                             endPoint: .init(x: 0.5, y: 1.0)) // Конец градиента в самом низу
+                        HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: $currentVerseNumber)
+                            .mask(LinearGradient(
+                                gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                                startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
+                                endPoint: .init(x: 0.5, y: 1.0)  // Конец градиента в самом низу
+                            )
                         )
                         .padding(12)
                     }
-                    
                     // MARK: Аудио-панель
                     viewAudioPanel(proxy: proxy)
                     
@@ -126,6 +130,46 @@ struct PageReadView: View {
                 MenuView()
                     .environmentObject(settingsManager)
                     .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
+                
+                if !showAudioPanel {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Button {
+                                if prevExcerpt != "" {
+                                    Task {
+                                        settingsManager.currentExcerpt = prevExcerpt
+                                        await updateExcerpt(proxy: proxy)
+                                    }
+                                }
+                            }
+                            label: {
+                                let prevColor =  prevExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+                                Image(systemName: "chevron.backward.2")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(prevColor)
+                                    .padding(10)
+                            }
+                            Spacer()
+                            Button {
+                                if nextExcerpt != "" {
+                                    Task {
+                                        settingsManager.currentExcerpt = nextExcerpt
+                                        await updateExcerpt(proxy: proxy)
+                                    }
+                                }
+                            }
+                            label: {
+                                let nextColor =  nextExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+                                Image(systemName: "chevron.forward.2")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(nextColor)
+                                    .padding(10)
+                            }
+                        }
+                        .padding(10)
+                    }
+                }
             }
             .toastView(toast: $toast)
             
@@ -176,9 +220,13 @@ struct PageReadView: View {
     // MARK: После выбора
     func updateExcerpt(proxy: ScrollViewProxy) async {
         do {
-            self.isTextLoading = true
+            //withAnimation(.easeOut(duration: 0.1)) {
+                self.isTextLoading = true
+                self.errorDescription = ""
+            //}
             
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
+            
             textVerses = thisTextVerses
             //print(isSingleChapter)
             let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
@@ -202,16 +250,21 @@ struct PageReadView: View {
             if (part != nil) {
                 self.prevExcerpt = part!.prev_excerpt
                 self.nextExcerpt = part!.next_excerpt
-                settingsManager.currentExcerptTitle = part!.book.name
-                settingsManager.currentExcerptSubtitle = "Глава \(part!.chapter_number)"
-                settingsManager.currentBookId = part!.book.number
-                settingsManager.currentChapterId = part!.chapter_number
+                withAnimation() {
+                    settingsManager.currentExcerptTitle = part!.book.name
+                    settingsManager.currentExcerptSubtitle = "Глава \(part!.chapter_number)"
+                    settingsManager.currentBookId = part!.book.number
+                    settingsManager.currentChapterId = part!.chapter_number
+                }
             }
         } catch {
-            print("Ошибка: \(error)")
-            toast = FancyToast(type: .error, title: "Ошибка загрузки данных", message: error.localizedDescription)
+            self.errorDescription = "Ошибка: \(error)"
+            //print("Ошибка: \(error)")
+            //toast = FancyToast(type: .error, title: "Ошибка загрузки данных", message: error.localizedDescription)
         }
-        self.isTextLoading = false
+        withAnimation(.easeOut(duration: 0.8)) {
+            self.isTextLoading = false
+        }
     }
     
     // MARK: Обработчики
@@ -286,6 +339,19 @@ struct PageReadView: View {
                 topTrailingRadius: 25
             )
         )
+        .gesture(DragGesture(minimumDistance: 20, coordinateSpace: .local)
+            .onEnded { value in
+                if value.translation.height > 50 {
+                    withAnimation {
+                        showAudioPanel = false
+                    }
+                } else if value.translation.height < -50 {
+                    withAnimation {
+                        showAudioPanel = true
+                    }
+                }
+            }
+        )
     }
     
     // MARK: Панель - сворачивание/разворачивание
@@ -303,6 +369,7 @@ struct PageReadView: View {
                     .foregroundColor(Color("DarkGreen"))
             }
             .frame(maxWidth: .infinity)
+            //.background(.red)
         }
         
     }
@@ -347,6 +414,7 @@ struct PageReadView: View {
     // MARK: Панель - Timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
         VStack(spacing: 0) {
+            // Text("\(audiopleer.state)")
             ZStack {
                 Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
                     .accentColor(Color("localAccentColor"))
@@ -355,7 +423,6 @@ struct PageReadView: View {
                         UISlider.appearance()
                             .setThumbImage(UIImage(systemName: "circle.fill",
                                                    withConfiguration: progressCircleConfig), for: .normal)
-                        
                     }
                     .disabled(audiopleer.state == .waitingForSelection || audiopleer.state == .buffering)
                 
@@ -431,12 +498,14 @@ struct PageReadView: View {
             
             // Previous chapter
             Button {
-                Task {
-                    settingsManager.currentExcerpt = prevExcerpt
-                    await updateExcerpt(proxy: proxy)
+                if prevExcerpt != "" {
+                    Task {
+                        settingsManager.currentExcerpt = prevExcerpt
+                        await updateExcerpt(proxy: proxy)
+                    }
                 }
             } label: {
-                Image(systemName: "arrow.left")
+                Image(systemName: "chevron.backward.2")
                     .foregroundColor(prevColor)
             }
             Spacer()
@@ -494,19 +563,21 @@ struct PageReadView: View {
                 settingsManager.currentSpeed = Double(audiopleer.currentSpeed)
             } label: {
                 Text(audiopleer.currentSpeed == 1 ? "x1" : String(format: "%.1f", audiopleer.currentSpeed))
-                    .font(.system(size: 20))
+                    .font(.system(size: 18))
                     .foregroundColor(buttonsColor)
             }
             Spacer()
             
             // Next chapter
             Button {
-                Task {
-                    settingsManager.currentExcerpt = nextExcerpt
-                    await updateExcerpt(proxy: proxy)
+                if nextExcerpt != "" {
+                    Task {
+                        settingsManager.currentExcerpt = nextExcerpt
+                        await updateExcerpt(proxy: proxy)
+                    }
                 }
             } label: {
-                Image(systemName: "arrow.right")
+                Image(systemName: "chevron.forward.2")
                     .foregroundColor(nextColor)
             }
             
