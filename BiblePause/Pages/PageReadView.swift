@@ -98,11 +98,20 @@ struct PageReadView: View {
                     
                     // MARK: Текст
                     if self.errorDescription != "" {
-                        Spacer()
-                        Text(self.errorDescription)
-                            .foregroundColor(.pink)
-                            .padding(globalBasePadding)
-                        Spacer()
+                        ScrollView {
+                            VStack {
+                                Spacer()
+                                Text(self.errorDescription)
+                                    .foregroundColor(.pink)
+                                    .padding(globalBasePadding)
+                                Spacer()
+                            }
+                        }
+                        .refreshable {
+                            Task {
+                               await updateExcerpt(proxy: proxy)
+                            }
+                        }
                     }
                     else if isTextLoading {
                         
@@ -204,6 +213,7 @@ struct PageReadView: View {
             .onAppear {
                 //settingsManager.currentExcerptTitle = settingsManager.currentExcerptTitle
                 //settingsManager.currentExcerptSubtitle = settingsManager.currentExcerptSubtitle
+                UIRefreshControl.appearance().tintColor = UIColor(Color("localAccentColor"))
                 
                 Task {
                     await updateExcerpt(proxy: proxy)
@@ -224,7 +234,7 @@ struct PageReadView: View {
         do {
             //withAnimation(.easeOut(duration: 0.1)) {
                 self.isTextLoading = true
-                self.errorDescription = ""
+                
             //}
             
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
@@ -238,7 +248,7 @@ struct PageReadView: View {
             }
             
             let playerItem = AVPlayerItem(url: url)
-            audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses)
+            audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses, itemTitle: settingsManager.currentExcerptTitle, itemSubtitle: settingsManager.currentExcerptSubtitle)
             
             // листание наверх
             withAnimation {
@@ -259,6 +269,7 @@ struct PageReadView: View {
                     settingsManager.currentChapterId = part!.chapter_number
                 }
             }
+            self.errorDescription = ""
         } catch {
             self.errorDescription = "Ошибка: \(error)"
             //print("Ошибка: \(error)")
@@ -271,18 +282,16 @@ struct PageReadView: View {
     
     // MARK: Обработчики изменения стиха
     func onStartVerse(_ cur: Int) {
-        print("onStartVerse \(cur) - \(cur >= 0 ? textVerses[cur].html : "")")
+        //print("onStartVerse \(cur) - \(cur >= 0 ? textVerses[cur].html : "")")
+        
         if skipOnePause {
-            print("1")
             skipOnePause = false
         }
         else if cur < 0 {
-            print("2")
             self.currentVerseNumber = 0
             return
         }
         else if cur > 0 && (settingsManager.pauseBlock == .paragraph || settingsManager.pauseBlock == .fragment) {
-            print("3")
             if settingsManager.pauseType == .time {
                 if (settingsManager.pauseBlock == .paragraph && textVerses[cur].startParagraph) ||
                    (settingsManager.pauseBlock == .fragment  && textVerses[cur].beforeTitle != nil)
@@ -424,7 +433,7 @@ struct PageReadView: View {
     // MARK: Панель - Timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
         VStack(spacing: 0) {
-            Text("\(audiopleer.state)")
+            // Text("\(audiopleer.state)")
             ZStack {
                 Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
                     .accentColor(Color("localAccentColor"))

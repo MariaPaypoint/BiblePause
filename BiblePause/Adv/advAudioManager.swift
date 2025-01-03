@@ -7,6 +7,7 @@
 
 import AVFoundation
 import Combine
+import MediaPlayer
 
 // MARK: PlayerTimeObserver
 
@@ -17,7 +18,6 @@ class PlayerTimeObserver {
     private var paused = false
     
     init(player: AVPlayer) {
-        print("PlayerTimeObserver deinit")
         self.player = player
         
         // Periodically observe the player's current time, whilst playing
@@ -31,7 +31,6 @@ class PlayerTimeObserver {
     }
     
     deinit {
-        print("PlayerTimeObserver deinit")
         if let player = player,
             let observer = timeObservation {
             player.removeTimeObserver(observer)
@@ -39,9 +38,10 @@ class PlayerTimeObserver {
     }
     
     func pause(_ pause: Bool) {
-        print("PlayerTimeObserver pause", pause)
         paused = pause
     }
+    
+    
 }
 
 // MARK: PlayerDurationObserver
@@ -129,14 +129,21 @@ class PlayerModel: ObservableObject {
     
     private var pauseTimer: Timer?
     
+    private var itemTitle: String = ""
+    private var itemSubtitle: String = ""
+    
     // MARK: init
     init() {
         
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+        try? AVAudioSession.sharedInstance().setActive(true)
         
         self.player = AVPlayer()
         self.durationObserver = PlayerDurationObserver(player: self.player)
         self.timeObserver = PlayerTimeObserver(player: self.player)
+        
+        self.setupNowPlaying()
+        self.setupRemoteTransportControls()
         
         // наблюдаем, когда подгрузится песня и определится ее длина
         durationObserver.publisher
@@ -158,7 +165,9 @@ class PlayerModel: ObservableObject {
             }
             .store(in: &cancellables)
         
-        
+        // Подписка на уведомления о прерываниях
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
+            
         // наблюдаем за изменением позиции
         timeObserver.publisher
             .receive(on: DispatchQueue.main)
@@ -179,6 +188,7 @@ class PlayerModel: ObservableObject {
             self.state = .finished
         }
     }
+    
     deinit {
         // Важно не забыть убрать подписку
         if let endPlayingObserver = endPlayingObserver {
@@ -186,8 +196,54 @@ class PlayerModel: ObservableObject {
         }
     }
     
+    @objc private func handleInterruption(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            return
+        }
+        
+        if type == .began {
+            // Прерывание началось, приостановить воспроизведение
+            pauseSimple()
+        } else if type == .ended {
+            // Прерывание закончилось, можно возобновить воспроизведение
+            if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
+                let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+                if options.contains(.shouldResume) {
+                    playSimple()
+                }
+            }
+        }
+    }
+    
+    private func setupNowPlaying() {
+        var nowPlayingInfo = [String: Any]()
+        nowPlayingInfo[MPMediaItemPropertyTitle] = itemTitle
+        nowPlayingInfo[MPMediaItemPropertyArtist] = itemSubtitle
+        // Добавьте дополнительные метаданные по необходимости
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
+    private func setupRemoteTransportControls() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
+        commandCenter.playCommand.addTarget { [weak self] event in
+            self?.playSimple()
+            return .success
+        }
+        
+        commandCenter.pauseCommand.addTarget { [weak self] event in
+            self?.pauseSimple()
+            return .success
+        }
+        
+        // Добавьте другие команды по необходимости
+    }
+
     // MARK: установка параметров новой композиции
-    func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAcousticalVerseFull]) {
+    func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAcousticalVerseFull], itemTitle: String, itemSubtitle: String) {
         
         self.oldState = self.state
         if self.state == .playing {
@@ -206,6 +262,10 @@ class PlayerModel: ObservableObject {
         
         self.deleteObservation()
         self.setObservation()
+        
+        self.itemTitle = itemTitle
+        self.itemSubtitle = itemSubtitle
+        self.setupNowPlaying()
         
         self.player.replaceCurrentItem(with: playerItem)
         
