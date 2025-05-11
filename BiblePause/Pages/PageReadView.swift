@@ -319,7 +319,8 @@ struct PageReadView: View {
             return
         }
         
-        // если нужна пауза - сделать ее (это событие не вызывается после последнего стиха и полной остановки)
+        // если нужна пауза - сделать ее
+        // (это событие не вызывается после последнего стиха и полной остановки)
         if settingsManager.pauseBlock == .verse {
             if settingsManager.pauseType == .time {
                 audiopleer.breakForSeconds(settingsManager.pauseLength)
@@ -433,7 +434,6 @@ struct PageReadView: View {
     // MARK: Панель - Timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
         VStack(spacing: 0) {
-            // Text("\(audiopleer.state)")
             ZStack {
                 Slider(value: $audiopleer.currentTime, in: 0...audiopleer.currentDuration, onEditingChanged: audiopleer.sliderEditingChanged)
                     .accentColor(Color("localAccentColor"))
@@ -491,6 +491,9 @@ struct PageReadView: View {
                 Text("\(formatTime(audiopleer.currentTime))")
                     .foregroundStyle(Color("Mustard"))
                 Spacer()
+                Text("\(audiopleer.state)")
+                    .foregroundStyle(Color("localAccentColor").opacity(0.1))
+                Spacer()
                 Text("\(formatTime(audiopleer.currentDuration))")
                     .foregroundStyle(Color("localAccentColor").opacity(0.4))
             }
@@ -512,6 +515,7 @@ struct PageReadView: View {
         let buttonsColor = audiopleer.state == .buffering ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let prevColor =  prevExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let nextColor =  nextExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+        let verseGoColor = audiopleer.state == .playing ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4)
         
         HStack {
             
@@ -544,7 +548,7 @@ struct PageReadView: View {
                 audiopleer.previousVerse()
             } label: {
                 Image(systemName: "arrow.turn.left.up")
-                    .foregroundColor(buttonsColor)
+                    .foregroundColor(verseGoColor)
             }
             Spacer()
             
@@ -574,7 +578,7 @@ struct PageReadView: View {
                 audiopleer.nextVerse()
             } label: {
                 Image(systemName: "arrow.turn.right.down")
-                    .foregroundColor(buttonsColor)
+                    .foregroundColor(verseGoColor)
             }
             Spacer()
             

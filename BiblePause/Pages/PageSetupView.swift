@@ -334,7 +334,7 @@ struct PageSetupView: View {
                     // загрузить инфу о переводе
                     //fetchTranslationInfo()
                     
-                    toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
+                    //toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
                 }
                 else {
                     toast = FancyToast(type: .warning, title: "Внимание!", message: self.translation == "" ? "Выберите перевод" : "Выберите кто читает")

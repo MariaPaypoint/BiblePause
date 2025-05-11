@@ -309,7 +309,8 @@ class PlayerModel: ObservableObject {
             if self.stopAtEnd && self.currentVerseIndex == self.audioVerses.count - 1 {
                 self.pauseSimple()
             }
-            else {
+            // не вызывать событие конца стиха на последнем стихе (чтобы не было пауз) (тем более что последний стих почему-то выравнивается плохо, последнее слово на середине обрезается)
+            else if self.currentVerseIndex != self.audioVerses.count - 1 {
                 self.onEndVerse?()
             }
         }
@@ -450,7 +451,9 @@ class PlayerModel: ObservableObject {
         if state == .playing && currentVerseIndex+1 < audioVerses.count {
             setCurrentVerseIndex(currentVerseIndex + 1)
             let begin = audioVerses[currentVerseIndex].begin
-            player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+            // чуть-чуть назад при переходе, а то резко
+            let minus = currentVerseIndex >= 1 ? min((audioVerses[currentVerseIndex-1].end - begin) / 2, 0.1) : 0
+            player.seek(to: CMTimeMake(value: Int64((begin+minus)*100), timescale: 100))
             currentTime = begin
         }
     }
