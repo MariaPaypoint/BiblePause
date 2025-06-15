@@ -144,7 +144,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                 }
                 for title in part.titles {
                     if title.before_verse_code == verse.code {
-                        verseFull.beforeTitle = BibleTitle(id: title.code, text: title.text, metadata: title.metadata)
+                        verseFull.beforeTitle = BibleTitle(id: title.code, text: title.text, metadata: title.metadata, reference: title.reference)
                     }
                 }
                 resTextVerses.append(verseFull)

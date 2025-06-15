@@ -163,6 +163,14 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     margin-top: 0.3rem;
                     margin-bottom: 0.8rem;
                 }
+                
+                .reference {
+                    font-size: 0.7rem;
+                    font-weight: bold;
+                    color: rgba(255, 255, 255, 0.8);
+                    margin-top: -1rem;
+                    margin-bottom: 1rem;
+                }
     
                 /* table nlt numbers 1 */
                 .table {
@@ -205,6 +213,13 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 <div id="top"></div>
                 <p id="title-\(verse.beforeTitle!.id)" class="title">\(verse.beforeTitle!.text)</p>
             """
+            
+            // reference
+            if let reference = verse.beforeTitle!.reference, !reference.isEmpty {
+                htmlString += """
+                    <p class="reference">\(reference)</p>
+                """
+            }
             
             // подзаголовок metadata
             if let metadata = verse.beforeTitle!.metadata, !metadata.isEmpty {

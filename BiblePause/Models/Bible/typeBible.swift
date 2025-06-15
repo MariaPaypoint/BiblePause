@@ -87,6 +87,7 @@ struct BibleTitle: Hashable, Codable {
     let id: Int
     let text: String
     let metadata: String?
+    let reference: String?
 }
 
 struct BibleNote: Hashable, Codable {
