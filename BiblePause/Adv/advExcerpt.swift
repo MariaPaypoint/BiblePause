@@ -156,7 +156,43 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     font-size: x-large;
                     font-weight: bold;
                 }
+                
+                .subtitle {
+                    font-size: 0.9rem;
+                    color: rgba(255, 255, 255, 0.7);
+                    margin-top: 0.3rem;
+                    margin-bottom: 0.8rem;
+                }
     
+                /* table nlt numbers 1 */
+                .table {
+                    width: 100%;
+                    margin-top: 1rem;
+                }
+                .row {
+                    display: flex;
+                    border: 1px solid gray;
+                    border-bottom: none;
+                }
+                .row:last-child {
+                    border-bottom: 1px solid gray;
+                }
+                .left, .right {
+                    padding: 2px;
+                    box-sizing: border-box;
+                    font-size: smaller; 
+                }
+                .left {
+                    width: 35%;
+                    border-right: 1px solid gray;
+                }
+                .right {
+                    width: 65%;
+                }
+                .th {
+                    font-weight: bold!important;
+                    background-color: rgba(122, 122, 122, 0.2);
+                }
             </style>
         </head>
         <body>
@@ -169,6 +205,13 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 <div id="top"></div>
                 <p id="title-\(verse.beforeTitle!.id)" class="title">\(verse.beforeTitle!.text)</p>
             """
+            
+            // подзаголовок metadata
+            if let metadata = verse.beforeTitle!.metadata, !metadata.isEmpty {
+                htmlString += """
+                    <p class="subtitle">\(metadata)</p>
+                """
+            }
         }
         // вставка примечаний
         var verseHTML = verse.html
@@ -191,7 +234,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             htmlString += "<p>"
         }
         htmlString += """
-            <span id="verse-\(verse.number)" class="\(quoteContainer)"><span class="verse-number">\(id_info).</span>\(verseHTML)</span>
+            <span id="verse-\(verse.number)" class="\(quoteContainer)"><span class="verse-number">\(id_info).</span><span>\(verseHTML)</span></span>
         """
     }
 
@@ -199,6 +242,8 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
         </body>
         </html>
     """
+    
+    print(htmlString)
     
     return htmlString
 }

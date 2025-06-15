@@ -385,7 +385,6 @@ struct PageSetupView: View {
     }
     
     func scrollToBottom(proxy: ScrollViewProxy) {
-        print("scrollToBottom")
         DispatchQueue.main.async {
             withAnimation {
                 proxy.scrollTo("bottom", anchor: .bottom)

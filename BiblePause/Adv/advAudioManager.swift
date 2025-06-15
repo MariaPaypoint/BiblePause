@@ -452,8 +452,8 @@ class PlayerModel: ObservableObject {
             setCurrentVerseIndex(currentVerseIndex + 1)
             let begin = audioVerses[currentVerseIndex].begin
             // чуть-чуть назад при переходе, а то резко
-            let minus = currentVerseIndex >= 1 ? min((audioVerses[currentVerseIndex-1].end - begin) / 2, 0.1) : 0
-            player.seek(to: CMTimeMake(value: Int64((begin+minus)*100), timescale: 100))
+            let minus = currentVerseIndex >= 1 ? min(abs((audioVerses[currentVerseIndex-1].end - begin) / 2), 0.1) : 0
+            player.seek(to: CMTimeMake(value: Int64((begin-minus)*100), timescale: 100))
             currentTime = begin
         }
     }

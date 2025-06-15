@@ -11,56 +11,56 @@ import Combine
 import OpenAPIRuntime
 
 struct PageReadView: View {
-    
+
     @EnvironmentObject var settingsManager: SettingsManager
-    
+
     @StateObject var audiopleer = PlayerModel()
-    
+
     @State private var showSelection = false
     @State private var showSetup = false
-    
+
     @State private var errorDescription: String = ""
-    
+
     @State private var textVerses: [BibleTextualVerseFull] = []
     //@State private var audioVerses: [BibleAudioVerseFull] = []
     @State private var currentVerseNumber: Int? // = 0
     @State private var prevExcerpt: String = ""
     @State private var nextExcerpt: String = ""
-    
+
     @State private var showAudioPanel = true
-    
+
     @State private var scrollViewProxy: ScrollViewProxy? = nil
-    
+
     @State private var isTextLoading: Bool = true
     @State private var toast: FancyToast? = nil
-    
+
     @State var scrollToVerseId: Int?
-    
+
     @State var oldExcerpt: String = "" // значение до клика на выбор
     @State var oldTranslation: Int = 0
     @State var oldFontIncreasePercent: Double = 0
-    
+
     //@State var currentExcerptTitle: String = ""
     //@State var currentExcerptSubtitle: String = ""
-    
+
     @State var skipOnePause: Bool = false
-    
+
     var body: some View {
         ScrollViewReader { proxy in
             ZStack {
                 VStack(spacing: 0) {
-                    
+
                     // MARK: Шапка
                     HStack(alignment: .center) {
                         MenuButtonView()
                             .environmentObject(settingsManager)
-                        
+
                         Spacer()
-                        
+
                         // заголовок, который ведет на выбор главы
                         Button {
                             ///player.pause()
-                            
+
                             withAnimation(Animation.easeInOut(duration: 1)) {
                                 //selectedMenuItem = .select
                                 oldExcerpt = settingsManager.currentExcerpt
@@ -77,9 +77,9 @@ struct PageReadView: View {
                             }
                             .padding(.top, 6)
                         }
-                        
+
                         Spacer()
-                        
+
                         // кнопка настроек
                         Button {
                             withAnimation(Animation.easeInOut(duration: 1)) {
@@ -95,7 +95,7 @@ struct PageReadView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, globalBasePadding)
                     .padding(.bottom, 5)
-                    
+
                     // MARK: Текст
                     if self.errorDescription != "" {
                         ScrollView {
@@ -114,7 +114,7 @@ struct PageReadView: View {
                         }
                     }
                     else if isTextLoading {
-                        
+
                         Spacer()
                     }
                     else {
@@ -129,19 +129,19 @@ struct PageReadView: View {
                     }
                     // MARK: Аудио-панель
                     viewAudioPanel(proxy: proxy)
-                    
+
                 }
-                
+
                 // подложка
                 .background(
                     Color("DarkGreen")
                 )
-                
+
                 // слой меню
                 MenuView()
                     .environmentObject(settingsManager)
                     .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
-                
+
                 if !showAudioPanel {
                     VStack {
                         Spacer()
@@ -183,7 +183,7 @@ struct PageReadView: View {
                 }
             }
             .toastView(toast: $toast)
-            
+
             .fullScreenCover(isPresented: $showSelection, onDismiss: {
                 Task {
                     if oldExcerpt != settingsManager.currentExcerpt {
@@ -195,7 +195,7 @@ struct PageReadView: View {
                 PageSelectView(showFromRead: $showSelection)
                     .environmentObject(settingsManager)
             }
-            
+
             .fullScreenCover(isPresented: $showSetup, onDismiss: {
                 Task {
                     if oldTranslation != settingsManager.translation || oldFontIncreasePercent != settingsManager.fontIncreasePercent {
@@ -207,14 +207,14 @@ struct PageReadView: View {
                 PageSetupView(showFromRead: $showSetup)
                     .environmentObject(settingsManager)
             }
-            
+
             .edgesIgnoringSafeArea(.bottom)
-            
+
             .onAppear {
                 //settingsManager.currentExcerptTitle = settingsManager.currentExcerptTitle
                 //settingsManager.currentExcerptSubtitle = settingsManager.currentExcerptSubtitle
                 UIRefreshControl.appearance().tintColor = UIColor(Color("localAccentColor"))
-                
+
                 Task {
                     await updateExcerpt(proxy: proxy)
                     audiopleer.onEndVerse = onEndVerse
@@ -223,41 +223,41 @@ struct PageReadView: View {
                     audiopleer.setSpeed(speed: Float(self.settingsManager.currentSpeed))
                     self.scrollViewProxy = proxy
                 }
-                
+
                 scrollToVerseId = nil
             }
         }
     }
-    
+
     // MARK: После выбора
     func updateExcerpt(proxy: ScrollViewProxy) async {
         do {
             //withAnimation(.easeOut(duration: 0.1)) {
                 self.isTextLoading = true
-                
             //}
-            
+
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
-            
+
             textVerses = thisTextVerses
             //print(isSingleChapter)
             let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
-            
+
             guard let url = URL(string: firstUrl) else {
                 throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "URL not found: \(firstUrl)"])
             }
-            
+            print("url: \(url)")
+
             let playerItem = AVPlayerItem(url: url)
             audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses, itemTitle: settingsManager.currentExcerptTitle, itemSubtitle: settingsManager.currentExcerptSubtitle)
-            
+
             // листание наверх
             withAnimation {
                 proxy.scrollTo("top", anchor: .top)
             }
-            
+
             settingsManager.currentBookId = textVerses[0].bookDigitCode
             settingsManager.currentChapterId = textVerses[0].chapterDigitCode
-            
+
             self.currentVerseNumber = -1
             if (part != nil) {
                 self.prevExcerpt = part!.prev_excerpt
@@ -279,11 +279,11 @@ struct PageReadView: View {
             self.isTextLoading = false
         }
     }
-    
+
     // MARK: Обработчики изменения стиха
     func onStartVerse(_ cur: Int) {
         //print("onStartVerse \(cur) - \(cur >= 0 ? textVerses[cur].html : "")")
-        
+
         if skipOnePause {
             skipOnePause = false
         }
@@ -310,15 +310,15 @@ struct PageReadView: View {
         }
         self.currentVerseNumber = textVerses[cur].number
     }
-    
+
     func onEndVerse() {
         //print("onEndVerse")
-        
+
         if skipOnePause {
             skipOnePause = false
             return
         }
-        
+
         // если нужна пауза - сделать ее
         // (это событие не вызывается после последнего стиха и полной остановки)
         if settingsManager.pauseBlock == .verse {
@@ -330,13 +330,13 @@ struct PageReadView: View {
             }
         }
     }
-    
+
     // MARK: Панель с плеером
     @ViewBuilder private func viewAudioPanel(proxy: ScrollViewProxy) -> some View {
-        
+
         VStack(spacing: 0) {
             viewAudioHide()
-            
+
             VStack {
                 viewAudioInfo()
                 viewAudioTimeline()
@@ -344,7 +344,7 @@ struct PageReadView: View {
             }
             .frame(height: showAudioPanel ? nil : 0)
             .opacity(showAudioPanel ? 1 : 0)
-            
+
             Spacer()
         }
         .frame(maxWidth: .infinity)
@@ -373,7 +373,7 @@ struct PageReadView: View {
             }
         )
     }
-    
+
     // MARK: Панель - сворачивание/разворачивание
     @ViewBuilder private func viewAudioHide() -> some View {
         Button {
@@ -391,9 +391,9 @@ struct PageReadView: View {
             .frame(maxWidth: .infinity)
             //.background(.red)
         }
-        
+
     }
-    
+
     // MARK: Панель - информация
     @ViewBuilder private func viewAudioInfo() -> some View {
         HStack {
@@ -406,7 +406,11 @@ struct PageReadView: View {
                         .fill(Color("localAccentColor"))
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
-            Spacer()
+            if settingsManager.pauseType == .none {
+                Text("").padding(.horizontal, 2)
+            } else {
+                Spacer()
+            }
             VStack(alignment: .leading, spacing: 0) {
                 Text("ЧИТАЕТ:")
                     .foregroundStyle(Color("localAccentColor").opacity(0.5))
@@ -416,13 +420,15 @@ struct PageReadView: View {
                     .font(.footnote)
             }
             Spacer()
-            VStack(alignment: .leading, spacing: 0) {
-                Text("ПАУЗА:")
-                    .foregroundStyle(Color("localAccentColor").opacity(0.5))
-                    .font(.caption2)
-                Text("\(String(format: "%g", settingsManager.pauseLength)) сек./\(settingsManager.pauseBlock.shortName)")
-                    .foregroundStyle(Color("localAccentColor"))
-                    .font(.footnote)
+            if settingsManager.pauseType != .none {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("ПАУЗА:")
+                        .foregroundStyle(Color("localAccentColor").opacity(0.5))
+                        .font(.caption2)
+                    Text("\(settingsManager.pauseBlock.shortName) / \(settingsManager.pauseType == .time ? String(format: "%g сек.", settingsManager.pauseLength) : "стоп")")
+                        .foregroundStyle(Color("localAccentColor"))
+                        .font(.footnote)
+                }
             }
             //Spacer()
             //Image(systemName: "gearshape.fill")
@@ -430,7 +436,7 @@ struct PageReadView: View {
             //    .foregroundStyle(Color("localAccentColor"))
         }
     }
-    
+
     // MARK: Панель - Timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
         VStack(spacing: 0) {
@@ -444,27 +450,27 @@ struct PageReadView: View {
                                                    withConfiguration: progressCircleConfig), for: .normal)
                     }
                     .disabled(audiopleer.state == .waitingForSelection || audiopleer.state == .buffering)
-                
+
                 // подсветка текущего отрывка
                 if audiopleer.periodTo > 0 {
-                    
+
                     // https://stackoverflow.com/a/62641399
                     let frameWidth: Double = UIScreen.main.bounds.size.width - globalBasePadding*2
                     let point: Double = frameWidth / audiopleer.currentDuration
-                    
+
                     let pointStart: Double = Double(audiopleer.periodFrom) * point
                     let pointCenter: Double = audiopleer.currentTime * point
                     let pointEnd: Double = Double(audiopleer.periodTo == 0 ? audiopleer.currentDuration : audiopleer.periodTo) * point
-                    
+
                     let circleLeftSpace: Double = 13 * audiopleer.currentTime / audiopleer.currentDuration
                     let circleRightSpace: Double = 13 - circleLeftSpace
-                    
+
                     let firstLeading: Double = pointStart
                     let firstTrailing: Double = frameWidth - (pointEnd > pointCenter - circleLeftSpace ? pointCenter - circleLeftSpace : pointEnd)
-                    
+
                     let secondLeading: Double = (pointCenter + circleRightSpace > pointStart ? pointCenter + circleRightSpace : pointStart)
                     let secondTrailing: Double = frameWidth - pointEnd
-                    
+
                     if pointCenter > pointStart {
                         Rectangle()
                             .fill(Color("localAccentColor"))
@@ -474,7 +480,7 @@ struct PageReadView: View {
                             .padding(.top, -0.9)
                         //.blendMode(.multiply)
                     }
-                    
+
                     if pointEnd > pointCenter {
                         Rectangle()
                             .fill(Color("localAccentColor").opacity(0.2))
@@ -500,25 +506,25 @@ struct PageReadView: View {
             .font(.subheadline)
         }
         .padding(.top, globalBasePadding)
-        
+
     }
-    
+
     func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-    
+
     // MARK: Панель - AudioButtons
     @ViewBuilder fileprivate func viewAudioButtons(proxy: ScrollViewProxy) -> some View {
-        
+
         let buttonsColor = audiopleer.state == .buffering ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let prevColor =  prevExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let nextColor =  nextExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let verseGoColor = audiopleer.state == .playing ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4)
-        
+
         HStack {
-            
+
             // Previous chapter
             Button {
                 if prevExcerpt != "" {
@@ -532,7 +538,7 @@ struct PageReadView: View {
                     .foregroundColor(prevColor)
             }
             Spacer()
-            
+
             // Restart отрывка
             Button {
                 audiopleer.restart()
@@ -541,7 +547,7 @@ struct PageReadView: View {
                     .foregroundColor(buttonsColor)
             }
             Spacer()
-            
+
             // Previos verse
             Button {
                 self.skipOnePause = true
@@ -551,12 +557,12 @@ struct PageReadView: View {
                     .foregroundColor(verseGoColor)
             }
             Spacer()
-            
+
             // Play/Pause
             Button {
                 audiopleer.doPlayOrPause()
             } label: {
-                
+
                 HStack {
                     switch audiopleer.state {
                     case .playing:
@@ -571,7 +577,7 @@ struct PageReadView: View {
                     .foregroundColor(buttonsColor)
             }
             Spacer()
-            
+
             // Next verse
             Button {
                 self.skipOnePause = true
@@ -581,7 +587,7 @@ struct PageReadView: View {
                     .foregroundColor(verseGoColor)
             }
             Spacer()
-            
+
             // Speed
             Button {
                 audiopleer.changeSpeed()
@@ -592,7 +598,7 @@ struct PageReadView: View {
                     .foregroundColor(buttonsColor)
             }
             Spacer()
-            
+
             // Next chapter
             Button {
                 if nextExcerpt != "" {
@@ -605,7 +611,7 @@ struct PageReadView: View {
                 Image(systemName: "chevron.forward.2")
                     .foregroundColor(nextColor)
             }
-            
+
         }
         .foregroundColor(Color("localAccentColor"))
     }
@@ -614,7 +620,7 @@ struct PageReadView: View {
 // MARK: Preview
 
 struct TestPageReadView: View {
-    
+
     var body: some View {
         PageReadView()
             .environmentObject(SettingsManager())
