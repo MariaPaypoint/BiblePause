@@ -223,15 +223,33 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             
             // подзаголовок metadata
             if let metadata = verse.beforeTitle!.metadata, !metadata.isEmpty {
+                // вставка примечаний в metadata
+                var metadataHTML = metadata
+                var prevNotesOffset = 0
+                // Сортируем примечания по position_html для корректной вставки
+                let sortedNotes = verse.beforeTitle!.notes.sorted { $0.positionHtml < $1.positionHtml }
+                for note in sortedNotes {
+                    let noteHTML = """
+                        <span class="note"> 
+                            <span class="note-icon" onClick="document.getElementById('note\(note.id)').classList.toggle('off');"></span>
+                            <span class="note-text off" id="note\(note.id)">\(note.text)</span>
+                        </span>
+                    """
+                    metadataHTML = insertSubstring(original: metadataHTML, substring: noteHTML, at: prevNotesOffset+note.positionHtml)
+                    prevNotesOffset += noteHTML.count
+                }
+                
                 htmlString += """
-                    <p class="subtitle">\(metadata)</p>
+                    <p class="subtitle">\(metadataHTML)</p>
                 """
             }
         }
         // вставка примечаний
         var verseHTML = verse.html
         var prevNotesOffset = 0
-        for note in verse.notes {
+        // Сортируем примечания по position_html для корректной вставки
+        let sortedVerseNotes = verse.notes.sorted { $0.positionHtml < $1.positionHtml }
+        for note in sortedVerseNotes {
             let noteHTML = """
                 <span class="note"> 
                     <span class="note-icon" onClick="document.getElementById('note\(note.id)').classList.toggle('off');"></span>

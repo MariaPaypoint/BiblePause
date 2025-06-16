@@ -88,6 +88,7 @@ struct BibleTitle: Hashable, Codable {
     let text: String
     let metadata: String?
     let reference: String?
+    var notes: [BibleNote] = []
 }
 
 struct BibleNote: Hashable, Codable {
