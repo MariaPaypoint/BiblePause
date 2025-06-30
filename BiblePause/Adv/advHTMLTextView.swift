@@ -57,7 +57,7 @@ struct HTMLTextView: UIViewRepresentable {
     func updateUIView(_ webView: WKWebView, context: Context) {
         // If scrollToVerse changes and webView is loaded, execute JavaScript
         if let verse = scrollToVerse, context.coordinator.webViewLoaded {
-            print("updateUIView \(verse)")
+            //print("updateUIView \(verse)")
             if verse <= 0 {
                 webView.evaluateJavaScript(jsTemplate.replacingOccurrences(of: "{elementId}", with: "top"), completionHandler: nil)
             }

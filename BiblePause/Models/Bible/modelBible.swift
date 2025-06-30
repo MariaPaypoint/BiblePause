@@ -30,7 +30,7 @@ class BibleAudio {
     init() {
         let code = favoriteVoiceHeaders[currentVoiceIndex].code
         let translationCode = favoriteVoiceHeaders[currentVoiceIndex].translationCode
-        print("audio json: ", translationCode + "-" + code + ".json")
+        //print("audio json: ", translationCode + "-" + code + ".json")
         activeVoices[code] = loadBibleTranslate(translationCode + "-" + code + ".json")
         currentVoice = activeVoices[code]!
     }
@@ -85,7 +85,7 @@ class BibleText {
     func setCurrentTranslation(index: Int) -> Void {
         
         currentTranslationIndex = index
-        print(index)
+        //print(index)
         
         let code = favoriteTranslationHeaders[currentTranslationIndex].code
         if activeTranslations[code] == nil {
