@@ -245,7 +245,7 @@ struct PageReadView: View {
             guard let url = URL(string: firstUrl) else {
                 throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "URL not found: \(firstUrl)"])
             }
-            print("url: \(url)")
+            //print("url: \(url)")
 
             let playerItem = AVPlayerItem(url: url)
             audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses, itemTitle: settingsManager.currentExcerptTitle, itemSubtitle: settingsManager.currentExcerptSubtitle)
