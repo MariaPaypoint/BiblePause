@@ -53,7 +53,7 @@ struct MenuView: View{
                 Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
                 Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (settingsManager.selectedMenuItem == .select)) }
                 Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (settingsManager.selectedMenuItem == .setup)) }
-                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты и донаты", subTitle: "Донат, кстати, на новый проект", selected: (settingsManager.selectedMenuItem == .contacts)) }
+                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты", subTitle: "Ищем единомышленников", selected: (settingsManager.selectedMenuItem == .contacts)) }
                 
                 Spacer(minLength: 10)
                 

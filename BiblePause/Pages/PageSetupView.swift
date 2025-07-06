@@ -15,6 +15,11 @@ struct PageSetupView: View {
     
     @Binding var showFromRead: Bool
     
+    // Для примера отображения текста
+    @State private var isExampleLoading: Bool = true
+    @State private var exampleVerses: [BibleTextualVerseFull] = []
+    @State private var exampleErrorText: String = ""
+    
     // MARK: Языки и переводы
     
     // отдельные настройки нужны для того, чтобы не соохранять некорректные данные
@@ -106,6 +111,7 @@ struct PageSetupView: View {
             self.translation = String(settingsManager.translation)
             self.voice = String(settingsManager.voice)
             fetchLanguages()
+            loadExampleText()
         }
     }
     
@@ -174,13 +180,22 @@ struct PageSetupView: View {
             Text("Пример:")
                 .foregroundColor(.white.opacity(0.5))
             ScrollView() {
-                
-                let (textVerses, _) = getExcerptTextualVerses(excerpts: "jhn 1:1-3")
-                viewExcerpt(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
-                    .padding(.bottom, 20)
-                    .id("top")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                 
+                if isExampleLoading {
+                    ProgressView()
+                        .tint(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                } else if exampleErrorText != "" {
+                    Text(exampleErrorText)
+                        .foregroundColor(.pink)
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                } else {
+                    viewExcerpt(verses: exampleVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
+                        .padding(.bottom, 20)
+                        .id("top")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             .frame(maxHeight: 158)
         }
@@ -388,6 +403,24 @@ struct PageSetupView: View {
         DispatchQueue.main.async {
             withAnimation {
                 proxy.scrollTo("bottom", anchor: .bottom)
+            }
+        }
+    }
+    
+    // Загрузка примера текста
+    func loadExampleText() {
+        Task {
+            do {
+                self.isExampleLoading = true
+                self.exampleErrorText = ""
+                
+                let (verses, _, _, _, _) = try await getExcerptTextualVersesOnline(excerpts: "jhn 1:1-3", client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
+                
+                self.exampleVerses = verses
+                self.isExampleLoading = false
+            } catch {
+                self.exampleErrorText = "Ошибка загрузки примера"
+                self.isExampleLoading = false
             }
         }
     }

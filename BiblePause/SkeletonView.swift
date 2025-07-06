@@ -40,9 +40,9 @@ class SettingsManager: ObservableObject {
     let client: any APIProtocol
     
     init() {
-        //let url = "http://helper-vm-maria:8000"
+        let url = "http://34.69.129.96:8000" // Google Cloude
         //let url = "http://192.168.130.169"
-        let url = "http://82.202.219.181"
+        //let url = "http://82.202.219.181"
         
         self.client = Client(serverURL: URL(string: url)!, transport: URLSessionTransport())
         
