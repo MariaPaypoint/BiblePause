@@ -87,6 +87,8 @@ struct PageSetupView: View {
                             
                             ViewPause()
                             
+                            ViewAutoNextChapter()
+                            
                             ViewLangTranslateAudio(proxy: proxy)
                         }
                         .padding(.horizontal, globalBasePadding)
@@ -274,6 +276,18 @@ struct PageSetupView: View {
                     
                     viewEnumPicker(title: settingsManager.pauseBlock.displayName, selection: $settingsManager.pauseBlock)
                 }
+            }
+        }
+        .padding(1)
+    }
+    
+    // MARK: Автоматический переход к следующей главе
+    @ViewBuilder private func ViewAutoNextChapter() -> some View {
+        viewGroupHeader(text: "Проигрыватель")
+        VStack(spacing: 15) {
+            HStack {
+                Toggle("Автопереход к следующей главе", isOn: $settingsManager.autoNextChapter)
+                    .toggleStyle(SwitchToggleStyle(tint: Color("DarkGreen-accent")))
             }
         }
         .padding(1)

@@ -15,6 +15,9 @@ struct PageReadView: View {
     @EnvironmentObject var settingsManager: SettingsManager
 
     @StateObject var audiopleer = PlayerModel()
+    
+    // Переменная для наблюдения за завершением аудио
+    @State private var audioStateObserver: AnyCancellable?
 
     @State private var showSelection = false
     @State private var showSetup = false
@@ -222,9 +225,17 @@ struct PageReadView: View {
                     audiopleer.smoothPauseLength = settingsManager.voiceMusic ? 0.3 : 0
                     audiopleer.setSpeed(speed: Float(self.settingsManager.currentSpeed))
                     self.scrollViewProxy = proxy
+                    
+                    // Настройка наблюдения за завершением аудио для автоматического перехода к следующей главе
+                    setupAudioCompletionObserver(proxy: proxy)
                 }
 
                 scrollToVerseId = nil
+            }
+            .onDisappear {
+                // Очистка наблюдателя для предотвращения утечек памяти
+                audioStateObserver?.cancel()
+                audioStateObserver = nil
             }
         }
     }
@@ -329,6 +340,32 @@ struct PageReadView: View {
                 audiopleer.doPlayOrPause()
             }
         }
+    }
+
+    // MARK: Настройка наблюдения за завершением аудио
+    private func setupAudioCompletionObserver(proxy: ScrollViewProxy) {
+        audioStateObserver = audiopleer.$state
+            .receive(on: DispatchQueue.main)
+            .sink { newState in
+                // Автоматический переход к следующей главе при завершении аудио
+                if newState == .finished && 
+                   self.settingsManager.autoNextChapter && 
+                   !self.nextExcerpt.isEmpty {
+                    
+                    // Небольшая задержка для лучшего UX
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        Task {
+                            self.settingsManager.currentExcerpt = self.nextExcerpt
+                            await self.updateExcerpt(proxy: proxy)
+                            
+                            // Автоматический старт воспроизведения после небольшой задержки
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                self.audiopleer.doPlayOrPause()
+                            }
+                        }
+                    }
+                }
+            }
     }
 
     // MARK: Панель с плеером

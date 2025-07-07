@@ -20,6 +20,8 @@ class SettingsManager: ObservableObject {
     @AppStorage("pauseLength") var pauseLength: Double = 3.0
     @AppStorage("pauseBlock") var pauseBlock: PauseBlock = .verse
     
+    @AppStorage("autoNextChapter") var autoNextChapter: Bool = true
+    
     @AppStorage("language") var language: String = "ru"
     @AppStorage("translation") var translation: Int = 10 // bti
     @AppStorage("translationName") var translationName: String = "BTI"
