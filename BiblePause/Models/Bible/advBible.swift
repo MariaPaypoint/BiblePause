@@ -170,7 +170,13 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
             }
         }
         
-        return (resTextVerses, resAudioVerses, resFirstUrl, resSingleChapter, resPart)
+        // Ensure the first audio URL includes the api_key as a query parameter
+        var firstURLWithKey = resFirstUrl
+        if let original = URL(string: resFirstUrl) {
+            let withKey = SettingsManager.audioURLWithKey(from: original)
+            firstURLWithKey = withKey.absoluteString
+        }
+        return (resTextVerses, resAudioVerses, firstURLWithKey, resSingleChapter, resPart)
     } catch {
         
         throw error

@@ -395,17 +395,16 @@ struct PageSetupView: View {
                     Text("Отменить выбор")
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(5)
+                        .padding(13)
                 }
             }
-            //.buttonStyle(PlainButtonStyle())
-            //.background(Color.clear)
-            .buttonStyle(.borderedProminent)
-            .tint(Color("DarkGreen"))
+            .buttonStyle(.plain)
+            .background(Color.clear)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white, lineWidth: 1) // Рамка вокруг кнопки
+                Capsule()
+                    .stroke(Color.white, lineWidth: 2)
             )
+            .clipShape(Capsule())
             .padding(.top, 5)
         }
         
