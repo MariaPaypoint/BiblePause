@@ -26,6 +26,9 @@
 		4C3F9EB12C14874B00EA807C /* nrt.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA52C14874B00EA807C /* nrt.json */; };
 		4C3F9EB22C14874B00EA807C /* syn.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA62C14874B00EA807C /* syn.json */; };
 		4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F9EB42C148DCD00EA807C /* advElements.swift */; };
+		4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B6E2E9B0091004BF2CB /* Configuration.plist */; };
+		4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B722E9B00A3004BF2CB /* Configuration.plist.example */; };
+		4C620B7E2E9B0123004BF2CB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C620B7D2E9B0123004BF2CB /* Config.swift */; };
 		4C749DFD2C149EF800CF4234 /* advCornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */; };
 		4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E002C14ABE700CF4234 /* typeBible.swift */; };
 		4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E022C14ABFB00CF4234 /* modelBible.swift */; };
@@ -70,6 +73,9 @@
 		4C3F9EA52C14874B00EA807C /* nrt.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = nrt.json; sourceTree = "<group>"; };
 		4C3F9EA62C14874B00EA807C /* syn.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = syn.json; sourceTree = "<group>"; };
 		4C3F9EB42C148DCD00EA807C /* advElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advElements.swift; sourceTree = "<group>"; };
+		4C620B6E2E9B0091004BF2CB /* Configuration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Configuration.plist; sourceTree = "<group>"; };
+		4C620B722E9B00A3004BF2CB /* Configuration.plist.example */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Configuration.plist.example; sourceTree = "<group>"; };
+		4C620B7D2E9B0123004BF2CB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advCornerRadius.swift; sourceTree = "<group>"; };
 		4C749E002C14ABE700CF4234 /* typeBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = typeBible.swift; sourceTree = "<group>"; };
 		4C749E022C14ABFB00CF4234 /* modelBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modelBible.swift; sourceTree = "<group>"; };
@@ -218,6 +224,9 @@
 			children = (
 				0458F54B2CCE111F0016C65F /* Info.plist */,
 				047B3BC42BEEB626009DEC11 /* SkeletonView.swift */,
+				4C620B7D2E9B0123004BF2CB /* Config.swift */,
+				4C620B6E2E9B0091004BF2CB /* Configuration.plist */,
+				4C620B722E9B00A3004BF2CB /* Configuration.plist.example */,
 				4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */,
 				4CFC91FE2C59AB26005AFAA5 /* openapi-generator-config.yml */,
 				4C141A032BED275000412C60 /* MenuView.swift */,
@@ -309,9 +318,11 @@
 				4C3F9EAA2C14874B00EA807C /* syn-bondarenko-nopause.json in Resources */,
 				4C3F9EB22C14874B00EA807C /* syn.json in Resources */,
 				4C3F9EAF2C14874B00EA807C /* bti.json in Resources */,
+				4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */,
 				4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */,
 				4C3F9EB02C14874B00EA807C /* kjv.json in Resources */,
 				4C3F9EA92C14874B00EA807C /* bti-prozorovsky.json in Resources */,
+				4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */,
 				4C3F9EAC2C14874B00EA807C /* syn-bondarenko.json in Resources */,
 				4C3F9EB12C14874B00EA807C /* nrt.json in Resources */,
 				4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */,
@@ -345,6 +356,7 @@
 				4C749E072C1A133800CF4234 /* advExtensions.swift in Sources */,
 				4C749E092C1D804A00CF4234 /* PageSetupView.swift in Sources */,
 				4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */,
+				4C620B7E2E9B0123004BF2CB /* Config.swift in Sources */,
 				04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */,
 				047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */,
 				4C7691242BECEA1300C66FDC /* BiblePauseApp.swift in Sources */,

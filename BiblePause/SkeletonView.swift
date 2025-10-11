@@ -39,8 +39,8 @@ class SettingsManager: ObservableObject {
     
     //var translationInfo: Components.Schemas.TranslationInfoModel?
     
-    private let baseURLString: String = "https://bibleapi.space"
-    static let apiKey: String = "bible-api-key-2024"
+    private let baseURLString: String = Config.baseURL
+    static let apiKey: String = Config.apiKey
     
     let client: any APIProtocol
     

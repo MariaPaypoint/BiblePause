@@ -82,3 +82,6 @@ playground.xcworkspace
 *.log
 *.temp
 
+# Configuration files with sensitive data
+Configuration.plist
+
