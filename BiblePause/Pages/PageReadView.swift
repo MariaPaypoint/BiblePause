@@ -36,6 +36,7 @@ struct PageReadView: View {
 
     @State private var isTextLoading: Bool = true
     @State private var toast: FancyToast? = nil
+    @State private var hasAudio: Bool = true
 
     @State var scrollToVerseId: Int?
 
@@ -100,7 +101,11 @@ struct PageReadView: View {
                     .padding(.bottom, 5)
 
                     // MARK: Текст
-                    if self.errorDescription != "" {
+                    if isTextLoading {
+                        Spacer()
+                    }
+                    else if textVerses.isEmpty && self.errorDescription != "" {
+                        // Показываем только ошибку, если текст не загружен
                         ScrollView {
                             VStack {
                                 Spacer()
@@ -116,11 +121,19 @@ struct PageReadView: View {
                             }
                         }
                     }
-                    else if isTextLoading {
-
-                        Spacer()
-                    }
                     else {
+                        // Показываем текст (с предупреждением об отсутствии аудио, если есть)
+                        VStack(spacing: 0) {
+                            if self.errorDescription != "" && hasAudio {
+                                Text("⚠️ " + self.errorDescription)
+                                    .foregroundColor(Color("Mustard"))
+                                    .font(.footnote)
+                                    .padding(.horizontal, globalBasePadding)
+                                    .padding(.vertical, 8)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color("DarkGreen-light"))
+                            }
+                            
                         HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: $currentVerseNumber)
                             .mask(LinearGradient(
                                 gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
@@ -129,6 +142,7 @@ struct PageReadView: View {
                             )
                         )
                         .padding(12)
+                    }
                     }
                     // MARK: Аудио-панель
                     viewAudioPanel(proxy: proxy)
@@ -250,25 +264,11 @@ struct PageReadView: View {
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
 
             textVerses = thisTextVerses
-            //print(isSingleChapter)
-            let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
-
-            guard let url = URL(string: firstUrl) else {
-                throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "URL not found: \(firstUrl)"])
-            }
-            //print("url: \(url)")
-
-            let playerItem = AVPlayerItem(url: url)
-            audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses, itemTitle: settingsManager.currentExcerptTitle, itemSubtitle: settingsManager.currentExcerptSubtitle)
-
-            // листание наверх
-            withAnimation {
-                proxy.scrollTo("top", anchor: .top)
-            }
-
+            
+            // Обновляем информацию о книге и главе
             settingsManager.currentBookId = textVerses[0].bookDigitCode
             settingsManager.currentChapterId = textVerses[0].chapterDigitCode
-
+            
             self.currentVerseNumber = -1
             if (part != nil) {
                 self.prevExcerpt = part!.prev_excerpt
@@ -280,7 +280,30 @@ struct PageReadView: View {
                     settingsManager.currentChapterId = part!.chapter_number
                 }
             }
-            self.errorDescription = ""
+            
+            // листание наверх
+            withAnimation {
+                proxy.scrollTo("top", anchor: .top)
+            }
+            
+            // Проверяем наличие аудио
+            if firstUrl.isEmpty {
+                self.hasAudio = false
+                self.errorDescription = "Аудиофайл для этой главы отсутствует"
+            } else if let url = URL(string: firstUrl) {
+                //print(isSingleChapter)
+                let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
+                //print("url: \(url)")
+                
+                let playerItem = AVPlayerItem(url: url)
+                audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses, itemTitle: settingsManager.currentExcerptTitle, itemSubtitle: settingsManager.currentExcerptSubtitle)
+                
+                self.hasAudio = true
+                self.errorDescription = ""
+            } else {
+                self.hasAudio = false
+                self.errorDescription = "Некорректный URL аудиофайла"
+            }
         } catch {
             self.errorDescription = "Ошибка: \(error)"
             //print("Ошибка: \(error)")
@@ -376,6 +399,25 @@ struct PageReadView: View {
 
             VStack {
                 viewAudioInfo()
+                
+                // Предупреждение об отсутствии аудио
+                if !hasAudio && self.errorDescription != "" {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(Color("Mustard"))
+                            .font(.footnote)
+                        Text(self.errorDescription)
+                            .foregroundColor(Color("Mustard"))
+                            .font(.footnote)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color("DarkGreen").opacity(0.5))
+                    .cornerRadius(8)
+                    .padding(.top, 8)
+                }
+                
                 viewAudioTimeline()
                 viewAudioButtons(proxy: proxy)
             }
@@ -385,7 +427,7 @@ struct PageReadView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: showAudioPanel ? 240 : 45)
+        .frame(height: showAudioPanel ? (hasAudio ? 220 : 260) : 45)
         .padding(.horizontal, globalBasePadding)
         .background(Color("DarkGreen-light"))
         .clipShape(
@@ -542,7 +584,7 @@ struct PageReadView: View {
             }
             .font(.subheadline)
         }
-        .padding(.top, globalBasePadding)
+        .padding(.top, 2)
 
     }
 
@@ -555,10 +597,10 @@ struct PageReadView: View {
     // MARK: Панель - AudioButtons
     @ViewBuilder fileprivate func viewAudioButtons(proxy: ScrollViewProxy) -> some View {
 
-        let buttonsColor = audiopleer.state == .buffering ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+        let buttonsColor = (!hasAudio || audiopleer.state == .buffering) ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let prevColor =  prevExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
         let nextColor =  nextExcerpt == "" ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
-        let verseGoColor = audiopleer.state == .playing ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4)
+        let verseGoColor = (hasAudio && audiopleer.state == .playing) ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4)
 
         HStack {
 
@@ -583,6 +625,7 @@ struct PageReadView: View {
                 Image(systemName: "gobackward")
                     .foregroundColor(buttonsColor)
             }
+            .disabled(!hasAudio)
             Spacer()
 
             // Previos verse
@@ -593,6 +636,7 @@ struct PageReadView: View {
                 Image(systemName: "arrow.turn.left.up")
                     .foregroundColor(verseGoColor)
             }
+            .disabled(!hasAudio)
             Spacer()
 
             // Play/Pause
@@ -613,6 +657,7 @@ struct PageReadView: View {
                     .font(.system(size: 55))
                     .foregroundColor(buttonsColor)
             }
+            .disabled(!hasAudio)
             Spacer()
 
             // Next verse
@@ -623,6 +668,7 @@ struct PageReadView: View {
                 Image(systemName: "arrow.turn.right.down")
                     .foregroundColor(verseGoColor)
             }
+            .disabled(!hasAudio)
             Spacer()
 
             // Speed
@@ -634,6 +680,7 @@ struct PageReadView: View {
                     .font(.system(size: 18))
                     .foregroundColor(buttonsColor)
             }
+            .disabled(!hasAudio)
             Spacer()
 
             // Next chapter

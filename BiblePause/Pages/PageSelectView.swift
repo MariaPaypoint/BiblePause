@@ -165,31 +165,45 @@ struct PageSelectView: View {
                     
                 }) {
                     if settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number {
-                        Text("\(chapter_number)").frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                        //.foregroundColor(Color("DarkGreen"))
-                            .background(.white.opacity(0.3))
-                            .cornerRadius(5)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .stroke(hasNoAudio ? Color.red : Color.white, lineWidth: hasNoAudio ? 2 : 1)
-                            )
-                            .fontWeight(.bold)
-                            .opacity(hasNoAudio ? 0.5 : 1.0)
+                        ZStack(alignment: .topTrailing) {
+                            Text("\(chapter_number)").frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                            //.foregroundColor(Color("DarkGreen"))
+                                .background(.white.opacity(0.3))
+                                .cornerRadius(5)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(Color.white, lineWidth: 1)
+                                )
+                                .fontWeight(.bold)
+                            
+                            if hasNoAudio {
+                                Image(systemName: "speaker.slash.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(Color("Mustard"))
+                                    .padding(4)
+                            }
+                        }
                     } else {
-                        Text("\(chapter_number)").frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .foregroundColor(hasNoAudio ? .white.opacity(0.5) : .white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .stroke(hasNoAudio ? Color.red.opacity(0.6) : Color.white, lineWidth: hasNoAudio ? 2 : 1)
-                            )
-                            .fontWeight(.bold)
-                            .opacity(hasNoAudio ? 0.5 : 1.0)
-                        
+                        ZStack(alignment: .topTrailing) {
+                            Text("\(chapter_number)").frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .foregroundColor(.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(Color.white, lineWidth: 1)
+                                )
+                                .fontWeight(.bold)
+                            
+                            if hasNoAudio {
+                                Image(systemName: "speaker.slash.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(Color("Mustard"))
+                                    .padding(4)
+                            }
+                        }
                     }
                 }
-                .disabled(hasNoAudio)
             }
         }
         .padding(.bottom, 10)
