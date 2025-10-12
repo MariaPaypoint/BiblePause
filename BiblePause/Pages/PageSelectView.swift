@@ -18,8 +18,9 @@ struct PageSelectView: View {
     @State private var expandedBook: Int = 0
     @State private var needSelectedBookOpen: Bool = true
     
-    @State private var translationInfo: Components.Schemas.TranslationInfoModel?
+    @State private var booksInfo: [Components.Schemas.TranslationBookModel] = []
     @State private var loadedTranslation: Int = 0
+    @State private var loadedVoice: Int = 0
     
     @State private var isLoading = false
     @State private var loadingError = ""
@@ -88,10 +89,11 @@ struct PageSelectView: View {
             
         }
         .onAppear {
-            if settingsManager.translation != self.loadedTranslation {
+            if settingsManager.translation != self.loadedTranslation || settingsManager.voice != self.loadedVoice {
                 //Task {
-                if fetchTranslationInfo() {
+                if fetchTranslationBooks() {
                     self.loadedTranslation = settingsManager.translation
+                    self.loadedVoice = settingsManager.voice
                 }
                 //}
                 
@@ -99,16 +101,19 @@ struct PageSelectView: View {
         }
     }
     
-    // MARK: fetchTranslationInfo
-    func fetchTranslationInfo() -> Bool {
+    // MARK: fetchTranslationBooks
+    func fetchTranslationBooks() -> Bool {
         Task {
             do {
                 self.isLoading = true
                 
-                let response = try await settingsManager.client.get_translation_info(query: .init(translation:  settingsManager.translation))
-                let translationInfoResponse = try response.ok.body.json
+                let response = try await settingsManager.client.get_translation_books(
+                    path: .init(translation_code: settingsManager.translation),
+                    query: .init(voice_code: settingsManager.voice)
+                )
+                let booksResponse = try response.ok.body.json
                 
-                self.translationInfo = translationInfoResponse
+                self.booksInfo = booksResponse
                 
                 self.isLoading = false
                 self.loadingError = ""
@@ -143,9 +148,11 @@ struct PageSelectView: View {
     }
     
     // MARK: Список глав
-    @ViewBuilder fileprivate func viewChaptersList(_ book: Components.Schemas.BookInfoModel) -> some View {
+    @ViewBuilder fileprivate func viewChaptersList(_ book: Components.Schemas.TranslationBookModel) -> some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
             ForEach(1...book.chapters_count, id: \.self) { chapter_number in
+                let hasNoAudio = book.chapters_without_audio?.contains(chapter_number) ?? false
+                
                 Button(action: {
                     // MARK: При выборе главы
                     settingsManager.currentExcerpt = "\(book.alias) \(chapter_number)"
@@ -157,7 +164,7 @@ struct PageSelectView: View {
                     }
                     
                 }) {
-                    if settingsManager.currentBookId == book.number && settingsManager.currentChapterId == chapter_number {
+                    if settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number {
                         Text("\(chapter_number)").frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
                         //.foregroundColor(Color("DarkGreen"))
@@ -165,21 +172,24 @@ struct PageSelectView: View {
                             .cornerRadius(5)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.white, lineWidth: 1)
+                                    .stroke(hasNoAudio ? Color.red : Color.white, lineWidth: hasNoAudio ? 2 : 1)
                             )
                             .fontWeight(.bold)
+                            .opacity(hasNoAudio ? 0.5 : 1.0)
                     } else {
                         Text("\(chapter_number)").frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
-                            .foregroundColor(.white)
+                            .foregroundColor(hasNoAudio ? .white.opacity(0.5) : .white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.white, lineWidth: 1)
+                                    .stroke(hasNoAudio ? Color.red.opacity(0.6) : Color.white, lineWidth: hasNoAudio ? 2 : 1)
                             )
                             .fontWeight(.bold)
+                            .opacity(hasNoAudio ? 0.5 : 1.0)
                         
                     }
                 }
+                .disabled(hasNoAudio)
             }
         }
         .padding(.bottom, 10)
@@ -195,42 +205,11 @@ struct PageSelectView: View {
                         .frame(height: 0)
                         .id("top")
                     
-                    /*
-                    let oldbooks = globalBibleText.getCurrentTranslation().books
-                    ForEach(Array(oldbooks.enumerated()), id: \.element.id) { index, book in
-                        if (selectedBiblePartIndex == 0 && index < 39) || (selectedBiblePartIndex == 1 && index >= 39) || selectedBiblePartIndex == -1 {
-                            if let headerTitle = bibleHeaders[index] {
-                                viewGroupHeader(text: headerTitle)
-                            }
-                            // Разворачивание книги
-                            Button {
-                                withAnimation {
-                                    expandedBook = book.id
-                                    
-                                    if book.id != settingsManager.currentBookId {
-                                        needSelectedBookOpen = false
-                                    }
-                                    
-                                    proxy.scrollTo("book_\(book.id)", anchor: .top)
-                                }
-                            } label: {
-                                Text(book.fullName)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.vertical, 10)
-                                    .id("book_\(book.id)")
-                            }
-                            
-                            if expandedBook == book.id || (settingsManager.currentBookId == book.id && needSelectedBookOpen) {
-                                viewChaptersList(book)
-                            }
-                        }
-                    }
-                     */
-                    if (self.translationInfo != nil) {
-                        ForEach(self.translationInfo!.books_info, id: \.code) { book in
-                            if (selectedBiblePartIndex == 0 && book.number < 39) || (selectedBiblePartIndex == 1 && book.number >= 39) || selectedBiblePartIndex == -1 {
+                    if !self.booksInfo.isEmpty {
+                        ForEach(self.booksInfo, id: \.code) { book in
+                            if (selectedBiblePartIndex == 0 && book.book_number < 39) || (selectedBiblePartIndex == 1 && book.book_number >= 39) || selectedBiblePartIndex == -1 {
                                 
-                                if let headerTitle = bibleHeaders[book.number] {
+                                if let headerTitle = bibleHeaders[book.book_number] {
                                     viewGroupHeader(text: headerTitle)
                                 }
                                 
@@ -238,23 +217,23 @@ struct PageSelectView: View {
                                 Button {
                                     
                                      withAnimation {
-                                         expandedBook = book.number
+                                         expandedBook = book.book_number
                                      
-                                         if book.number != settingsManager.currentBookId {
+                                         if book.book_number != settingsManager.currentBookId {
                                             needSelectedBookOpen = false
                                          }
                                      
-                                         proxy.scrollTo("book_\(book.number)", anchor: .top)
+                                         proxy.scrollTo("book_\(book.book_number)", anchor: .top)
                                      }
                                      
                                 } label: {
                                     Text(book.name)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.vertical, 10)
-                                        .id("book_\(book.number)")
+                                        .id("book_\(book.book_number)")
                                 }
                                  
-                                if expandedBook == book.number || (settingsManager.currentBookId == book.number && needSelectedBookOpen) {
+                                if expandedBook == book.book_number || (settingsManager.currentBookId == book.book_number && needSelectedBookOpen) {
                                     viewChaptersList(book)
                                 }
                             }

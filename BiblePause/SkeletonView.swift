@@ -37,8 +37,6 @@ class SettingsManager: ObservableObject {
     
     @AppStorage("currentSpeed") var currentSpeed: Double = 1.0
     
-    //var translationInfo: Components.Schemas.TranslationInfoModel?
-    
     private let baseURLString: String = Config.baseURL
     static let apiKey: String = Config.apiKey
     
@@ -52,19 +50,6 @@ class SettingsManager: ObservableObject {
         let session = URLSession(configuration: sessionConfiguration)
         let transport = URLSessionTransport(configuration: .init(session: session))
         self.client = Client(serverURL: URL(string: baseURLString)!, transport: transport)
-        
-        // загрузка информации о переводе
-        /*
-        Task {
-            do {
-                let response = try await client.get_translation_info(query: .init(translation: Int(exactly: translation)!))
-                let translationInfoResponse = try response.ok.body.json
-                self.translationInfo = translationInfoResponse
-            } catch {
-                // ничего не делать
-            }
-        }
-        */
     }
     
     /// Builds a full audio URL by appending the api_key query parameter.
@@ -148,7 +133,7 @@ struct SkeletonView: View {
                 .environmentObject(settingsManager)
             }
             
-            // слой меню
+            /// menu layer
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)

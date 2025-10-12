@@ -322,6 +322,7 @@ struct PageSetupView: View {
                        onSelect: { selectedTranslateIndex in
                             self.translation = translationKeys[selectedTranslateIndex]
                             self.translationName = translationNames[selectedTranslateIndex]
+            print(self.translationName)
                             self.voice = ""
                             showAudios()
                             scrollToBottom(proxy: proxy)
