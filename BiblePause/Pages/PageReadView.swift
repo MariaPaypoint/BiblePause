@@ -259,6 +259,7 @@ struct PageReadView: View {
         do {
             //withAnimation(.easeOut(duration: 0.1)) {
                 self.isTextLoading = true
+                //self.errorDescription = ""
             //}
 
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)

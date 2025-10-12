@@ -152,6 +152,7 @@ struct PageSelectView: View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
             ForEach(1...book.chapters_count, id: \.self) { chapter_number in
                 let hasNoAudio = book.chapters_without_audio?.contains(chapter_number) ?? false
+                let hasNoText = book.chapters_without_text?.contains(chapter_number) ?? false
                 
                 Button(action: {
                     // MARK: При выборе главы
@@ -164,46 +165,30 @@ struct PageSelectView: View {
                     }
                     
                 }) {
-                    if settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number {
-                        ZStack(alignment: .topTrailing) {
-                            Text("\(chapter_number)").frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                            //.foregroundColor(Color("DarkGreen"))
-                                .background(.white.opacity(0.3))
-                                .cornerRadius(5)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white, lineWidth: 1)
-                                )
-                                .fontWeight(.bold)
-                            
-                            if hasNoAudio {
-                                Image(systemName: "speaker.slash.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(Color("Mustard"))
-                                    .padding(4)
-                            }
-                        }
-                    } else {
-                        ZStack(alignment: .topTrailing) {
-                            Text("\(chapter_number)").frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .foregroundColor(.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white, lineWidth: 1)
-                                )
-                                .fontWeight(.bold)
-                            
-                            if hasNoAudio {
-                                Image(systemName: "speaker.slash.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(Color("Mustard"))
-                                    .padding(4)
-                            }
+                    let isCurrentChapter = settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number
+                    
+                    ZStack(alignment: .topTrailing) {
+                        Text("\(chapter_number)").frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .foregroundColor(.white)
+                            .background(isCurrentChapter ? .white.opacity(0.3) : .clear)
+                            .cornerRadius(5)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.white, lineWidth: 1)
+                            )
+                            .fontWeight(.bold)
+                        
+                        if hasNoAudio {
+                            Image(systemName: "speaker.slash.fill")
+                                .font(.system(size: 10))
+                                .foregroundColor(Color("Mustard"))
+                                .padding(4)
                         }
                     }
+                    .opacity(hasNoText ? 0.3 : 1)
                 }
+                .disabled(hasNoText)
             }
         }
         .padding(.bottom, 10)

@@ -106,7 +106,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
         
         if let unprocessableContent = try? response.unprocessableContent {
             let detail = try unprocessableContent.body.json.detail
-            throw NSError(domain: "", code: 422, userInfo: [NSLocalizedDescriptionKey: detail])
+            throw NSError(domain: "getExcerptTextualVersesOnline", code: 422, userInfo: [NSLocalizedDescriptionKey: detail])
         }
         
         let answer = try response.ok.body.json
