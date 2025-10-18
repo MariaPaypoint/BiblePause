@@ -43,6 +43,7 @@ struct PageReadView: View {
 
     @State var oldExcerpt: String = "" // значение до клика на выбор
     @State var oldTranslation: Int = 0
+    @State var oldVoice: Int = 0
     @State var oldFontIncreasePercent: Double = 0
 
     //@State var currentExcerptTitle: String = ""
@@ -89,6 +90,7 @@ struct PageReadView: View {
                         Button {
                             withAnimation(Animation.easeInOut(duration: 1)) {
                                 oldTranslation = settingsManager.translation
+                                oldVoice = settingsManager.voice
                                 oldFontIncreasePercent = settingsManager.fontIncreasePercent
                                 showSetup = true
                             }
@@ -216,7 +218,7 @@ struct PageReadView: View {
 
             .fullScreenCover(isPresented: $showSetup, onDismiss: {
                 Task {
-                    if oldTranslation != settingsManager.translation || oldFontIncreasePercent != settingsManager.fontIncreasePercent {
+                    if oldTranslation != settingsManager.translation || oldVoice != settingsManager.voice || oldFontIncreasePercent != settingsManager.fontIncreasePercent {
                         await updateExcerpt(proxy: proxy)
                     }
                 }
