@@ -19,8 +19,6 @@ struct PageSelectView: View {
     @State private var needSelectedBookOpen: Bool = true
     
     @State private var booksInfo: [Components.Schemas.TranslationBookModel] = []
-    @State private var loadedTranslation: Int = 0
-    @State private var loadedVoice: Int = 0
     
     @State private var isLoading = false
     @State private var loadingError = ""
@@ -61,7 +59,9 @@ struct PageSelectView: View {
                     
                     if isLoading {
                         Spacer()
-                        // вообще надо бы лоадер отображать
+                        ProgressView()
+                            .tint(.white)
+                        Spacer()
                     }
                     else if loadingError == "" {
                         viewSelectTestament()
@@ -89,42 +89,27 @@ struct PageSelectView: View {
             
         }
         .onAppear {
-            if settingsManager.translation != self.loadedTranslation || settingsManager.voice != self.loadedVoice {
-                //Task {
-                if fetchTranslationBooks() {
-                    self.loadedTranslation = settingsManager.translation
-                    self.loadedVoice = settingsManager.voice
-                }
-                //}
-                
-            }
+            fetchTranslationBooks()
         }
     }
     
     // MARK: fetchTranslationBooks
-    func fetchTranslationBooks() -> Bool {
+    func fetchTranslationBooks() {
         Task {
             do {
                 self.isLoading = true
-                
-                let response = try await settingsManager.client.get_translation_books(
-                    path: .init(translation_code: settingsManager.translation),
-                    query: .init(voice_code: settingsManager.voice)
-                )
-                let booksResponse = try response.ok.body.json
-                
-                self.booksInfo = booksResponse
-                
-                self.isLoading = false
                 self.loadingError = ""
-                return true
+                
+                // Используем кешированный метод из SettingsManager
+                let books = try await settingsManager.getTranslationBooks()
+                
+                self.booksInfo = books
+                self.isLoading = false
             } catch {
                 self.isLoading = false
                 self.loadingError = error.localizedDescription
             }
-            return false
         }
-        return false
     }
     
     // MARK: Выбор завета

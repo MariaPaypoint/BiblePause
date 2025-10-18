@@ -42,6 +42,11 @@ class SettingsManager: ObservableObject {
     
     let client: any APIProtocol
     
+    // MARK: Кеширование книг и глав
+    @Published var cachedBooks: [Components.Schemas.TranslationBookModel] = []
+    @Published var cachedBooksTranslation: Int = 0
+    @Published var cachedBooksVoice: Int = 0
+    
     init() {
         let sessionConfiguration = URLSessionConfiguration.default
         sessionConfiguration.httpAdditionalHeaders = [
@@ -92,6 +97,42 @@ class SettingsManager: ObservableObject {
             components.queryItems = items
         }
         return components.url ?? url
+    }
+    
+    // MARK: Получение книг с кешированием
+    /// Получает список книг для текущего перевода и голоса.
+    /// Использует кеш если данные уже загружены для этой комбинации translation/voice.
+    /// - Returns: Массив книг или throws error при ошибке загрузки
+    func getTranslationBooks() async throws -> [Components.Schemas.TranslationBookModel] {
+        // Проверяем, есть ли актуальный кеш
+        if !cachedBooks.isEmpty && 
+           cachedBooksTranslation == translation && 
+           cachedBooksVoice == voice {
+            return cachedBooks
+        }
+        
+        // Загружаем данные с API
+        let response = try await client.get_translation_books(
+            path: .init(translation_code: translation),
+            query: .init(voice_code: voice)
+        )
+        let books = try response.ok.body.json
+        
+        // Сохраняем в кеш
+        await MainActor.run {
+            self.cachedBooks = books
+            self.cachedBooksTranslation = translation
+            self.cachedBooksVoice = voice
+        }
+        
+        return books
+    }
+    
+    /// Очищает кеш книг (например, при изменении настроек)
+    func clearBooksCache() {
+        cachedBooks = []
+        cachedBooksTranslation = 0
+        cachedBooksVoice = 0
     }
 }
 
