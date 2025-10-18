@@ -387,14 +387,59 @@ struct PageReadView: View {
                             self.settingsManager.currentExcerpt = self.nextExcerpt
                             await self.updateExcerpt(proxy: proxy)
                             
-                            // Автоматический старт воспроизведения после небольшой задержки
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                self.audiopleer.doPlayOrPause()
+                            // Определяем нужна ли пауза между главами и должно ли начаться воспроизведение
+                            let (pauseDelay, shouldAutoPlay) = self.calculateChapterTransitionPause()
+                            
+                            // Если есть пауза, показываем состояние autopausing
+                            if pauseDelay > 0.3 && shouldAutoPlay {
+                                self.audiopleer.state = .autopausing
+                            }
+                            
+                            // Автоматический старт воспроизведения после паузы (если нужно)
+                            if shouldAutoPlay {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + pauseDelay) {
+                                    self.audiopleer.doPlayOrPause()
+                                }
                             }
                         }
                     }
                 }
             }
+    }
+    
+    // MARK: Вычисление паузы при переходе между главами
+    private func calculateChapterTransitionPause() -> (delay: Double, shouldAutoPlay: Bool) {
+        // Если паузы отключены
+        guard settingsManager.pauseType != .none else {
+            return (0.3, true) // минимальная техническая задержка, автовоспроизведение
+        }
+        
+        // Новая глава всегда считается новым стихом и новым абзацем
+        // Проверяем, является ли она новым отрывком (есть ли заголовок перед первым стихом)
+        let isNewFragment = textVerses.first?.beforeTitle != nil
+        
+        // Определяем нужна ли пауза в зависимости от настроек
+        let shouldPause: Bool
+        switch settingsManager.pauseBlock {
+        case .verse:
+            shouldPause = true // новая глава = новый стих
+        case .paragraph:
+            shouldPause = true // новая глава = новый абзац
+        case .fragment:
+            shouldPause = isNewFragment // новая глава = новый отрывок только если есть заголовок
+        }
+        
+        guard shouldPause else {
+            return (0.3, true) // минимальная техническая задержка, автовоспроизведение
+        }
+        
+        // Возвращаем длительность паузы и флаг автовоспроизведения в зависимости от типа
+        if settingsManager.pauseType == .time {
+            return (settingsManager.pauseLength, true)
+        } else {
+            // Для .full паузы воспроизведение не должно начаться автоматически
+            return (0.3, false)
+        }
     }
 
     // MARK: Панель с плеером
