@@ -37,6 +37,7 @@ struct PageReadView: View {
     @State private var isTextLoading: Bool = true
     @State private var toast: FancyToast? = nil
     @State private var hasAudio: Bool = true
+    @State private var hasText: Bool = true
 
     @State var scrollToVerseId: Int?
 
@@ -124,7 +125,7 @@ struct PageReadView: View {
                     else {
                         // Показываем текст (с предупреждением об отсутствии аудио, если есть)
                         VStack(spacing: 0) {
-                            if self.errorDescription != "" && hasAudio {
+                            if self.errorDescription != "" && !hasText {
                                 Text("⚠️ " + self.errorDescription)
                                     .foregroundColor(Color("Mustard"))
                                     .font(.footnote)
@@ -259,12 +260,14 @@ struct PageReadView: View {
         do {
             //withAnimation(.easeOut(duration: 0.1)) {
                 self.isTextLoading = true
-                //self.errorDescription = ""
+                self.errorDescription = ""
+                self.hasText = false
             //}
 
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
 
             textVerses = thisTextVerses
+            self.hasText = true
             
             // Обновляем информацию о книге и главе
             settingsManager.currentBookId = textVerses[0].bookDigitCode
@@ -402,7 +405,7 @@ struct PageReadView: View {
                 viewAudioInfo()
                 
                 // Предупреждение об отсутствии аудио
-                if !hasAudio && self.errorDescription != "" {
+                if !hasAudio && hasText && self.errorDescription != "" {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(Color("Mustard"))
@@ -428,7 +431,7 @@ struct PageReadView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: showAudioPanel ? (hasAudio ? 220 : 260) : 45)
+        .frame(height: showAudioPanel ? (!hasAudio && hasText ? 260 : 220) : 45)
         .padding(.horizontal, globalBasePadding)
         .background(Color("DarkGreen-light"))
         .clipShape(

@@ -23,14 +23,14 @@ class SettingsManager: ObservableObject {
     @AppStorage("autoNextChapter") var autoNextChapter: Bool = true
     
     @AppStorage("language") var language: String = "ru"
-    @AppStorage("translation") var translation: Int = 10 // bti
-    @AppStorage("translationName") var translationName: String = "BTI"
-    @AppStorage("voice") var voice: Int = 4 // prozorovsky
-    @AppStorage("voiceName") var voiceName: String = "Н. Семёнов-Прозоровский"
-    @AppStorage("voiceMusic") var voiceMusic: Bool = false
+    @AppStorage("translation") var translation: Int = 1 // syn
+    @AppStorage("translationName") var translationName: String = "SYNO"
+    @AppStorage("voice") var voice: Int = 1 // prozorovsky
+    @AppStorage("voiceName") var voiceName: String = "Александр Бондаренко"
+    @AppStorage("voiceMusic") var voiceMusic: Bool = true
     
-    @AppStorage("currentExcerpt") var currentExcerpt: String = "mat 1"
-    @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "Евангелие от Матфея"
+    @AppStorage("currentExcerpt") var currentExcerpt: String = "jhn 1"
+    @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "От Иоанна святое благовествование"
     @AppStorage("currentExcerptSubtitle") var currentExcerptSubtitle: String = "Глава 1"
     @AppStorage("currentBookId") var currentBookId: Int = 0
     @AppStorage("currentChapterId") var currentChapterId: Int = 0
