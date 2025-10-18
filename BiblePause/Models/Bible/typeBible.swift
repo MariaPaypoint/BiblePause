@@ -1,67 +1,10 @@
-// Необходимые типы: стихи, главы, книги, варианты
+// Необходимые типы для работы с Библией через API
 
 import Foundation
 
-// MARK: Text
+// MARK: Verse structures
 
-struct BibleTextualVerse: Hashable, Codable {
-    var id: Int
-    var text: String
-}
-
-struct BibleTextualChapter: Hashable, Codable, Identifiable {
-    var id: Int
-    var verses: [BibleTextualVerse]
-}
-
-struct BibleTextualBook: Hashable, Codable, Identifiable {
-    let id: Int
-    let code: String
-    let shortName: String
-    let fullName: String
-    var chapters: [BibleTextualChapter]
-}
-
-// BibleTextualTranslation
-struct BibleTextualTranslation: Hashable, Codable {
-    var code: String
-    var lang: String
-    var shortName: String
-    var fullName: String
-    var books: [BibleTextualBook]
-}
-
-// MARK: Audio
-
-struct BibleAcousticalVerse: Hashable, Codable {
-    let id: Int
-    //let begin: String
-    //let end: String
-    let begin: Double
-    let end: Double
-}
-
-struct BibleAcousticalChapter: Hashable, Codable, Identifiable {
-    let id: Int
-    let verses: [BibleAcousticalVerse]
-}
-
-struct BibleAcousticalBook: Hashable, Codable, Identifiable {
-    let id: Int
-    let chapters: [BibleAcousticalChapter]
-}
-
-// BibleAcousticalVoice
-struct BibleAcousticalVoice: Hashable, Codable {
-    let code: String
-    let translation: String
-    let books: [BibleAcousticalBook]
-}
-
-// MARK: Advanced
-
-// более полная версия стиха, с указанием главы и книги
-
+// Полная версия стиха с указанием главы и книги
 struct BibleTextualVerseFull: Hashable {
     let number: Int
     let html: String

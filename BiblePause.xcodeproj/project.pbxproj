@@ -17,21 +17,12 @@
 		04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */; };
 		04BC330E2C95F3BB004D8E65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */; };
 		4C141A042BED275000412C60 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C141A032BED275000412C60 /* MenuView.swift */; };
-		4C3F9EA92C14874B00EA807C /* bti-prozorovsky.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */; };
-		4C3F9EAA2C14874B00EA807C /* syn-bondarenko-nopause.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */; };
-		4C3F9EAB2C14874B00EA807C /* syn-bondarenko-pause.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9B2C14874B00EA807C /* syn-bondarenko-pause.json */; };
-		4C3F9EAC2C14874B00EA807C /* syn-bondarenko.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9E9C2C14874B00EA807C /* syn-bondarenko.json */; };
-		4C3F9EAF2C14874B00EA807C /* bti.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA32C14874B00EA807C /* bti.json */; };
-		4C3F9EB02C14874B00EA807C /* kjv.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA42C14874B00EA807C /* kjv.json */; };
-		4C3F9EB12C14874B00EA807C /* nrt.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA52C14874B00EA807C /* nrt.json */; };
-		4C3F9EB22C14874B00EA807C /* syn.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C3F9EA62C14874B00EA807C /* syn.json */; };
 		4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F9EB42C148DCD00EA807C /* advElements.swift */; };
 		4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B6E2E9B0091004BF2CB /* Configuration.plist */; };
 		4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B722E9B00A3004BF2CB /* Configuration.plist.example */; };
 		4C620B7E2E9B0123004BF2CB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C620B7D2E9B0123004BF2CB /* Config.swift */; };
 		4C749DFD2C149EF800CF4234 /* advCornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */; };
 		4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E002C14ABE700CF4234 /* typeBible.swift */; };
-		4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E022C14ABFB00CF4234 /* modelBible.swift */; };
 		4C749E052C14AC1500CF4234 /* advBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E042C14AC1500CF4234 /* advBible.swift */; };
 		4C749E072C1A133800CF4234 /* advExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E062C1A133800CF4234 /* advExtensions.swift */; };
 		4C749E092C1D804A00CF4234 /* PageSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E082C1D804A00CF4234 /* PageSetupView.swift */; };
@@ -64,21 +55,12 @@
 		04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advHTMLTextView.swift; sourceTree = "<group>"; };
 		04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4C141A032BED275000412C60 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
-		4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "bti-prozorovsky.json"; sourceTree = "<group>"; };
-		4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko-nopause.json"; sourceTree = "<group>"; };
-		4C3F9E9B2C14874B00EA807C /* syn-bondarenko-pause.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko-pause.json"; sourceTree = "<group>"; };
-		4C3F9E9C2C14874B00EA807C /* syn-bondarenko.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "syn-bondarenko.json"; sourceTree = "<group>"; };
-		4C3F9EA32C14874B00EA807C /* bti.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bti.json; sourceTree = "<group>"; };
-		4C3F9EA42C14874B00EA807C /* kjv.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = kjv.json; sourceTree = "<group>"; };
-		4C3F9EA52C14874B00EA807C /* nrt.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = nrt.json; sourceTree = "<group>"; };
-		4C3F9EA62C14874B00EA807C /* syn.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = syn.json; sourceTree = "<group>"; };
 		4C3F9EB42C148DCD00EA807C /* advElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advElements.swift; sourceTree = "<group>"; };
 		4C620B6E2E9B0091004BF2CB /* Configuration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Configuration.plist; sourceTree = "<group>"; };
 		4C620B722E9B00A3004BF2CB /* Configuration.plist.example */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Configuration.plist.example; sourceTree = "<group>"; };
 		4C620B7D2E9B0123004BF2CB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advCornerRadius.swift; sourceTree = "<group>"; };
 		4C749E002C14ABE700CF4234 /* typeBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = typeBible.swift; sourceTree = "<group>"; };
-		4C749E022C14ABFB00CF4234 /* modelBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modelBible.swift; sourceTree = "<group>"; };
 		4C749E042C14AC1500CF4234 /* advBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advBible.swift; sourceTree = "<group>"; };
 		4C749E062C1A133800CF4234 /* advExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advExtensions.swift; sourceTree = "<group>"; };
 		4C749E082C1D804A00CF4234 /* PageSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSetupView.swift; sourceTree = "<group>"; };
@@ -111,15 +93,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		042268EE2C70F4F000B194A0 /* Res */ = {
-			isa = PBXGroup;
-			children = (
-				4C3F9EA72C14874B00EA807C /* text */,
-				4C3F9E9D2C14874B00EA807C /* audio */,
-			);
-			path = Res;
-			sourceTree = "<group>";
-		};
 		0497A95E2C6BFD40008A5D7F /* FancyToast */ = {
 			isa = PBXGroup;
 			children = (
@@ -128,28 +101,6 @@
 				0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */,
 			);
 			path = FancyToast;
-			sourceTree = "<group>";
-		};
-		4C3F9E9D2C14874B00EA807C /* audio */ = {
-			isa = PBXGroup;
-			children = (
-				4C3F9E992C14874B00EA807C /* bti-prozorovsky.json */,
-				4C3F9E9A2C14874B00EA807C /* syn-bondarenko-nopause.json */,
-				4C3F9E9B2C14874B00EA807C /* syn-bondarenko-pause.json */,
-				4C3F9E9C2C14874B00EA807C /* syn-bondarenko.json */,
-			);
-			path = audio;
-			sourceTree = "<group>";
-		};
-		4C3F9EA72C14874B00EA807C /* text */ = {
-			isa = PBXGroup;
-			children = (
-				4C3F9EA32C14874B00EA807C /* bti.json */,
-				4C3F9EA42C14874B00EA807C /* kjv.json */,
-				4C3F9EA52C14874B00EA807C /* nrt.json */,
-				4C3F9EA62C14874B00EA807C /* syn.json */,
-			);
-			path = text;
 			sourceTree = "<group>";
 		};
 		4C3F9EB32C148DB200EA807C /* Adv */ = {
@@ -192,7 +143,6 @@
 			isa = PBXGroup;
 			children = (
 				4C749E002C14ABE700CF4234 /* typeBible.swift */,
-				4C749E022C14ABFB00CF4234 /* modelBible.swift */,
 				4C749E042C14AC1500CF4234 /* advBible.swift */,
 			);
 			path = Bible;
@@ -315,18 +265,10 @@
 			files = (
 				0458F5472CCE0FE20016C65F /* LaunchScreen.storyboard in Resources */,
 				4C76912B2BECEA1800C66FDC /* Preview Assets.xcassets in Resources */,
-				4C3F9EAA2C14874B00EA807C /* syn-bondarenko-nopause.json in Resources */,
-				4C3F9EB22C14874B00EA807C /* syn.json in Resources */,
-				4C3F9EAF2C14874B00EA807C /* bti.json in Resources */,
 				4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */,
 				4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */,
-				4C3F9EB02C14874B00EA807C /* kjv.json in Resources */,
-				4C3F9EA92C14874B00EA807C /* bti-prozorovsky.json in Resources */,
 				4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */,
-				4C3F9EAC2C14874B00EA807C /* syn-bondarenko.json in Resources */,
-				4C3F9EB12C14874B00EA807C /* nrt.json in Resources */,
 				4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */,
-				4C3F9EAB2C14874B00EA807C /* syn-bondarenko-pause.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,7 +297,6 @@
 				4C749E0D2C1F690100CF4234 /* advSettings.swift in Sources */,
 				4C749E072C1A133800CF4234 /* advExtensions.swift in Sources */,
 				4C749E092C1D804A00CF4234 /* PageSetupView.swift in Sources */,
-				4C749E032C14ABFB00CF4234 /* modelBible.swift in Sources */,
 				4C620B7E2E9B0123004BF2CB /* Config.swift in Sources */,
 				04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */,
 				047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */,
