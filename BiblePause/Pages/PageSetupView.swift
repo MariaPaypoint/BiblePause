@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AVFoundation
+import Combine
 
 struct PageSetupView: View {
     
@@ -43,6 +45,12 @@ struct PageSetupView: View {
     @State private var voice: String = "" // инициализируется в onAppear
     @State private var voiceName: String = ""
     @State private var voiceMusic: Bool = false
+    
+    // Для предпрослушивания голосов
+    @State private var previewPlayer: AVPlayer?
+    @State private var previewVoiceIndex: Int? = nil
+    @State private var previewTimer: AnyCancellable? = nil
+    @State private var previewTimeObserver: Any? = nil
     
     init(showFromRead: Binding<Bool>) {
         self._showFromRead = showFromRead
@@ -114,6 +122,10 @@ struct PageSetupView: View {
             self.voice = String(settingsManager.voice)
             fetchLanguages()
             loadExampleText()
+        }
+        .onDisappear {
+            // Останавливаем предпрослушивание при закрытии экрана
+            stopVoicePreview()
         }
     }
     
@@ -331,7 +343,7 @@ struct PageSetupView: View {
         .padding(.vertical, -5)
         
         viewGroupHeader(text: "Читает")
-        viewSelectList(texts: voiceTexts,
+        viewSelectListWithPreview(texts: voiceTexts,
                        keys: voiceKeys,
                        selectedKey: $voice,
                        onSelect: { selectedTranslateIndex in
@@ -339,6 +351,12 @@ struct PageSetupView: View {
                             self.voiceName = voiceTexts[selectedTranslateIndex]
                             self.voiceMusic = voiceMusics[selectedTranslateIndex]
                             scrollToBottom(proxy: proxy)
+                       },
+                       onPreview: { index in
+                            toggleVoicePreview(index: index)
+                       },
+                       isPlaying: { index in
+                            return previewVoiceIndex == index
                        }
         )
         .padding(.vertical, -5)
@@ -521,6 +539,80 @@ struct PageSetupView: View {
                 break
             }
         }
+    }
+    
+    // MARK: Предпрослушивание голоса
+    func toggleVoicePreview(index: Int) {
+        // Если уже играет этот голос - остановить
+        if previewVoiceIndex == index {
+            stopVoicePreview()
+            return
+        }
+        
+        // Остановить предыдущее воспроизведение
+        stopVoicePreview()
+        
+        // Начать воспроизведение нового голоса
+        let voiceCode = Int(voiceKeys[index]) ?? 0
+        
+        Task {
+            do {
+                // Загружаем аудио для Иоанна 1 главы
+                let (_, audioVerses, firstUrl, _, _) = try await getExcerptTextualVersesOnline(
+                    excerpts: "jhn 1",
+                    client: settingsManager.client,
+                    translation: Int(self.translation) ?? settingsManager.translation,
+                    voice: voiceCode
+                )
+                
+                guard !firstUrl.isEmpty, let url = URL(string: firstUrl) else {
+                    toast = FancyToast(type: .error, title: "Ошибка", message: "Аудио недоступно для этого голоса")
+                    return
+                }
+                
+                // Создаем плеер
+                let playerItem = AVPlayerItem(url: url)
+                previewPlayer = AVPlayer(playerItem: playerItem)
+                previewVoiceIndex = index
+                
+                // Позиционируем на начало первого стиха
+                if let firstVerse = audioVerses.first {
+                    let startTime = CMTime(seconds: firstVerse.begin, preferredTimescale: 600)
+                    await previewPlayer?.seek(to: startTime, toleranceBefore: .zero, toleranceAfter: .zero)
+                }
+                
+                // Устанавливаем наблюдатель для остановки в конце третьего стиха
+                if audioVerses.count >= 3 {
+                    let thirdVerseEndTime = CMTime(seconds: audioVerses[2].end, preferredTimescale: 600)
+                    previewTimeObserver = previewPlayer?.addBoundaryTimeObserver(
+                        forTimes: [NSValue(time: thirdVerseEndTime)],
+                        queue: .main
+                    ) {
+                        self.stopVoicePreview()
+                    }
+                }
+                
+                // Воспроизводим
+                previewPlayer?.play()
+                
+            } catch {
+                toast = FancyToast(type: .error, title: "Ошибка", message: "Не удалось загрузить аудио")
+            }
+        }
+    }
+    
+    func stopVoicePreview() {
+        // Удаляем наблюдатель времени
+        if let observer = previewTimeObserver {
+            previewPlayer?.removeTimeObserver(observer)
+            previewTimeObserver = nil
+        }
+        
+        previewPlayer?.pause()
+        previewPlayer = nil
+        previewVoiceIndex = nil
+        previewTimer?.cancel()
+        previewTimer = nil
     }
 }
 
