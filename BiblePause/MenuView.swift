@@ -11,6 +11,7 @@ enum MenuItem {
     case main
     case read
     case select
+    case progress
     case setup
     case contacts
 }
@@ -52,6 +53,7 @@ struct MenuView: View{
                 Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (settingsManager.selectedMenuItem == .main)) }
                 Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
                 Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (settingsManager.selectedMenuItem == .select)) }
+                Button { changeSelected(selected: .progress) } label: { MenuItem(title: "Прогресс", subTitle: "Управление прогрессом чтения", selected: (settingsManager.selectedMenuItem == .progress)) }
                 Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (settingsManager.selectedMenuItem == .setup)) }
                 Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты", subTitle: "Ищем единомышленников", selected: (settingsManager.selectedMenuItem == .contacts)) }
                 

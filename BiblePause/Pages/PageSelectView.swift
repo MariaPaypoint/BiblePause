@@ -151,8 +151,9 @@ struct PageSelectView: View {
                     
                 }) {
                     let isCurrentChapter = settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number
+                    let isRead = settingsManager.isChapterRead(book: book.alias, chapter: chapter_number)
                     
-                    ZStack(alignment: .topTrailing) {
+                    ZStack {
                         Text("\(chapter_number)").frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
                             .foregroundColor(.white)
@@ -164,16 +165,52 @@ struct PageSelectView: View {
                             )
                             .fontWeight(.bold)
                         
+                        // Значок отсутствия аудио (слева вверху)
                         if hasNoAudio {
-                            Image(systemName: "speaker.slash.fill")
-                                .font(.system(size: 10))
-                                .foregroundColor(Color("Mustard"))
-                                .padding(4)
+                            VStack {
+                                Spacer()
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "speaker.slash.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color("Mustard"))
+                                        .padding(3)
+                                }
+                            }
+                        }
+                        
+                        // Галочка прочитанной главы (справа вверху)
+                        if isRead {
+                            VStack {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.green)
+                                        .padding(2)
+                                }
+                                Spacer()
+                            }
                         }
                     }
                     .opacity(hasNoText ? 0.3 : 1)
                 }
                 .disabled(hasNoText)
+                .contextMenu {
+                    if settingsManager.isChapterRead(book: book.alias, chapter: chapter_number) {
+                        Button {
+                            settingsManager.markChapterAsUnread(book: book.alias, chapter: chapter_number)
+                        } label: {
+                            Label("Отметить как непрочитанную", systemImage: "xmark.circle")
+                        }
+                    } else {
+                        Button {
+                            settingsManager.markChapterAsRead(book: book.alias, chapter: chapter_number)
+                        } label: {
+                            Label("Отметить как прочитанную", systemImage: "checkmark.circle")
+                        }
+                    }
+                }
             }
         }
         .padding(.bottom, 10)
@@ -211,10 +248,61 @@ struct PageSelectView: View {
                                      }
                                      
                                 } label: {
-                                    Text(book.name)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 10)
-                                        .id("book_\(book.book_number)")
+                                    HStack(spacing: 12) {
+                                        Text(book.name)
+                                            .multilineTextAlignment(.leading)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        
+                                        // Прогресс-бар справа от названия
+                                        let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
+                                        if progress.read > 0 {
+                                            let isCompleted = progress.read == progress.total
+                                            let progressColor = isCompleted ? Color("Success") : Color("Marigold")
+                                            
+                                            ZStack {
+                                                GeometryReader { geometry in
+                                                    ZStack(alignment: .leading) {
+                                                        // Фон
+                                                        RoundedRectangle(cornerRadius: 6)
+                                                            .fill(Color.white.opacity(0.15))
+                                                            .frame(height: 20)
+                                                        
+                                                        // Прогресс
+                                                        let progressWidth = geometry.size.width * CGFloat(progress.read) / CGFloat(progress.total)
+                                                        let progressPercent = CGFloat(progress.read) / CGFloat(progress.total)
+                                                        
+                                                        progressColor
+                                                            .frame(width: progressWidth, height: 20)
+                                                            .mask(
+                                                                HStack(spacing: 0) {
+                                                                    if progressPercent > 0.98 {
+                                                                        RoundedRectangle(cornerRadius: 6)
+                                                                    } else {
+                                                                        UnevenRoundedRectangle(
+                                                                            topLeadingRadius: 6,
+                                                                            bottomLeadingRadius: 6,
+                                                                            bottomTrailingRadius: 0,
+                                                                            topTrailingRadius: 0
+                                                                        )
+                                                                    }
+                                                                }
+                                                                .frame(width: progressWidth, height: 20)
+                                                            )
+                                                    }
+                                                }
+                                                .frame(height: 20)
+                                                
+                                                // Счетчик поверх прогресс-бара
+                                                Text("\(progress.read) / \(progress.total)")
+                                                    .font(.footnote)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                            }
+                                            .frame(width: 100, height: 24)
+                                        }
+                                    }
+                                    .padding(.vertical, 10)
+                                    .id("book_\(book.book_number)")
                                 }
                                  
                                 if expandedBook == book.book_number || (settingsManager.currentBookId == book.book_number && needSelectedBookOpen) {

@@ -377,28 +377,35 @@ struct PageReadView: View {
             .receive(on: DispatchQueue.main)
             .sink { newState in
                 // Автоматический переход к следующей главе при завершении аудио
-                if newState == .finished && 
-                   self.settingsManager.autoNextChapter && 
-                   !self.nextExcerpt.isEmpty {
+                if newState == .finished {
+                    // Отмечаем текущую главу как прочитанную
+                    if let firstVerse = self.textVerses.first {
+                        let bookAlias = self.settingsManager.getBookAlias(bookNumber: firstVerse.bookDigitCode)
+                        if !bookAlias.isEmpty {
+                            self.settingsManager.markChapterAsRead(book: bookAlias, chapter: firstVerse.chapterDigitCode)
+                        }
+                    }
                     
-                    // Небольшая задержка для лучшего UX
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        Task {
-                            self.settingsManager.currentExcerpt = self.nextExcerpt
-                            await self.updateExcerpt(proxy: proxy)
-                            
-                            // Определяем нужна ли пауза между главами и должно ли начаться воспроизведение
-                            let (pauseDelay, shouldAutoPlay) = self.calculateChapterTransitionPause()
-                            
-                            // Если есть пауза, показываем состояние autopausing
-                            if pauseDelay > 0.3 && shouldAutoPlay {
-                                self.audiopleer.state = .autopausing
-                            }
-                            
-                            // Автоматический старт воспроизведения после паузы (если нужно)
-                            if shouldAutoPlay {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + pauseDelay) {
-                                    self.audiopleer.doPlayOrPause()
+                    if self.settingsManager.autoNextChapter && !self.nextExcerpt.isEmpty {
+                        // Небольшая задержка для лучшего UX
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            Task {
+                                self.settingsManager.currentExcerpt = self.nextExcerpt
+                                await self.updateExcerpt(proxy: proxy)
+                                
+                                // Определяем нужна ли пауза между главами и должно ли начаться воспроизведение
+                                let (pauseDelay, shouldAutoPlay) = self.calculateChapterTransitionPause()
+                                
+                                // Если есть пауза, показываем состояние autopausing
+                                if pauseDelay > 0.3 && shouldAutoPlay {
+                                    self.audiopleer.state = .autopausing
+                                }
+                                
+                                // Автоматический старт воспроизведения после паузы (если нужно)
+                                if shouldAutoPlay {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + pauseDelay) {
+                                        self.audiopleer.doPlayOrPause()
+                                    }
                                 }
                             }
                         }
@@ -627,8 +634,8 @@ struct PageReadView: View {
                 Text("\(formatTime(audiopleer.currentTime))")
                     .foregroundStyle(Color("Mustard"))
                 Spacer()
-                Text("\(audiopleer.state)")
-                    .foregroundStyle(Color("localAccentColor").opacity(0.1))
+                //Text("\(audiopleer.state)")
+                    //.foregroundStyle(Color("localAccentColor").opacity(0.1))
                 Spacer()
                 Text("\(formatTime(audiopleer.currentDuration))")
                     .foregroundStyle(Color("localAccentColor").opacity(0.4))

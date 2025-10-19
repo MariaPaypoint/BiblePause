@@ -8,6 +8,12 @@
 import SwiftUI
 import OpenAPIURLSession
 
+// MARK: ReadProgress
+struct ReadProgress: Codable {
+    var readChapters: Set<String> = [] // ["gen_1", "exo_2", ...]
+    var startDate: Date = Date()
+}
+
 // MARK: SettingsManager
 class SettingsManager: ObservableObject {
     
@@ -47,6 +53,10 @@ class SettingsManager: ObservableObject {
     @Published var cachedBooksTranslation: Int = 0
     @Published var cachedBooksVoice: Int = 0
     
+    // MARK: Прогресс чтения
+    @Published var readProgress: ReadProgress = ReadProgress()
+    private let readProgressKey = "readProgress"
+    
     init() {
         let sessionConfiguration = URLSessionConfiguration.default
         sessionConfiguration.httpAdditionalHeaders = [
@@ -55,6 +65,9 @@ class SettingsManager: ObservableObject {
         let session = URLSession(configuration: sessionConfiguration)
         let transport = URLSessionTransport(configuration: .init(session: session))
         self.client = Client(serverURL: URL(string: baseURLString)!, transport: transport)
+        
+        // Загружаем прогресс чтения
+        loadReadProgress()
     }
     
     /// Builds a full audio URL by appending the api_key query parameter.
@@ -134,6 +147,101 @@ class SettingsManager: ObservableObject {
         cachedBooksTranslation = 0
         cachedBooksVoice = 0
     }
+    
+    // MARK: Методы работы с прогрессом чтения
+    
+    /// Загружает прогресс чтения из UserDefaults
+    private func loadReadProgress() {
+        if let data = UserDefaults.standard.data(forKey: readProgressKey),
+           let progress = try? JSONDecoder().decode(ReadProgress.self, from: data) {
+            self.readProgress = progress
+        }
+    }
+    
+    /// Сохраняет прогресс чтения в UserDefaults
+    private func saveReadProgress() {
+        if let data = try? JSONEncoder().encode(readProgress) {
+            UserDefaults.standard.set(data, forKey: readProgressKey)
+        }
+    }
+    
+    /// Формирует ключ главы в формате "bookAlias_chapterNumber"
+    private func chapterKey(book: String, chapter: Int) -> String {
+        return "\(book)_\(chapter)"
+    }
+    
+    /// Отмечает главу как прочитанную
+    func markChapterAsRead(book: String, chapter: Int) {
+        let key = chapterKey(book: book, chapter: chapter)
+        readProgress.readChapters.insert(key)
+        saveReadProgress()
+    }
+    
+    /// Отмечает главу как непрочитанную
+    func markChapterAsUnread(book: String, chapter: Int) {
+        let key = chapterKey(book: book, chapter: chapter)
+        readProgress.readChapters.remove(key)
+        saveReadProgress()
+    }
+    
+    /// Проверяет, прочитана ли глава
+    func isChapterRead(book: String, chapter: Int) -> Bool {
+        let key = chapterKey(book: book, chapter: chapter)
+        return readProgress.readChapters.contains(key)
+    }
+    
+    /// Получает прогресс по книге
+    func getBookProgress(book: String, totalChapters: Int) -> (read: Int, total: Int) {
+        var readCount = 0
+        for chapter in 1...totalChapters {
+            if isChapterRead(book: book, chapter: chapter) {
+                readCount += 1
+            }
+        }
+        return (readCount, totalChapters)
+    }
+    
+    /// Получает общий прогресс (требует информацию о всех книгах)
+    func getTotalProgress(books: [Components.Schemas.TranslationBookModel]) -> (read: Int, total: Int) {
+        var totalRead = 0
+        var totalChapters = 0
+        
+        for book in books {
+            let progress = getBookProgress(book: book.alias, totalChapters: book.chapters_count)
+            totalRead += progress.read
+            totalChapters += progress.total
+        }
+        
+        return (totalRead, totalChapters)
+    }
+    
+    /// Сбрасывает весь прогресс
+    func resetProgress() {
+        readProgress = ReadProgress()
+        saveReadProgress()
+    }
+    
+    /// Сбрасывает прогресс по конкретной книге
+    func resetBookProgress(book: String, totalChapters: Int) {
+        for chapter in 1...totalChapters {
+            markChapterAsUnread(book: book, chapter: chapter)
+        }
+    }
+    
+    /// Отмечает всю книгу как прочитанную
+    func markBookAsRead(book: String, totalChapters: Int) {
+        for chapter in 1...totalChapters {
+            markChapterAsRead(book: book, chapter: chapter)
+        }
+    }
+    
+    /// Получает алиас книги по её номеру из кешированных данных
+    func getBookAlias(bookNumber: Int) -> String {
+        if let book = cachedBooks.first(where: { $0.book_number == bookNumber }) {
+            return book.alias
+        }
+        return ""
+    }
 }
 
 struct SkeletonView: View {
@@ -161,6 +269,11 @@ struct SkeletonView: View {
             
             else if settingsManager.selectedMenuItem == .select {
                 PageSelectView(showFromRead: $showAsPartOfRead)
+                .environmentObject(settingsManager)
+            }
+            
+            else if settingsManager.selectedMenuItem == .progress {
+                PageProgressView()
                 .environmentObject(settingsManager)
             }
             

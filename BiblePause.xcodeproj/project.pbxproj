@@ -36,6 +36,7 @@
 		4C99F3762C023FD400879594 /* advUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3752C023FD400879594 /* advUtility.swift */; };
 		4C99F3782C02660C00879594 /* advExcerpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3772C02660C00879594 /* advExcerpt.swift */; };
 		4C99F37A2C0266C900879594 /* advGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99F3792C0266C900879594 /* advGlobals.swift */; };
+		4CA027002EA43D4E004A6FD1 /* PageProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA026FF2EA43D4E004A6FD1 /* PageProgressView.swift */; };
 		4CFC91F82C59AA7E005AFAA5 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 4CFC91F72C59AA7E005AFAA5 /* OpenAPIRuntime */; };
 		4CFC91FB2C59AAB1005AFAA5 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 4CFC91FA2C59AAB1005AFAA5 /* OpenAPIURLSession */; };
 		4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */ = {isa = PBXBuildFile; fileRef = 4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */; };
@@ -75,6 +76,7 @@
 		4C99F3752C023FD400879594 /* advUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advUtility.swift; sourceTree = "<group>"; };
 		4C99F3772C02660C00879594 /* advExcerpt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advExcerpt.swift; sourceTree = "<group>"; };
 		4C99F3792C0266C900879594 /* advGlobals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advGlobals.swift; sourceTree = "<group>"; };
+		4CA026FF2EA43D4E004A6FD1 /* PageProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageProgressView.swift; sourceTree = "<group>"; };
 		4CFC91F02C59A844005AFAA5 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		4CFC91FE2C59AB26005AFAA5 /* openapi-generator-config.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "openapi-generator-config.yml"; sourceTree = "<group>"; };
 		4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = openapi.yaml; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				4C7691252BECEA1300C66FDC /* PageMainView.swift */,
 				047B3BC62BEEBADD009DEC11 /* PageReadView.swift */,
 				047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */,
+				4CA026FF2EA43D4E004A6FD1 /* PageProgressView.swift */,
 				4C749E082C1D804A00CF4234 /* PageSetupView.swift */,
 				4C749E0A2C1E1FC000CF4234 /* PageContactsView.swift */,
 			);
@@ -156,7 +159,6 @@
 				0497A9592C6AC3EC008A5D7F /* .gitignore */,
 				4CFC91F02C59A844005AFAA5 /* readme.md */,
 				0497A95E2C6BFD40008A5D7F /* FancyToast */,
-				042268EE2C70F4F000B194A0 /* Res */,
 				4C7691212BECEA1300C66FDC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -281,6 +283,7 @@
 			files = (
 				0497A9652C6BFEA6008A5D7F /* FancyToastView.swift in Sources */,
 				0497A9662C6BFEA6008A5D7F /* FancyToastStyle.swift in Sources */,
+				4CA027002EA43D4E004A6FD1 /* PageProgressView.swift in Sources */,
 				0497A9672C6BFEA6008A5D7F /* FancyToastModifier.swift in Sources */,
 				4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Sources */,
 				4C7691262BECEA1300C66FDC /* PageMainView.swift in Sources */,
