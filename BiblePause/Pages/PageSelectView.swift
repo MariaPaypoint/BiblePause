@@ -139,6 +139,9 @@ struct PageSelectView: View {
                 let hasNoAudio = book.chapters_without_audio?.contains(chapter_number) ?? false
                 let hasNoText = book.chapters_without_text?.contains(chapter_number) ?? false
                 
+                let isCurrentChapter = settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number
+                let isRead = settingsManager.isChapterRead(book: book.alias, chapter: chapter_number)
+                
                 Button(action: {
                     // MARK: При выборе главы
                     settingsManager.currentExcerpt = "\(book.alias) \(chapter_number)"
@@ -150,9 +153,6 @@ struct PageSelectView: View {
                     }
                     
                 }) {
-                    let isCurrentChapter = settingsManager.currentBookId == book.book_number && settingsManager.currentChapterId == chapter_number
-                    let isRead = settingsManager.isChapterRead(book: book.alias, chapter: chapter_number)
-                    
                     ZStack {
                         Text("\(chapter_number)").frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
@@ -197,7 +197,7 @@ struct PageSelectView: View {
                 }
                 .disabled(hasNoText)
                 .contextMenu {
-                    if settingsManager.isChapterRead(book: book.alias, chapter: chapter_number) {
+                    if isRead {
                         Button {
                             settingsManager.markChapterAsUnread(book: book.alias, chapter: chapter_number)
                         } label: {
