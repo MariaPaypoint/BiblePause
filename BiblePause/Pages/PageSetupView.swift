@@ -317,6 +317,7 @@ struct PageSetupView: View {
                            keys: languageKeys,
                            selectedKey: $language,
                            onSelect: { selectedLanguageIndex in
+                                stopVoicePreview()
                                 self.language = languageKeys[selectedLanguageIndex]
                                 self.translation = ""
                                 self.voice = ""
@@ -332,6 +333,7 @@ struct PageSetupView: View {
                        keys: translationKeys,
                        selectedKey: $translation,
                        onSelect: { selectedTranslateIndex in
+                            stopVoicePreview()
                             self.translation = translationKeys[selectedTranslateIndex]
                             self.translationName = translationNames[selectedTranslateIndex]
             print(self.translationName)
