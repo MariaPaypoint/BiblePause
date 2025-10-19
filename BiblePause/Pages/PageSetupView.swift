@@ -193,25 +193,21 @@ struct PageSetupView: View {
             
             Text("Пример:")
                 .foregroundColor(.white.opacity(0.5))
-            ScrollView() {
-                if isExampleLoading {
-                    ProgressView()
-                        .tint(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(20)
-                } else if exampleErrorText != "" {
-                    Text(exampleErrorText)
-                        .foregroundColor(.pink)
-                        .frame(maxWidth: .infinity)
-                        .padding(20)
-                } else {
-                    viewExcerpt(verses: exampleVerses, fontIncreasePercent: settingsManager.fontIncreasePercent)
-                        .padding(.bottom, 20)
-                        .id("top")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+            if isExampleLoading {
+                ProgressView()
+                    .tint(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 158)
+            } else if exampleErrorText != "" {
+                Text(exampleErrorText)
+                    .foregroundColor(.pink)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 158)
+            } else {
+                HTMLTextView(htmlContent: generateHTMLContent(verses: exampleVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: .constant(nil))
+                    .frame(height: 158)
+                    .id(settingsManager.fontIncreasePercent)
             }
-            .frame(maxHeight: 158)
         }
         
     }
