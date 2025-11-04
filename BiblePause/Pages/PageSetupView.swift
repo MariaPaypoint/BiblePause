@@ -335,6 +335,7 @@ struct PageSetupView: View {
             print(self.translationName)
                             self.voice = ""
                             showAudios()
+                            loadExampleText()
                             scrollToBottom(proxy: proxy)
                        }
         )
@@ -444,7 +445,10 @@ struct PageSetupView: View {
                 self.isExampleLoading = true
                 self.exampleErrorText = ""
                 
-                let (verses, _, _, _, _) = try await getExcerptTextualVersesOnline(excerpts: "jhn 1:1-3", client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
+                // Use current selection if available, otherwise use saved settings
+                let translationToUse = Int(self.translation) ?? settingsManager.translation
+                
+                let (verses, _, _, _, _) = try await getExcerptTextualVersesOnline(excerpts: "jhn 1:1-3", client: settingsManager.client, translation: translationToUse, voice: 0)
                 
                 self.exampleVerses = verses
                 self.isExampleLoading = false
