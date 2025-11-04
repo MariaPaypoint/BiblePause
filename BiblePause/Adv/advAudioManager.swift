@@ -343,7 +343,8 @@ class PlayerModel: ObservableObject {
     // MARK: воспр/пауза
     func doPlayOrPause() {
         if self.state == .playing {
-            pauseSmoothly(duration: smoothPauseLength)
+            let safeDuration = calculateSafeSmoothPauseDuration()
+            pauseSmoothly(duration: safeDuration)
         }
         else if state == .buffering {
             // ничего не делать
@@ -371,6 +372,33 @@ class PlayerModel: ObservableObject {
         //self.timeObserver.pause(true)
         self.player.pause()
         self.state = .pausing
+    }
+    
+    // Calculate safe duration for smooth pause to avoid overlapping with next verse
+    private func calculateSafeSmoothPauseDuration() -> TimeInterval {
+        // If no smooth pause is set, return 0
+        guard smoothPauseLength > 0 else { return 0 }
+        
+        // Find current verse and check distance to next verse
+        let currentTime = CMTimeGetSeconds(player.currentTime())
+        var distanceToNextVerse: Double = smoothPauseLength // default to full smooth pause length
+        
+        // Find current verse index based on current time
+        for (index, verse) in audioVerses.enumerated() {
+            if currentTime >= verse.begin && currentTime <= verse.end {
+                // Check if there's a next verse
+                if index + 1 < audioVerses.count {
+                    let nextVerseBegin = audioVerses[index + 1].begin
+                    distanceToNextVerse = nextVerseBegin - currentTime
+                }
+                break
+            }
+        }
+        
+        // Return the minimum of smoothPauseLength and available distance
+        // Leave a small buffer (0.05 seconds) to avoid exact timing issues
+        let safeDistance = max(0, distanceToNextVerse - 0.05)
+        return min(smoothPauseLength, safeDistance)
     }
     
     private func pauseSmoothly(duration: TimeInterval) {
