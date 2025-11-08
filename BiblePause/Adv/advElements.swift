@@ -96,6 +96,7 @@ func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String
 // выбор из листа с кнопкой предпрослушивания
 @ViewBuilder
 func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Binding<String>,
+                                descriptions: [String] = [],
                                 onSelect: @escaping (Int) -> Void = { _ in },
                                 onPreview: @escaping (Int) -> Void,
                                 isPlaying: @escaping (Int) -> Bool) -> some View {
@@ -103,29 +104,44 @@ func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Bin
         ForEach(texts.indices, id: \.self) { index in
             let text = texts[index]
             let key = keys[index]
-            HStack {
-                Text(text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+            let description = index < descriptions.count ? descriptions[index] : ""
+            
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(text)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+                        
+                        if !description.isEmpty {
+                            Text(description)
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.6))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
                     .padding(.vertical, 10)
-                
-                Spacer()
-                
-                // Кнопка предпрослушивания
-                Button {
-                    onPreview(index)
-                } label: {
-                    Image(systemName: isPlaying(index) ? "stop.circle.fill" : "play.circle.fill")
-                        .foregroundColor(Color("localAccentColor"))
-                        .font(.system(size: 24))
+                    
+                    Spacer()
+                    
+                    // Кнопка предпрослушивания
+                    Button {
+                        onPreview(index)
+                    } label: {
+                        Image(systemName: isPlaying(index) ? "stop.circle.fill" : "play.circle.fill")
+                            .foregroundColor(Color("localAccentColor"))
+                            .font(.system(size: 24))
+                    }
+                    .frame(width: 32)
+                    .padding(.top, 10)
+                    
+                    // Галочка с фиксированной шириной
+                    Image(systemName: "checkmark")
+                        .foregroundColor(Color("Mustard"))
+                        .frame(width: 20)
+                        .padding(.top, 10)
+                        .opacity(selectedKey.wrappedValue == key ? 1 : 0)
                 }
-                .frame(width: 32)
-                
-                // Галочка с фиксированной шириной
-                Image(systemName: "checkmark")
-                    .foregroundColor(Color("Mustard"))
-                    .frame(width: 20)
-                    .opacity(selectedKey.wrappedValue == key ? 1 : 0)
             }
             .background(Color("DarkGreen"))
             .onTapGesture {

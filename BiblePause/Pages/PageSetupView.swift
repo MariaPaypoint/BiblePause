@@ -42,6 +42,7 @@ struct PageSetupView: View {
     @State private var voiceTexts: [String] = []
     @State private var voiceKeys: [String]  = []
     @State private var voiceMusics: [Bool]  = []
+    @State private var voiceDescriptions: [String] = []
     @State private var voice: String = "" // инициализируется в onAppear
     @State private var voiceName: String = ""
     @State private var voiceMusic: Bool = false
@@ -345,6 +346,7 @@ struct PageSetupView: View {
         viewSelectListWithPreview(texts: voiceTexts,
                        keys: voiceKeys,
                        selectedKey: $voice,
+                       descriptions: voiceDescriptions,
                        onSelect: { selectedTranslateIndex in
                             self.voice = voiceKeys[selectedTranslateIndex]
                             self.voiceName = voiceTexts[selectedTranslateIndex]
@@ -531,12 +533,15 @@ struct PageSetupView: View {
         
         self.voiceKeys = []
         self.voiceTexts = []
+        self.voiceMusics = []
+        self.voiceDescriptions = []
         for translation in self.translationsResponse {
             if "\(translation.code)" == self.translation {
                 for voice in translation.voices {
                     self.voiceKeys.append("\(voice.code)")
                     self.voiceTexts.append("\(voice.name)")
                     self.voiceMusics.append(voice.is_music)
+                    self.voiceDescriptions.append(voice.description ?? "")
                 }
                 break
             }
