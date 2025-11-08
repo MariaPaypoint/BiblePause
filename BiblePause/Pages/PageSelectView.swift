@@ -253,6 +253,15 @@ struct PageSelectView: View {
                                             .multilineTextAlignment(.leading)
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                         
+                                        // Иконка отсутствия аудио у всей книги
+                                        let chaptersWithoutAudioCount = book.chapters_without_audio?.count ?? 0
+                                        let hasNoAudioForWholeBook = chaptersWithoutAudioCount == book.chapters_count
+                                        if hasNoAudioForWholeBook {
+                                            Image(systemName: "speaker.slash.fill")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(Color("Mustard"))
+                                        }
+                                        
                                         // Прогресс-бар справа от названия
                                         let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
                                         if progress.read > 0 {
