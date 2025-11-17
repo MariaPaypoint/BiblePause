@@ -36,7 +36,7 @@ struct PageContactsView: View {
                     }
                     Spacer()
                     
-                    Text("Контакты")
+                    Text("page.contacts.title".localized)
                         .fontWeight(.bold)
                         .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру9
                         .foregroundColor(.white)
@@ -47,7 +47,7 @@ struct PageContactsView: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        viewGroupHeader(text: "Связаться с нами")
+                        viewGroupHeader(text: "contacts.contact_us".localized)
                         
                         Button {
                             if let url = URL(string: "https://t.me/your_telegram") {
@@ -57,7 +57,7 @@ struct PageContactsView: View {
                             HStack {
                                 Image(systemName: "paperplane.fill")
                                     .foregroundColor(.white)
-                                Text("Написать в Telegram")
+                                Text("contacts.telegram".localized)
                                     .foregroundColor(.white)
                                 Spacer()
                                 Image(systemName: "arrow.right")
@@ -77,7 +77,7 @@ struct PageContactsView: View {
                             HStack {
                                 Image(systemName: "envelope.fill")
                                     .foregroundColor(.white)
-                                Text("Написать на email")
+                                Text("contacts.email".localized)
                                     .foregroundColor(.white)
                                 Spacer()
                                 Image(systemName: "arrow.right")
@@ -89,9 +89,9 @@ struct PageContactsView: View {
                             .cornerRadius(8)
                         }
                         
-                        viewGroupHeader(text: "О приложении")
+                        viewGroupHeader(text: "contacts.about".localized)
                         
-                        Text("Приложение BiblePause создано для тех, кто ценит размышление над Словом Божьим. Оно помогает делать паузы во время чтения, чтобы у вас было время поразмыслить над прочитанным текстом.")
+                        Text("contacts.about.text".localized)
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: .infinity)

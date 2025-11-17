@@ -50,17 +50,17 @@ struct MenuView: View{
                 .padding(.bottom, 15)
 
                 // MARK: Menu Buttons
-                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "Главное окно", selected: (settingsManager.selectedMenuItem == .main)) }
-                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "Продолжить чтение", subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
-                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "Выбрать", subTitle: "Выберите книгу и главу Библии", selected: (settingsManager.selectedMenuItem == .select)) }
-                Button { changeSelected(selected: .progress) } label: { MenuItem(title: "Прогресс", subTitle: "Управление прогрессом чтения", selected: (settingsManager.selectedMenuItem == .progress)) }
-                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "Настройки", selected: (settingsManager.selectedMenuItem == .setup)) }
-                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "Контакты", subTitle: "Ищем единомышленников", selected: (settingsManager.selectedMenuItem == .contacts)) }
+                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "menu.main".localized, selected: (settingsManager.selectedMenuItem == .main)) }
+                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "menu.continue_reading".localized, subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
+                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "menu.select".localized, subTitle: "menu.select.subtitle".localized, selected: (settingsManager.selectedMenuItem == .select)) }
+                Button { changeSelected(selected: .progress) } label: { MenuItem(title: "menu.progress".localized, subTitle: "menu.progress.subtitle".localized, selected: (settingsManager.selectedMenuItem == .progress)) }
+                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "menu.settings".localized, selected: (settingsManager.selectedMenuItem == .setup)) }
+                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "menu.contacts".localized, subTitle: "menu.contacts.subtitle".localized, selected: (settingsManager.selectedMenuItem == .contacts)) }
                 
                 Spacer(minLength: 10)
                 
                 // MARK: Version
-                Text("Версия 1.0.2")
+                Text("menu.version".localized)
                     .foregroundColor(Color.white.opacity(0.5))
             }
             .padding(.trailing,120)

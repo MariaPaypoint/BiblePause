@@ -1,0 +1,89 @@
+/* Menu Items */
+"menu.main" = "Main Screen";
+"menu.continue_reading" = "Continue Reading";
+"menu.select" = "Select";
+"menu.select.subtitle" = "Choose a book and chapter of the Bible";
+"menu.progress" = "Progress";
+"menu.progress.subtitle" = "Reading progress management";
+"menu.settings" = "Settings";
+"menu.contacts" = "Contacts";
+"menu.contacts.subtitle" = "Looking for like-minded people";
+"menu.version" = "Version 1.0.2";
+
+/* Page Titles */
+"page.select.title" = "Select";
+"page.settings.title" = "Settings";
+"page.contacts.title" = "Contacts";
+"page.progress.title" = "Reading Progress";
+"page.main.continue_reading" = "Continue Reading";
+"page.main.reading_progress" = "Reading Progress";
+
+/* Errors */
+"error.prefix" = "Error: %@";
+"error.audio_warning" = "⚠️ %@";
+
+/* Audio Player */
+"audio.reader" = "READER:";
+"audio.pause" = "PAUSE:";
+"audio.pause.seconds" = "%g sec.";
+"audio.pause.stop" = "stop";
+
+/* Chapter Actions */
+"chapter.mark_as_read" = "Mark as read";
+"chapter.mark_as_unread" = "Mark as unread";
+"chapter.title" = "Chapter %d";
+
+/* Progress */
+"progress.total" = "Total Progress";
+"progress.books_in_progress" = "Books in Progress";
+"progress.unstarted_books" = "Unstarted Books";
+"progress.completed_books" = "Completed Books";
+"progress.reset_confirmation.title" = "Reset Progress?";
+"progress.reset_confirmation.message" = "Are you sure you want to reset all reading progress? This action cannot be undone.";
+"progress.reset_confirmation.cancel" = "Cancel";
+"progress.reset_confirmation.reset" = "Reset";
+"progress.mark_all_as_read" = "✔️ Mark as read";
+"progress.mark_all_as_unread" = "Mark all as unread";
+"progress.read_chapter" = "Read chapter %d";
+"progress.reset_book" = "Reset book progress";
+
+/* Contacts */
+"contacts.contact_us" = "Contact Us";
+"contacts.telegram" = "Message on Telegram";
+"contacts.email" = "Send email";
+"contacts.about" = "About the App";
+"contacts.about.text" = "BiblePause app is created for those who value reflection on the Word of God. It helps you pause while reading to give you time to meditate on the text.";
+
+/* Settings */
+"settings.language" = "Interface Language";
+"settings.language.russian" = "Русский";
+"settings.language.english" = "English";
+"settings.language.ukrainian" = "Українська";
+"settings.font" = "Font";
+"settings.font.reset" = "Reset";
+"settings.font.example" = "Example:";
+"settings.pause" = "Pause";
+"settings.pause.make_pause" = "Make pause";
+"settings.player" = "Player";
+"settings.auto_next_chapter" = "Auto-advance to next chapter";
+"settings.bible_language" = "Bible Language";
+"settings.translation" = "Translation";
+"settings.reader" = "Reader";
+"settings.save_choice" = "Save choice";
+"settings.cancel_choice" = "Cancel choice";
+"settings.warning" = "Warning!";
+"settings.select_translation" = "Select translation";
+"settings.select_reader" = "Select who reads";
+
+/* Bible parts */
+"bible.part.old" = "Old Testament";
+"bible.part.new" = "New Testament";
+"bible.header.1" = "Law (Torah)";
+"bible.header.6" = "Historical Books";
+"bible.header.18" = "Wisdom Books";
+"bible.header.23" = "Major Prophets";
+"bible.header.28" = "Minor Prophets";
+"bible.header.40" = "Gospels & Acts";
+"bible.header.45" = "General Epistles";
+"bible.header.52" = "Paul's Epistles";
+"bible.header.66" = "Prophetic";

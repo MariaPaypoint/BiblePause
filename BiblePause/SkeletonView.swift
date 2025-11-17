@@ -247,6 +247,7 @@ class SettingsManager: ObservableObject {
 struct SkeletonView: View {
     
     @StateObject private var settingsManager = SettingsManager()
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     // не имеет значения здесь
     @State private var showAsPartOfRead: Bool = false

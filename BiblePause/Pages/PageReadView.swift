@@ -128,7 +128,7 @@ struct PageReadView: View {
                         // Показываем текст (с предупреждением об отсутствии аудио, если есть)
                         VStack(spacing: 0) {
                             if self.errorDescription != "" && !hasText {
-                                Text("⚠️ " + self.errorDescription)
+                                Text("error.audio_warning".localized(self.errorDescription))
                                     .foregroundColor(Color("Mustard"))
                                     .font(.footnote)
                                     .padding(.horizontal, globalBasePadding)
@@ -549,7 +549,7 @@ struct PageReadView: View {
                 Spacer()
             }
             VStack(alignment: .leading, spacing: 0) {
-                Text("ЧИТАЕТ:")
+                Text("audio.reader".localized)
                     .foregroundStyle(Color("localAccentColor").opacity(0.5))
                     .font(.caption2)
                 Text(settingsManager.voiceName)
@@ -559,10 +559,10 @@ struct PageReadView: View {
             Spacer()
             if settingsManager.pauseType != .none {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("ПАУЗА:")
+                    Text("audio.pause".localized)
                         .foregroundStyle(Color("localAccentColor").opacity(0.5))
                         .font(.caption2)
-                    Text("\(settingsManager.pauseBlock.shortName) / \(settingsManager.pauseType == .time ? String(format: "%g сек.", settingsManager.pauseLength) : "стоп")")
+                    Text("\(settingsManager.pauseBlock.shortName) / \(settingsManager.pauseType == .time ? "audio.pause.seconds".localized(settingsManager.pauseLength) : "audio.pause.stop".localized)")
                         .foregroundStyle(Color("localAccentColor"))
                         .font(.footnote)
                 }

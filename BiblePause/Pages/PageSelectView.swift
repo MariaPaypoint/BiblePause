@@ -48,7 +48,7 @@ struct PageSelectView: View {
                         }
                         Spacer()
                         
-                        Text("Выберите")
+                        Text("page.select.title".localized)
                             .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
                             .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру
                             .foregroundColor(.white)
@@ -69,7 +69,7 @@ struct PageSelectView: View {
                     }
                     else {
                         Spacer()
-                        Text("Error: \(loadingError)")
+                        Text("error.prefix".localized(loadingError))
                             .foregroundColor(.white)
                         Spacer()
                     }
@@ -146,7 +146,7 @@ struct PageSelectView: View {
                     // MARK: При выборе главы
                     settingsManager.currentExcerpt = "\(book.alias) \(chapter_number)"
                     settingsManager.currentExcerptTitle = book.name
-                    settingsManager.currentExcerptSubtitle = "Глава \(chapter_number)"
+                    settingsManager.currentExcerptSubtitle = "chapter.title".localized(chapter_number)
                     settingsManager.selectedMenuItem = .read
                     withAnimation(Animation.easeInOut(duration: 1)) {
                         showFromRead = false
@@ -201,13 +201,13 @@ struct PageSelectView: View {
                         Button {
                             settingsManager.markChapterAsUnread(book: book.alias, chapter: chapter_number)
                         } label: {
-                            Label("Отметить как непрочитанную", systemImage: "xmark.circle")
+                            Label("chapter.mark_as_unread".localized, systemImage: "xmark.circle")
                         }
                     } else {
                         Button {
                             settingsManager.markChapterAsRead(book: book.alias, chapter: chapter_number)
                         } label: {
-                            Label("Отметить как прочитанную", systemImage: "checkmark.circle")
+                            Label("chapter.mark_as_read".localized, systemImage: "checkmark.circle")
                         }
                     }
                 }

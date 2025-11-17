@@ -16,6 +16,10 @@
 		0497A9672C6BFEA6008A5D7F /* FancyToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */; };
 		04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */; };
 		04BC330E2C95F3BB004D8E65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */; };
+		04DB3CA72EC9F5D4004AF6BC /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DB3CA62EC9F5D4004AF6BC /* LocalizationManager.swift */; };
+		04DB3CB12EC9F70C004AF6BC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04DB3CAF2EC9F70C004AF6BC /* Localizable.strings */; };
+		04DB3CB72EC9F71B004AF6BC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04DB3CB52EC9F71B004AF6BC /* Localizable.strings */; };
+		04DB3CC72ECB9A60004AF6BC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04DB3CC52ECB9A60004AF6BC /* Localizable.strings */; };
 		4C141A042BED275000412C60 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C141A032BED275000412C60 /* MenuView.swift */; };
 		4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F9EB42C148DCD00EA807C /* advElements.swift */; };
 		4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B6E2E9B0091004BF2CB /* Configuration.plist */; };
@@ -55,6 +59,10 @@
 		0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastModifier.swift; sourceTree = "<group>"; };
 		04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advHTMLTextView.swift; sourceTree = "<group>"; };
 		04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		04DB3CA62EC9F5D4004AF6BC /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
+		04DB3CAE2EC9F70C004AF6BC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Localizable.strings; sourceTree = "<group>"; };
+		04DB3CB42EC9F71B004AF6BC /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = Localizable.strings; sourceTree = "<group>"; };
+		04DB3CC42ECB9A60004AF6BC /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = Localizable.strings; sourceTree = "<group>"; };
 		4C141A032BED275000412C60 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		4C3F9EB42C148DCD00EA807C /* advElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advElements.swift; sourceTree = "<group>"; };
 		4C620B6E2E9B0091004BF2CB /* Configuration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Configuration.plist; sourceTree = "<group>"; };
@@ -103,6 +111,30 @@
 				0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */,
 			);
 			path = FancyToast;
+			sourceTree = "<group>";
+		};
+		04DB3CB02EC9F70C004AF6BC /* en.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				04DB3CAF2EC9F70C004AF6BC /* Localizable.strings */,
+			);
+			path = en.lproj;
+			sourceTree = "<group>";
+		};
+		04DB3CB62EC9F71B004AF6BC /* ru.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				04DB3CB52EC9F71B004AF6BC /* Localizable.strings */,
+			);
+			path = ru.lproj;
+			sourceTree = "<group>";
+		};
+		04DB3CC62ECB9A60004AF6BC /* uk.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				04DB3CC52ECB9A60004AF6BC /* Localizable.strings */,
+			);
+			path = uk.lproj;
 			sourceTree = "<group>";
 		};
 		4C3F9EB32C148DB200EA807C /* Adv */ = {
@@ -174,6 +206,10 @@
 		4C7691222BECEA1300C66FDC /* BiblePause */ = {
 			isa = PBXGroup;
 			children = (
+				04DB3CC62ECB9A60004AF6BC /* uk.lproj */,
+				04DB3CB62EC9F71B004AF6BC /* ru.lproj */,
+				04DB3CB02EC9F70C004AF6BC /* en.lproj */,
+				04DB3CA62EC9F5D4004AF6BC /* LocalizationManager.swift */,
 				0458F54B2CCE111F0016C65F /* Info.plist */,
 				047B3BC42BEEB626009DEC11 /* SkeletonView.swift */,
 				4C620B7D2E9B0123004BF2CB /* Config.swift */,
@@ -244,6 +280,8 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
+				uk,
 			);
 			mainGroup = 4C7691172BECEA1300C66FDC;
 			packageReferences = (
@@ -268,7 +306,10 @@
 				0458F5472CCE0FE20016C65F /* LaunchScreen.storyboard in Resources */,
 				4C76912B2BECEA1800C66FDC /* Preview Assets.xcassets in Resources */,
 				4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */,
+				04DB3CB12EC9F70C004AF6BC /* Localizable.strings in Resources */,
+				04DB3CC72ECB9A60004AF6BC /* Localizable.strings in Resources */,
 				4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */,
+				04DB3CB72EC9F71B004AF6BC /* Localizable.strings in Resources */,
 				4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */,
 				4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */,
 			);
@@ -291,6 +332,7 @@
 				4C749E0B2C1E1FC000CF4234 /* PageContactsView.swift in Sources */,
 				4C99F37A2C0266C900879594 /* advGlobals.swift in Sources */,
 				4C749E052C14AC1500CF4234 /* advBible.swift in Sources */,
+				04DB3CA72EC9F5D4004AF6BC /* LocalizationManager.swift in Sources */,
 				4C99F3762C023FD400879594 /* advUtility.swift in Sources */,
 				4C99F3742C023F4300879594 /* advAudioManager.swift in Sources */,
 				4C141A042BED275000412C60 /* MenuView.swift in Sources */,
@@ -318,6 +360,33 @@
 			productRef = 4CFC92172C59B4D7005AFAA5 /* OpenAPIGenerator */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		04DB3CAF2EC9F70C004AF6BC /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				04DB3CAE2EC9F70C004AF6BC /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		04DB3CB52EC9F71B004AF6BC /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				04DB3CB42EC9F71B004AF6BC /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		04DB3CC52ECB9A60004AF6BC /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				04DB3CC42ECB9A60004AF6BC /* uk */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		4C76912C2BECEA1800C66FDC /* Debug */ = {

@@ -1,0 +1,89 @@
+/* Menu Items */
+"menu.main" = "Головне вікно";
+"menu.continue_reading" = "Продовжити читання";
+"menu.select" = "Вибрати";
+"menu.select.subtitle" = "Виберіть книгу та розділ Біблії";
+"menu.progress" = "Прогрес";
+"menu.progress.subtitle" = "Управління прогресом читання";
+"menu.settings" = "Налаштування";
+"menu.contacts" = "Контакти";
+"menu.contacts.subtitle" = "Шукаємо однодумців";
+"menu.version" = "Версія 1.0.2";
+
+/* Page Titles */
+"page.select.title" = "Виберіть";
+"page.settings.title" = "Налаштування";
+"page.contacts.title" = "Контакти";
+"page.progress.title" = "Прогрес читання";
+"page.main.continue_reading" = "Продовжити читання";
+"page.main.reading_progress" = "Прогрес читання";
+
+/* Errors */
+"error.prefix" = "Помилка: %@";
+"error.audio_warning" = "⚠️ %@";
+
+/* Audio Player */
+"audio.reader" = "ЧИТАЄ:";
+"audio.pause" = "ПАУЗА:";
+"audio.pause.seconds" = "%g сек.";
+"audio.pause.stop" = "стоп";
+
+/* Chapter Actions */
+"chapter.mark_as_read" = "Позначити як прочитаний";
+"chapter.mark_as_unread" = "Позначити як непрочитаний";
+"chapter.title" = "Розділ %d";
+
+/* Progress */
+"progress.total" = "Загальний прогрес";
+"progress.books_in_progress" = "Книги в процесі читання";
+"progress.unstarted_books" = "Непочаті книги";
+"progress.completed_books" = "Прочитані книги";
+"progress.reset_confirmation.title" = "Скинути прогрес?";
+"progress.reset_confirmation.message" = "Ви впевнені, що хочете скинути весь прогрес читання? Цю дію неможливо скасувати.";
+"progress.reset_confirmation.cancel" = "Скасувати";
+"progress.reset_confirmation.reset" = "Скинути";
+"progress.mark_all_as_read" = "✔️ Позначити як прочитану";
+"progress.mark_all_as_unread" = "Позначити все як непрочитане";
+"progress.read_chapter" = "Читати розділ %d";
+"progress.reset_book" = "Скинути прогрес книги";
+
+/* Contacts */
+"contacts.contact_us" = "Зв'язатися з нами";
+"contacts.telegram" = "Написати в Telegram";
+"contacts.email" = "Написати на email";
+"contacts.about" = "Про додаток";
+"contacts.about.text" = "Додаток BiblePause створений для тих, хто цінує роздуми над Словом Божим. Він допомагає робити паузи під час читання, щоб у вас був час поміркувати над прочитаним текстом.";
+
+/* Settings */
+"settings.language" = "Мова інтерфейсу";
+"settings.language.russian" = "Русский";
+"settings.language.english" = "English";
+"settings.language.ukrainian" = "Українська";
+"settings.font" = "Шрифт";
+"settings.font.reset" = "Скинути";
+"settings.font.example" = "Приклад:";
+"settings.pause" = "Пауза";
+"settings.pause.make_pause" = "Робити паузу";
+"settings.player" = "Програвач";
+"settings.auto_next_chapter" = "Автоперехід до наступного розділу";
+"settings.bible_language" = "Мова Біблії";
+"settings.translation" = "Переклад";
+"settings.reader" = "Читає";
+"settings.save_choice" = "Зберегти вибір";
+"settings.cancel_choice" = "Скасувати вибір";
+"settings.warning" = "Увага!";
+"settings.select_translation" = "Виберіть переклад";
+"settings.select_reader" = "Виберіть хто читає";
+
+/* Bible parts */
+"bible.part.old" = "Старий Заповіт";
+"bible.part.new" = "Новий Заповіт";
+"bible.header.1" = "Закон п'ятикнижжя (Тора)";
+"bible.header.6" = "Історичні книги";
+"bible.header.18" = "Учительські книги";
+"bible.header.23" = "Великі пророки";
+"bible.header.28" = "Малі пророки";
+"bible.header.40" = "Євангелія та Діяння";
+"bible.header.45" = "Соборні послання";
+"bible.header.52" = "Послання Павла";
+"bible.header.66" = "Пророчі";

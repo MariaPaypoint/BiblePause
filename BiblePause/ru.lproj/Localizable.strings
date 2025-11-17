@@ -1,0 +1,89 @@
+/* Menu Items */
+"menu.main" = "Главное окно";
+"menu.continue_reading" = "Продолжить чтение";
+"menu.select" = "Выбрать";
+"menu.select.subtitle" = "Выберите книгу и главу Библии";
+"menu.progress" = "Прогресс";
+"menu.progress.subtitle" = "Управление прогрессом чтения";
+"menu.settings" = "Настройки";
+"menu.contacts" = "Контакты";
+"menu.contacts.subtitle" = "Ищем единомышленников";
+"menu.version" = "Версия 1.0.2";
+
+/* Page Titles */
+"page.select.title" = "Выберите";
+"page.settings.title" = "Настройки";
+"page.contacts.title" = "Контакты";
+"page.progress.title" = "Прогресс чтения";
+"page.main.continue_reading" = "Продолжить чтение";
+"page.main.reading_progress" = "Прогресс чтения";
+
+/* Errors */
+"error.prefix" = "Error: %@";
+"error.audio_warning" = "⚠️ %@";
+
+/* Audio Player */
+"audio.reader" = "ЧИТАЕТ:";
+"audio.pause" = "ПАУЗА:";
+"audio.pause.seconds" = "%g сек.";
+"audio.pause.stop" = "стоп";
+
+/* Chapter Actions */
+"chapter.mark_as_read" = "Отметить как прочитанную";
+"chapter.mark_as_unread" = "Отметить как непрочитанную";
+"chapter.title" = "Глава %d";
+
+/* Progress */
+"progress.total" = "Общий прогресс";
+"progress.books_in_progress" = "Книги в процессе чтения";
+"progress.unstarted_books" = "Неначатые книги";
+"progress.completed_books" = "Прочитанные книги";
+"progress.reset_confirmation.title" = "Сбросить прогресс?";
+"progress.reset_confirmation.message" = "Вы уверены, что хотите сбросить весь прогресс чтения? Это действие нельзя отменить.";
+"progress.reset_confirmation.cancel" = "Отмена";
+"progress.reset_confirmation.reset" = "Сбросить";
+"progress.mark_all_as_read" = "✔️ Отметить как прочитанную";
+"progress.mark_all_as_unread" = "Отметить все как непрочитанное";
+"progress.read_chapter" = "Читать главу %d";
+"progress.reset_book" = "Сбросить прогресс книги";
+
+/* Contacts */
+"contacts.contact_us" = "Связаться с нами";
+"contacts.telegram" = "Написать в Telegram";
+"contacts.email" = "Написать на email";
+"contacts.about" = "О приложении";
+"contacts.about.text" = "Приложение BiblePause создано для тех, кто ценит размышление над Словом Божьим. Оно помогает делать паузы во время чтения, чтобы у вас было время поразмыслить над прочитанным текстом.";
+
+/* Settings */
+"settings.language" = "Язык интерфейса";
+"settings.language.russian" = "Русский";
+"settings.language.english" = "English";
+"settings.language.ukrainian" = "Українська";
+"settings.font" = "Шрифт";
+"settings.font.reset" = "Сброс";
+"settings.font.example" = "Пример:";
+"settings.pause" = "Пауза";
+"settings.pause.make_pause" = "Делать паузу";
+"settings.player" = "Проигрыватель";
+"settings.auto_next_chapter" = "Автопереход к следующей главе";
+"settings.bible_language" = "Язык Библии";
+"settings.translation" = "Перевод";
+"settings.reader" = "Читает";
+"settings.save_choice" = "Сохранить выбор";
+"settings.cancel_choice" = "Отменить выбор";
+"settings.warning" = "Внимание!";
+"settings.select_translation" = "Выберите перевод";
+"settings.select_reader" = "Выберите кто читает";
+
+/* Bible parts */
+"bible.part.old" = "Ветхий Завет";
+"bible.part.new" = "Новый Завет";
+"bible.header.1" = "Закон пятикнижия (Тора)";
+"bible.header.6" = "Исторические книги";
+"bible.header.18" = "Учительные";
+"bible.header.23" = "Большие пророки";
+"bible.header.28" = "Малые пророки";
+"bible.header.40" = "Евангелия и Деяния";
+"bible.header.45" = "Соборные послания";
+"bible.header.52" = "Послания Павла";
+"bible.header.66" = "Пророческие";

@@ -24,7 +24,7 @@ struct PageProgressView: View {
                         MenuButtonView()
                             .environmentObject(settingsManager)
                         Spacer()
-                        Text("Прогресс чтения")
+                        Text("page.progress.title".localized)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                         Spacer()
@@ -50,7 +50,7 @@ struct PageProgressView: View {
                                 let totalProgress = settingsManager.getTotalProgress(books: booksInfo)
                                 
                                 VStack(spacing: 10) {
-                                    Text("Общий прогресс")
+                                    Text("progress.total".localized)
                                         .font(.subheadline)
                                         .foregroundColor(.white)
                                     
@@ -104,7 +104,7 @@ struct PageProgressView: View {
                                     }
                                     
                                     if !inProgressBooks.isEmpty {
-                                        Text("Книги в процессе чтения")
+                                        Text("progress.books_in_progress".localized)
                                             .font(.title3)
                                             .fontWeight(.bold)
                                             .foregroundColor(.white)
@@ -122,7 +122,7 @@ struct PageProgressView: View {
                                     }
                                     
                                     if !unstartedBooks.isEmpty {
-                                        Text("Неначатые книги")
+                                        Text("progress.unstarted_books".localized)
                                             .font(.title3)
                                             .fontWeight(.bold)
                                             .foregroundColor(.white)
@@ -140,7 +140,7 @@ struct PageProgressView: View {
                                     }
                                     
                                     if !completedBooks.isEmpty {
-                                        Text("Прочитанные книги")
+                                        Text("progress.completed_books".localized)
                                             .font(.title3)
                                             .fontWeight(.bold)
                                             .foregroundColor(.white)
@@ -164,13 +164,13 @@ struct PageProgressView: View {
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
         }
-        .alert("Сбросить прогресс?", isPresented: $showResetConfirmation) {
-            Button("Отмена", role: .cancel) { }
-            Button("Сбросить", role: .destructive) {
+        .alert("progress.reset_confirmation.title".localized, isPresented: $showResetConfirmation) {
+            Button("progress.reset_confirmation.cancel".localized, role: .cancel) { }
+            Button("progress.reset_confirmation.reset".localized, role: .destructive) {
                 settingsManager.resetProgress()
             }
         } message: {
-            Text("Вы уверены, что хотите сбросить весь прогресс чтения? Это действие нельзя отменить.")
+            Text("progress.reset_confirmation.message".localized)
         }
         .onAppear {
             loadBooks()
@@ -245,22 +245,22 @@ struct PageProgressView: View {
         )) {
             if !isCompleted {
                 let nextChapter = findNextUnreadChapter(book: book, totalChapters: progress.total)
-                Button("Читать главу \(nextChapter)") {
+                Button("progress.read_chapter".localized(nextChapter)) {
                     navigateToUnreadChapter(book: book, progress: progress)
                 }
             }
             
             if !isCompleted {
-                Button("✔️ Отметить как прочитанную") {
+                Button("progress.mark_all_as_read".localized) {
                     settingsManager.markBookAsRead(book: book.alias, totalChapters: book.chapters_count)
                 }
             }
             
-            Button("Сбросить прогресс книги", role: .destructive) {
+            Button("progress.reset_book".localized, role: .destructive) {
                 settingsManager.resetBookProgress(book: book.alias, totalChapters: book.chapters_count)
             }
             
-            Button("Отмена", role: .cancel) {}
+            Button("progress.reset_confirmation.cancel".localized, role: .cancel) {}
         }
     }
     
@@ -288,7 +288,7 @@ struct PageProgressView: View {
         // Устанавливаем текущий отрывок
         settingsManager.currentExcerpt = "\(book.alias) \(nextChapter)"
         settingsManager.currentExcerptTitle = book.name
-        settingsManager.currentExcerptSubtitle = "Глава \(nextChapter)"
+        settingsManager.currentExcerptSubtitle = "chapter.title".localized(nextChapter)
         
         // Переключаемся на страницу чтения
         settingsManager.selectedMenuItem = .read

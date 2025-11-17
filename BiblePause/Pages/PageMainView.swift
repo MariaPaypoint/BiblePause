@@ -37,7 +37,7 @@ struct PageMainView: View {
                     settingsManager.selectedMenuItem = .read
                 } label: {
                     VStack {
-                        Text("Продолжить чтение")
+                        Text("page.main.continue_reading".localized)
                             .foregroundColor(Color("ForestGreen"))
                             .frame(maxWidth: .infinity)
                             .font(.system(.body, weight: .heavy))
@@ -78,7 +78,7 @@ struct PageMainView: View {
                     Spacer()
                     
                     VStack(spacing: 10) {
-                        Text("Прогресс чтения")
+                        Text("page.main.reading_progress".localized)
                             .font(.subheadline)
                             .foregroundColor(.white)
                         

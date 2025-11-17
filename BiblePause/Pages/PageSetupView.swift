@@ -79,7 +79,7 @@ struct PageSetupView: View {
                     }
                     Spacer()
                     
-                    Text("Настройки")
+                    Text("page.settings.title".localized)
                         .fontWeight(.bold)
                         .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру
                         .foregroundColor(.white)
@@ -91,6 +91,8 @@ struct PageSetupView: View {
                 ScrollViewReader { proxy in
                     ScrollView() {
                         VStack {
+                            
+                            ViewInterfaceLanguage()
                             
                             ViewFont()
                             
@@ -133,7 +135,7 @@ struct PageSetupView: View {
     // MARK: Шрифт
     @ViewBuilder private func ViewFont() -> some View {
         VStack {
-            viewGroupHeader(text: "Шрифт")
+            viewGroupHeader(text: "settings.font".localized)
             
             HStack {
                 Text("\(Int(settingsManager.fontIncreasePercent))%")
@@ -186,13 +188,13 @@ struct PageSetupView: View {
                 Button {
                     settingsManager.fontIncreasePercent = 100.0
                 } label: {
-                    Text("Сброс")
+                    Text("settings.font.reset".localized)
                         .foregroundColor(Color("Mustard"))
                         .frame(width: 70)
                 }
             }
             
-            Text("Пример:")
+            Text("settings.font.example".localized)
                 .foregroundColor(.white.opacity(0.5))
             if isExampleLoading {
                 ProgressView()
@@ -215,7 +217,7 @@ struct PageSetupView: View {
     
     // MARK: Пауза
     @ViewBuilder private func ViewPause() -> some View {
-        viewGroupHeader(text: "Пауза")
+        viewGroupHeader(text: "settings.pause".localized)
         VStack(spacing: 15) {
             viewEnumPicker(title: settingsManager.pauseType.displayName, selection: $settingsManager.pauseType)
             
@@ -223,7 +225,7 @@ struct PageSetupView: View {
                 // время
                 if settingsManager.pauseType == .time {
                     HStack {
-                        Text("Делать паузу")
+                        Text("settings.pause.make_pause".localized)
                             .frame(width: 140, alignment: .leading)
                         Spacer()
                         
@@ -292,10 +294,10 @@ struct PageSetupView: View {
     
     // MARK: Автоматический переход к следующей главе
     @ViewBuilder private func ViewAutoNextChapter() -> some View {
-        viewGroupHeader(text: "Проигрыватель")
+        viewGroupHeader(text: "settings.player".localized)
         VStack(spacing: 15) {
             HStack {
-                Toggle("Автопереход к следующей главе", isOn: $settingsManager.autoNextChapter)
+                Toggle("settings.auto_next_chapter".localized, isOn: $settingsManager.autoNextChapter)
                     .toggleStyle(SwitchToggleStyle(tint: Color("DarkGreen-accent")))
             }
         }
@@ -305,7 +307,7 @@ struct PageSetupView: View {
     // MARK: Языки трио
     @ViewBuilder private func ViewLangTranslateAudio(proxy: ScrollViewProxy) -> some View {
         
-        viewGroupHeader(text: "Язык Библии")
+        viewGroupHeader(text: "settings.bible_language".localized)
         if isLanguagesLoading {
             Text("Loading languages...")
         }
@@ -325,7 +327,7 @@ struct PageSetupView: View {
             .padding(.vertical, -5)
         }
         
-        viewGroupHeader(text: "Перевод")
+        viewGroupHeader(text: "settings.translation".localized)
         viewSelectList(texts: translationTexts,
                        keys: translationKeys,
                        selectedKey: $translation,
@@ -342,7 +344,7 @@ struct PageSetupView: View {
         )
         .padding(.vertical, -5)
         
-        viewGroupHeader(text: "Читает")
+        viewGroupHeader(text: "settings.reader".localized)
         viewSelectListWithPreview(texts: voiceTexts,
                        keys: voiceKeys,
                        selectedKey: $voice,
@@ -386,11 +388,11 @@ struct PageSetupView: View {
                     //toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
                 }
                 else {
-                    toast = FancyToast(type: .warning, title: "Внимание!", message: self.translation == "" ? "Выберите перевод" : "Выберите кто читает")
+                    toast = FancyToast(type: .warning, title: "settings.warning".localized, message: self.translation == "" ? "settings.select_translation".localized : "settings.select_reader".localized)
                 }
             } label: {
                 VStack {
-                    Text("Сохранить выбор")
+                    Text("settings.save_choice".localized)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(5)
@@ -412,7 +414,7 @@ struct PageSetupView: View {
                 //toast = FancyToast(type: .info, title: "OK", message: "Значения восстановлены")
             } label: {
                 VStack {
-                    Text("Отменить выбор")
+                    Text("settings.cancel_choice".localized)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(13)
@@ -620,6 +622,35 @@ struct PageSetupView: View {
         previewVoiceIndex = nil
         previewTimer?.cancel()
         previewTimer = nil
+    }
+    
+    // MARK: Interface Language
+    @ViewBuilder private func ViewInterfaceLanguage() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            viewGroupHeader(text: "settings.language".localized)
+            
+            ForEach(AppLanguage.allCases, id: \.self) { language in
+                Button {
+                    LocalizationManager.shared.currentLanguage = language
+                } label: {
+                    HStack {
+                        Text(language.displayName)
+                            .foregroundColor(.white)
+                        Spacer()
+                        if LocalizationManager.shared.currentLanguage == language {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(Color("Marigold"))
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(LocalizationManager.shared.currentLanguage == language ? Color("DarkGreen-light").opacity(0.8) : Color("DarkGreen-light").opacity(0.4))
+                    )
+                }
+            }
+        }
+        .padding(.bottom, 10)
     }
 }
 
