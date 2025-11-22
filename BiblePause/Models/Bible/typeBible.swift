@@ -20,7 +20,7 @@ struct BibleTextualVerseFull: Hashable {
     
     var notes: [BibleNote] = []
     
-    var beforeTitle: BibleTitle?
+    var beforeTitles: [BibleTitle] = []
     
 }
 

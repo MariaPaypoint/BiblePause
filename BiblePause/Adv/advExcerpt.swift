@@ -207,26 +207,27 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
 
     for verse in verses {
         // Title
-        if (verse.beforeTitle != nil) {
+        // Title
+        for title in verse.beforeTitles {
             htmlString += """
                 <div id="top"></div>
-                <p id="title-\(verse.beforeTitle!.id)" class="title">\(verse.beforeTitle!.text)</p>
+                <p id="title-\(title.id)" class="title">\(title.text)</p>
             """
             
             // reference
-            if let reference = verse.beforeTitle!.reference, !reference.isEmpty {
+            if let reference = title.reference, !reference.isEmpty {
                 htmlString += """
                     <p class="reference">\(reference)</p>
                 """
             }
             
             // Subtitle metadata
-            if let metadata = verse.beforeTitle!.metadata, !metadata.isEmpty {
+            if let metadata = title.metadata, !metadata.isEmpty {
                 // Insert notes into metadata
                 var metadataHTML = metadata
                 var prevNotesOffset = 0
                 // Sort notes by position_html for proper insertion
-                let sortedNotes = verse.beforeTitle!.notes.sorted { $0.positionHtml < $1.positionHtml }
+                let sortedNotes = title.notes.sorted { $0.positionHtml < $1.positionHtml }
                 for note in sortedNotes {
                     let noteHTML = """
                         <span class="note"> 

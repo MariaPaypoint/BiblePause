@@ -52,7 +52,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                             }
                         }
                         
-                        verseFull.beforeTitle = titleWithNotes
+                        verseFull.beforeTitles.append(titleWithNotes)
                     }
                 }
                 resTextVerses.append(verseFull)

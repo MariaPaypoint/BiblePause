@@ -311,7 +311,7 @@ struct PageReadView: View {
         else if cur > 0 && (settingsManager.pauseBlock == .paragraph || settingsManager.pauseBlock == .fragment) {
             if settingsManager.pauseType == .time {
                 if (settingsManager.pauseBlock == .paragraph && textVerses[cur].startParagraph) ||
-                   (settingsManager.pauseBlock == .fragment  && textVerses[cur].beforeTitle != nil)
+                   (settingsManager.pauseBlock == .fragment  && !textVerses[cur].beforeTitles.isEmpty)
                 {
                     audiopleer.breakForSeconds(settingsManager.pauseLength)
                     DispatchQueue.main.asyncAfter(deadline: .now() + settingsManager.pauseLength) {
@@ -399,7 +399,7 @@ struct PageReadView: View {
         
         // New chapter counts as new verse and new paragraph
         // Check if it also starts a new fragment (title before verse)
-        let isNewFragment = textVerses.first?.beforeTitle != nil
+        let isNewFragment = !textVerses.first!.beforeTitles.isEmpty
         
         // Decide if pause is required based on settings
         let shouldPause: Bool
