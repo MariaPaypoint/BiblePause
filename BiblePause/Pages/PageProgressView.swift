@@ -1,10 +1,3 @@
-//
-//  PageProgressView.swift
-//  BiblePause
-//
-//  Created by Cascade on 19.10.2024.
-//
-
 import SwiftUI
 
 struct PageProgressView: View {
@@ -19,7 +12,7 @@ struct PageProgressView: View {
         ZStack {
             VStack(spacing: 0) {
                 VStack(spacing: 20) {
-                    // MARK: Шапка
+                    // MARK: Header
                     HStack {
                         MenuButtonView()
                             .environmentObject(settingsManager)
@@ -46,7 +39,7 @@ struct PageProgressView: View {
                     } else if !booksInfo.isEmpty {
                         ScrollView {
                             VStack(spacing: 20) {
-                                // MARK: Общая статистика
+                                // MARK: Overall stats
                                 let totalProgress = settingsManager.getTotalProgress(books: booksInfo)
                                 
                                 VStack(spacing: 10) {
@@ -54,9 +47,9 @@ struct PageProgressView: View {
                                         .font(.subheadline)
                                         .foregroundColor(.white)
                                     
-                                    // Прогресс-бар с процентом поверх
+                                    // Progress bar with overlayed percent
                                     ZStack {
-                                        // Фон прогресс-бара
+                                        // Progress bar background
                                         RoundedRectangle(cornerRadius: 6)
                                             .fill(Color.white.opacity(0.3))
                                             .frame(height: 24)
@@ -65,7 +58,7 @@ struct PageProgressView: View {
                                             let progressWidth = geometry.size.width * CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
                                             let progressPercent = CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
                                             
-                                            // Зеленый прогресс
+                                            // Green progress fill
                                             HStack(spacing: 0) {
                                                 LinearGradient(
                                                     gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green]),
@@ -87,7 +80,7 @@ struct PageProgressView: View {
                                         }
                                         .frame(height: 24)
                                         
-                                        // Процент поверх прогресс-бара
+                                        // Percentage label on top of the bar
                                         Text(String(format: "%.1f%%", Double(totalProgress.read) / Double(totalProgress.total) * 100))
                                             .font(.caption)
                                             .fontWeight(.bold)
@@ -95,9 +88,9 @@ struct PageProgressView: View {
                                     }
                                 }
                                 
-                                // MARK: Прогресс по книгам
+                                // MARK: Progress by books
                                 VStack(alignment: .leading, spacing: 12) {
-                                    // Главы в процессе
+                                    // Books currently in progress
                                     let inProgressBooks = booksInfo.filter { book in
                                         let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
                                         return progress.read > 0 && progress.read < progress.total
@@ -115,7 +108,7 @@ struct PageProgressView: View {
                                         }
                                     }
                                     
-                                    // Неначатые книги
+                                    // Books not yet started
                                     let unstartedBooks = booksInfo.filter { book in
                                         let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
                                         return progress.read == 0
@@ -133,7 +126,7 @@ struct PageProgressView: View {
                                         }
                                     }
                                     
-                                    // Прочитанные книги
+                                    // Completed books
                                     let completedBooks = booksInfo.filter { book in
                                         let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
                                         return progress.read > 0 && progress.read == progress.total
@@ -159,7 +152,7 @@ struct PageProgressView: View {
             }
             .background(Color("DarkGreen"))
             
-            // Слой меню
+            // Menu layer
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
@@ -215,7 +208,7 @@ struct PageProgressView: View {
                 }
             }
             
-            // Сегментированный прогресс-бар
+            // Segmented progress bar
             GeometryReader { geometry in
                 let spacing: CGFloat = progress.total > 50 ? 0 : 1
                 let totalSpacing = spacing * CGFloat(progress.total - 1)
@@ -275,22 +268,22 @@ struct PageProgressView: View {
     }
     
     func navigateToUnreadChapter(book: Components.Schemas.TranslationBookModel, progress: (read: Int, total: Int)) {
-        // Находим первую непрочитанную главу
+        // Locate the first unread chapter
         let nextChapter = findNextUnreadChapter(book: book, totalChapters: progress.total)
         
-        // Закрываем меню если оно открыто
+        // Close menu if it is open
         if settingsManager.showMenu {
             withAnimation(.spring().delay(0.1)) {
                 settingsManager.showMenu = false
             }
         }
         
-        // Устанавливаем текущий отрывок
+        // Update current excerpt selection
         settingsManager.currentExcerpt = "\(book.alias) \(nextChapter)"
         settingsManager.currentExcerptTitle = book.name
         settingsManager.currentExcerptSubtitle = "chapter.title".localized(nextChapter)
         
-        // Переключаемся на страницу чтения
+        // Switch to the reading page
         settingsManager.selectedMenuItem = .read
     }
 }

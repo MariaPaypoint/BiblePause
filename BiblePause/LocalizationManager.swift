@@ -1,10 +1,3 @@
-//
-//  LocalizationManager.swift
-//  BiblePause
-//
-//  Created by Cascade
-//
-
 import Foundation
 import SwiftUI
 

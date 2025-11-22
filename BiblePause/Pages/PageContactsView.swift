@@ -1,10 +1,3 @@
-//
-//  PageContactsView.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 15.06.2024.
-//
-
 import SwiftUI
 
 struct PageContactsView: View {
@@ -18,7 +11,7 @@ struct PageContactsView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // MARK: шапка
+                // MARK: Header
                 HStack {
                     if showFromRead {
                         Button {
@@ -38,7 +31,7 @@ struct PageContactsView: View {
                     
                     Text("page.contacts.title".localized)
                         .fontWeight(.bold)
-                        .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру9
+                        .padding(.trailing, 32) // compensate menu so title stays centered
                         .foregroundColor(.white)
                     
                     Spacer()
@@ -103,12 +96,12 @@ struct PageContactsView: View {
                 }
             }
             
-            // подложка
+            // Background layer
             .background(
                 Color("DarkGreen")
             )
             
-            // слой меню
+            // Menu layer
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)

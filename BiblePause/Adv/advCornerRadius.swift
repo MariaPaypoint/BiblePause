@@ -1,11 +1,3 @@
-//
-//  advCornerRadius.swift
-//  cep
-//
-//  Created by Maria Novikova on 19.07.2022.
-//  https://stackoverflow.com/a/72150622
-//
-
 import SwiftUI
 
 /*

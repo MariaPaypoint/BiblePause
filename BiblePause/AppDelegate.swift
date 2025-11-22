@@ -7,7 +7,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        // Предварительная загрузка WKWebView
+        // Preload WKWebView ahead of time
         preloadedWebView = WKWebView()
         preloadedWebView?.loadHTMLString("", baseURL: nil)
 

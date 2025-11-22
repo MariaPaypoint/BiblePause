@@ -1,21 +1,19 @@
-// Необходимые типы для работы с Библией через API
+// Required types for working with the Bible via the API
 
 import Foundation
 
 // MARK: Verse structures
 
-// Полная версия стиха с указанием главы и книги
+// Full verse version with chapter and book references
 struct BibleTextualVerseFull: Hashable {
     let number: Int
     let html: String
     var join: Int = 0
     
-    // чтобы выбор книги и главы позиционировался корректно
+    // To position book and chapter selection correctly
     var bookDigitCode: Int = 0
     var chapterDigitCode: Int = 0
      
-    //var changedBook = false
-    //var changedChapter = false
     var skippedVerses = false
     
     var startParagraph = false

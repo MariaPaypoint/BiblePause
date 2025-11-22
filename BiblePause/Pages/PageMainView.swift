@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 09.05.2024.
-//
-
 import SwiftUI
 
 struct PageMainView: View {
@@ -15,7 +8,7 @@ struct PageMainView: View {
     var body: some View {
         
         ZStack {
-            // подложка
+            // Background layer
             Image("Forest")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
@@ -29,10 +22,10 @@ struct PageMainView: View {
                         .padding(.bottom, 50)
                     Spacer()
                 }
-                // заголовок
+                // Title artwork
                 Image("TitleRus")
                 
-                // кнопка
+                // Continue button
                 Button {
                     settingsManager.selectedMenuItem = .read
                 } label: {
@@ -51,15 +44,15 @@ struct PageMainView: View {
                     .cornerRadius(12)
                 }
                 
-                // и все толкнем наверх
+                // Push remaining content upward
                 Spacer()
             }
             .padding(20)
             
-            // Карточка со статистикой прогресса (внизу экрана)
+            // Reading progress card near bottom
             progressCardView()
             
-            // слой меню
+            // Sliding menu layer
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
@@ -82,9 +75,9 @@ struct PageMainView: View {
                             .font(.subheadline)
                             .foregroundColor(.white)
                         
-                        // Прогресс-бар с процентом поверх
+                        // Progress bar with overlayed percentage
                         ZStack {
-                            // Фон прогресс-бара
+                            // Progress bar background
                             RoundedRectangle(cornerRadius: 6)
                                 .fill(Color.white.opacity(0.3))
                                 .frame(height: 24)
@@ -93,7 +86,7 @@ struct PageMainView: View {
                                 let progressWidth = geometry.size.width * CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
                                 let progressPercent = CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
                                 
-                                // Зеленый прогресс
+                                // Green progress fill
                                 HStack(spacing: 0) {
                                     LinearGradient(
                                         gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green]),
@@ -115,7 +108,7 @@ struct PageMainView: View {
                             }
                             .frame(height: 24)
                             
-                            // Процент поверх прогресс-бара
+                            // Percentage label above progress bar
                             Text(String(format: "%.1f%%", Double(totalProgress.read) / Double(totalProgress.total) * 100))
                                 .font(.caption)
                                 .fontWeight(.bold)
@@ -146,7 +139,7 @@ struct PageMainView: View {
                 _ = try await settingsManager.getTranslationBooks()
                 booksLoaded = true
             } catch {
-                // Ошибка загрузки, но не критично для главной страницы
+                // Loading error is non-critical for the main page
             }
         }
     }

@@ -1,25 +1,18 @@
-//
-//  advExcerpt.swift
-//  cep
-//
-//  Created by Maria Novikova on 31.12.2022.
-//
-
 import SwiftUI
 
-// MARK: Готовое отображение
+// MARK: Ready-made display
 
 @ViewBuilder func viewExcerpt(verses: [BibleTextualVerseFull], fontIncreasePercent: Double, selectedId: Int=0) -> some View {
     
     let formattedText = verses.reduce(Text("")) { partialResult, verse in
         partialResult
         +
-        Text("\(verse.number). ") // Номер стиха
+        Text("\(verse.number). ") // Verse number
             .font(.system(size: 7 * (1 + fontIncreasePercent / 100)))
             .foregroundColor(.white.opacity(0.5))
             //.id("verse_number_\(verse.id)")
         +
-        Text(verse.html) // Текст стиха
+        Text(verse.html) // Verse text
             .foregroundColor(selectedId == verse.number ? Color("DarkGreen-accent") : .white)
             .font(.system(size: 10 * (1 + fontIncreasePercent / 100)))
         +
@@ -43,7 +36,7 @@ func getCSSColor(named colorName: String) -> String {
             return String(format: "rgba(%d, %d, %d, %.2f)", Int(red * 255), Int(green * 255), Int(blue * 255), alpha)
         }
     }
-    return "yellow" // Значение по умолчанию
+    return "yellow" // Default value
 }
 
 
@@ -60,7 +53,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
             <style>
                 html {
-                    font-size: \(fontSize)px; /* Базовый размер шрифта */
+                    font-size: \(fontSize)px; /* Base font size */
                     scroll-behavior: smooth;
                 }
 
@@ -156,12 +149,18 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     font-size: x-large;
                     font-weight: bold;
                 }
-                
+                                
+                .subtitle:first-of-type {
+                    display: inline;
+                    text-align: center;
+                }
                 .subtitle {
                     font-size: 0.9rem;
                     color: rgba(255, 255, 255, 0.7);
                     margin-top: 0.3rem;
                     margin-bottom: 0.8rem;
+                    display: block;
+                    text-align: center;
                 }
                 
                 .reference {
@@ -207,7 +206,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     """
 
     for verse in verses {
-        // заголовок
+        // Title
         if (verse.beforeTitle != nil) {
             htmlString += """
                 <div id="top"></div>
@@ -221,12 +220,12 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 """
             }
             
-            // подзаголовок metadata
+            // Subtitle metadata
             if let metadata = verse.beforeTitle!.metadata, !metadata.isEmpty {
-                // вставка примечаний в metadata
+                // Insert notes into metadata
                 var metadataHTML = metadata
                 var prevNotesOffset = 0
-                // Сортируем примечания по position_html для корректной вставки
+                // Sort notes by position_html for proper insertion
                 let sortedNotes = verse.beforeTitle!.notes.sorted { $0.positionHtml < $1.positionHtml }
                 for note in sortedNotes {
                     let noteHTML = """
@@ -244,10 +243,10 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 """
             }
         }
-        // вставка примечаний
+        // Insert notes
         var verseHTML = verse.html
         var prevNotesOffset = 0
-        // Сортируем примечания по position_html для корректной вставки
+        // Sort notes by position_html for proper insertion
         let sortedVerseNotes = verse.notes.sorted { $0.positionHtml < $1.positionHtml }
         for note in sortedVerseNotes {
             let noteHTML = """
@@ -259,7 +258,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             verseHTML = insertSubstring(original: verseHTML, substring: noteHTML, at: prevNotesOffset+note.positionHtml)
             prevNotesOffset += noteHTML.count
         }
-        // абзацы
+        // Paragraphs
         let id_info = verse.join == 0 ? "\(verse.number)" : "\(verse.number)-\(verse.number+verse.join)"
         
         let quoteContainer = verse.html.contains("class=\"quote\"") ? "quote-container" : ""
@@ -283,7 +282,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
 
 func insertSubstring(original: String, substring: String, at position: Int) -> String {
     guard position >= 0 && position <= original.count else {
-        print("Некорректная позиция.")
+        print("Invalid position.")
         return original
     }
     

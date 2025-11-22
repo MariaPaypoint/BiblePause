@@ -1,10 +1,3 @@
-//
-//  PageReadView.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 15.06.2024.
-//
-
 import SwiftUI
 import AVFoundation
 import Combine
@@ -16,7 +9,7 @@ struct PageReadView: View {
 
     @StateObject var audiopleer = PlayerModel()
     
-    // Переменная для наблюдения за завершением аудио
+    // Observer for tracking audio completion
     @State private var audioStateObserver: AnyCancellable?
 
     @State private var showSelection = false
@@ -25,8 +18,7 @@ struct PageReadView: View {
     @State private var errorDescription: String = ""
 
     @State private var textVerses: [BibleTextualVerseFull] = []
-    //@State private var audioVerses: [BibleAudioVerseFull] = []
-    @State private var currentVerseNumber: Int? // = 0
+    @State private var currentVerseNumber: Int?
     @State private var prevExcerpt: String = ""
     @State private var nextExcerpt: String = ""
 
@@ -41,13 +33,10 @@ struct PageReadView: View {
 
     @State var scrollToVerseId: Int?
 
-    @State var oldExcerpt: String = "" // значение до клика на выбор
+    @State var oldExcerpt: String = "" // value before tapping on selection
     @State var oldTranslation: Int = 0
     @State var oldVoice: Int = 0
     @State var oldFontIncreasePercent: Double = 0
-
-    //@State var currentExcerptTitle: String = ""
-    //@State var currentExcerptSubtitle: String = ""
 
     @State var skipOnePause: Bool = false
 
@@ -56,19 +45,16 @@ struct PageReadView: View {
             ZStack {
                 VStack(spacing: 0) {
 
-                    // MARK: Шапка
+                    // MARK: Header
                     HStack(alignment: .center) {
                         MenuButtonView()
                             .environmentObject(settingsManager)
 
                         Spacer()
 
-                        // заголовок, который ведет на выбор главы
+                        // Title that opens chapter selection
                         Button {
-                            ///player.pause()
-
                             withAnimation(Animation.easeInOut(duration: 1)) {
-                                //selectedMenuItem = .select
                                 oldExcerpt = settingsManager.currentExcerpt
                                 showSelection = true
                             }
@@ -86,7 +72,7 @@ struct PageReadView: View {
 
                         Spacer()
 
-                        // кнопка настроек
+                        // Settings button
                         Button {
                             withAnimation(Animation.easeInOut(duration: 1)) {
                                 oldTranslation = settingsManager.translation
@@ -103,12 +89,12 @@ struct PageReadView: View {
                     .padding(.horizontal, globalBasePadding)
                     .padding(.bottom, 5)
 
-                    // MARK: Текст
+                    // MARK: Text content
                     if isTextLoading {
                         Spacer()
                     }
                     else if textVerses.isEmpty && self.errorDescription != "" {
-                        // Показываем только ошибку, если текст не загружен
+                        // Show only the error if text failed to load
                         ScrollView {
                             VStack {
                                 Spacer()
@@ -125,7 +111,7 @@ struct PageReadView: View {
                         }
                     }
                     else {
-                        // Показываем текст (с предупреждением об отсутствии аудио, если есть)
+                        // Show text (with audio warning when applicable)
                         VStack(spacing: 0) {
                             if self.errorDescription != "" && !hasText {
                                 Text("error.audio_warning".localized(self.errorDescription))
@@ -140,24 +126,24 @@ struct PageReadView: View {
                         HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: $currentVerseNumber)
                             .mask(LinearGradient(
                                 gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
-                                startPoint: .init(x: 0.5, y: 0.9), // Начало градиента на 90% высоты
-                                endPoint: .init(x: 0.5, y: 1.0)  // Конец градиента в самом низу
+                                startPoint: .init(x: 0.5, y: 0.9), // Gradient starts at 90% height
+                                endPoint: .init(x: 0.5, y: 1.0)  // Gradient ends at very bottom
                             )
                         )
                         .padding(12)
                     }
                     }
-                    // MARK: Аудио-панель
+                    // MARK: Audio panel
                     viewAudioPanel(proxy: proxy)
 
                 }
 
-                // подложка
+                // Background layer
                 .background(
                     Color("DarkGreen")
                 )
 
-                // слой меню
+                // Menu layer
                 MenuView()
                     .environmentObject(settingsManager)
                     .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
@@ -231,8 +217,6 @@ struct PageReadView: View {
             .edgesIgnoringSafeArea(.bottom)
 
             .onAppear {
-                //settingsManager.currentExcerptTitle = settingsManager.currentExcerptTitle
-                //settingsManager.currentExcerptSubtitle = settingsManager.currentExcerptSubtitle
                 UIRefreshControl.appearance().tintColor = UIColor(Color("localAccentColor"))
 
                 Task {
@@ -243,35 +227,33 @@ struct PageReadView: View {
                     audiopleer.setSpeed(speed: Float(self.settingsManager.currentSpeed))
                     self.scrollViewProxy = proxy
                     
-                    // Настройка наблюдения за завершением аудио для автоматического перехода к следующей главе
+                    // Setup observer for finishing audio to auto-switch chapters
                     setupAudioCompletionObserver(proxy: proxy)
                 }
 
                 scrollToVerseId = nil
             }
             .onDisappear {
-                // Очистка наблюдателя для предотвращения утечек памяти
+                // Cleanup observer to avoid memory leaks
                 audioStateObserver?.cancel()
                 audioStateObserver = nil
             }
         }
     }
 
-    // MARK: После выбора784/
+    // MARK: After selection
     func updateExcerpt(proxy: ScrollViewProxy) async {
         do {
-            //withAnimation(.easeOut(duration: 0.1)) {
                 self.isTextLoading = true
                 self.errorDescription = ""
                 self.hasText = false
-            //}
 
             let (thisTextVerses, audioVerses, firstUrl, isSingleChapter, part) = try await getExcerptTextualVersesOnline(excerpts: settingsManager.currentExcerpt, client: settingsManager.client, translation: settingsManager.translation, voice: settingsManager.voice)
 
             textVerses = thisTextVerses
             self.hasText = true
             
-            // Обновляем информацию о книге и главе
+            // Update book and chapter information
             settingsManager.currentBookId = textVerses[0].bookDigitCode
             settingsManager.currentChapterId = textVerses[0].chapterDigitCode
             
@@ -287,19 +269,17 @@ struct PageReadView: View {
                 }
             }
             
-            // листание наверх
+            // Scroll back to top
             withAnimation {
                 proxy.scrollTo("top", anchor: .top)
             }
             
-            // Проверяем наличие аудио
+            // Check for audio availability
             if firstUrl.isEmpty {
                 self.hasAudio = false
-                self.errorDescription = "Аудиофайл для этой главы отсутствует"
+                self.errorDescription = "Audio file for this chapter is missing"
             } else if let url = URL(string: firstUrl) {
-                //print(isSingleChapter)
                 let (from, to) = getExcerptPeriod(audioVerses: audioVerses)
-                //print("url: \(url)")
                 
                 let playerItem = AVPlayerItem(url: url)
                 audiopleer.setItem(playerItem: playerItem, periodFrom: isSingleChapter ? 0 : from, periodTo: isSingleChapter ? 0 : to, audioVerses: audioVerses, itemTitle: settingsManager.currentExcerptTitle, itemSubtitle: settingsManager.currentExcerptSubtitle)
@@ -308,21 +288,18 @@ struct PageReadView: View {
                 self.errorDescription = ""
             } else {
                 self.hasAudio = false
-                self.errorDescription = "Некорректный URL аудиофайла"
+                self.errorDescription = "Invalid audio file URL"
             }
         } catch {
-            self.errorDescription = "Ошибка: \(error)"
-            //print("Ошибка: \(error)")
-            //toast = FancyToast(type: .error, title: "Ошибка загрузки данных", message: error.localizedDescription)
+            self.errorDescription = "Error: \(error)"
         }
         withAnimation(.easeOut(duration: 0.8)) {
             self.isTextLoading = false
         }
     }
 
-    // MARK: Обработчики изменения стиха
+    // MARK: Verse change handlers
     func onStartVerse(_ cur: Int) {
-        //print("onStartVerse \(cur) - \(cur >= 0 ? textVerses[cur].html : "")")
 
         if skipOnePause {
             skipOnePause = false
@@ -352,15 +329,14 @@ struct PageReadView: View {
     }
 
     func onEndVerse() {
-        //print("onEndVerse")
 
         if skipOnePause {
             skipOnePause = false
             return
         }
 
-        // если нужна пауза - сделать ее
-        // (это событие не вызывается после последнего стиха и полной остановки)
+        // Apply pause if needed
+        // (event not fired after last verse and full stop)
         if settingsManager.pauseBlock == .verse {
             if settingsManager.pauseType == .time {
                 audiopleer.breakForSeconds(settingsManager.pauseLength)
@@ -371,14 +347,14 @@ struct PageReadView: View {
         }
     }
 
-    // MARK: Настройка наблюдения за завершением аудио
+    // MARK: Audio completion observer setup
     private func setupAudioCompletionObserver(proxy: ScrollViewProxy) {
         audioStateObserver = audiopleer.$state
             .receive(on: DispatchQueue.main)
             .sink { newState in
-                // Автоматический переход к следующей главе при завершении аудио
+                // Auto-move to next chapter once audio finishes
                 if newState == .finished {
-                    // Отмечаем текущую главу как прочитанную
+                    // Mark current chapter as read
                     if let firstVerse = self.textVerses.first {
                         let bookAlias = self.settingsManager.getBookAlias(bookNumber: firstVerse.bookDigitCode)
                         if !bookAlias.isEmpty {
@@ -387,21 +363,21 @@ struct PageReadView: View {
                     }
                     
                     if self.settingsManager.autoNextChapter && !self.nextExcerpt.isEmpty {
-                        // Небольшая задержка для лучшего UX
+                        // Small delay for better UX
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             Task {
                                 self.settingsManager.currentExcerpt = self.nextExcerpt
                                 await self.updateExcerpt(proxy: proxy)
                                 
-                                // Определяем нужна ли пауза между главами и должно ли начаться воспроизведение
+                                // Determine needed pause between chapters and auto-play flag
                                 let (pauseDelay, shouldAutoPlay) = self.calculateChapterTransitionPause()
                                 
-                                // Если есть пауза, показываем состояние autopausing
+                                // Show autopausing state when pause is long enough
                                 if pauseDelay > 0.3 && shouldAutoPlay {
                                     self.audiopleer.state = .autopausing
                                 }
                                 
-                                // Автоматический старт воспроизведения после паузы (если нужно)
+                                // Auto-start playback once pause ends (if required)
                                 if shouldAutoPlay {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + pauseDelay) {
                                         self.audiopleer.doPlayOrPause()
@@ -414,42 +390,42 @@ struct PageReadView: View {
             }
     }
     
-    // MARK: Вычисление паузы при переходе между главами
+    // MARK: Pause calculation between chapters
     private func calculateChapterTransitionPause() -> (delay: Double, shouldAutoPlay: Bool) {
-        // Если паузы отключены
+        // Early exit when pauses are disabled
         guard settingsManager.pauseType != .none else {
-            return (0.3, true) // минимальная техническая задержка, автовоспроизведение
+            return (0.3, true) // minimal technical delay, auto-play
         }
         
-        // Новая глава всегда считается новым стихом и новым абзацем
-        // Проверяем, является ли она новым отрывком (есть ли заголовок перед первым стихом)
+        // New chapter counts as new verse and new paragraph
+        // Check if it also starts a new fragment (title before verse)
         let isNewFragment = textVerses.first?.beforeTitle != nil
         
-        // Определяем нужна ли пауза в зависимости от настроек
+        // Decide if pause is required based on settings
         let shouldPause: Bool
         switch settingsManager.pauseBlock {
         case .verse:
-            shouldPause = true // новая глава = новый стих
+            shouldPause = true // new chapter == new verse
         case .paragraph:
-            shouldPause = true // новая глава = новый абзац
+            shouldPause = true // new chapter == new paragraph
         case .fragment:
-            shouldPause = isNewFragment // новая глава = новый отрывок только если есть заголовок
+            shouldPause = isNewFragment // new chapter == new fragment only with title
         }
         
         guard shouldPause else {
-            return (0.3, true) // минимальная техническая задержка, автовоспроизведение
+            return (0.3, true) // minimal technical delay with auto-play
         }
         
-        // Возвращаем длительность паузы и флаг автовоспроизведения в зависимости от типа
+        // Return pause duration and auto-play flag based on type
         if settingsManager.pauseType == .time {
             return (settingsManager.pauseLength, true)
         } else {
-            // Для .full паузы воспроизведение не должно начаться автоматически
+            // For .full pause playback must not auto-start
             return (0.3, false)
         }
     }
 
-    // MARK: Панель с плеером
+    // MARK: Player panel
     @ViewBuilder private func viewAudioPanel(proxy: ScrollViewProxy) -> some View {
 
         VStack(spacing: 0) {
@@ -458,7 +434,7 @@ struct PageReadView: View {
             VStack {
                 viewAudioInfo()
                 
-                // Предупреждение об отсутствии аудио
+                // Warning when audio is missing
                 if !hasAudio && hasText && self.errorDescription != "" {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -511,7 +487,7 @@ struct PageReadView: View {
         )
     }
 
-    // MARK: Панель - сворачивание/разворачивание
+    // MARK: Panel – expand/collapse
     @ViewBuilder private func viewAudioHide() -> some View {
         Button {
             withAnimation {
@@ -531,7 +507,7 @@ struct PageReadView: View {
 
     }
 
-    // MARK: Панель - информация
+    // MARK: Panel – info
     @ViewBuilder private func viewAudioInfo() -> some View {
         HStack {
             Text(settingsManager.translationName)
@@ -574,7 +550,7 @@ struct PageReadView: View {
         }
     }
 
-    // MARK: Панель - Timeline
+    // MARK: Panel – timeline
     @ViewBuilder private func viewAudioTimeline() -> some View {
         VStack(spacing: 0) {
             ZStack {
@@ -588,7 +564,7 @@ struct PageReadView: View {
                     }
                     .disabled(audiopleer.state == .waitingForSelection || audiopleer.state == .buffering)
 
-                // подсветка текущего отрывка
+                // Highlight current excerpt
                 if audiopleer.periodTo > 0 {
 
                     // https://stackoverflow.com/a/62641399
@@ -630,7 +606,7 @@ struct PageReadView: View {
                 }
             }
             HStack {
-                // время
+                // time
                 Text("\(formatTime(audiopleer.currentTime))")
                     .foregroundStyle(Color("Mustard"))
                 Spacer()
@@ -652,7 +628,7 @@ struct PageReadView: View {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
-    // MARK: Панель - AudioButtons
+    // MARK: Panel – AudioButtons
     @ViewBuilder fileprivate func viewAudioButtons(proxy: ScrollViewProxy) -> some View {
 
         let buttonsColor = (!hasAudio || audiopleer.state == .buffering) ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
@@ -676,7 +652,7 @@ struct PageReadView: View {
             }
             Spacer()
 
-            // Restart отрывка
+            // Restart excerpt
             Button {
                 audiopleer.restart()
             } label: {
@@ -686,7 +662,7 @@ struct PageReadView: View {
             .disabled(!hasAudio)
             Spacer()
 
-            // Previos verse
+            // Previous verse
             Button {
                 self.skipOnePause = true
                 audiopleer.previousVerse()

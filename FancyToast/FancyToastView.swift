@@ -1,6 +1,3 @@
-//  Created by Maria Novikova on 24.12.2022.
-//  Сделано по статье https://betterprogramming.pub/swiftui-create-a-fancy-toast-component-in-10-minutes-e6bae6021984
-
 import SwiftUI
 
 struct FancyToastView: View {
@@ -28,7 +25,7 @@ struct FancyToastView: View {
                                 .foregroundColor(type.themeBorderColor)
                         }
                     }
-                    .padding(.bottom, -3) // без паддинга как будто -10
+                    .padding(.bottom, -3) // Without padding it looks like -10
                     Text(message)
                         .font(.subheadline.weight(.light))
                         .foregroundColor(type.themeTextColor)

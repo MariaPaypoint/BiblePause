@@ -1,10 +1,3 @@
-//
-//  SkeletonView.swift
-//  BiblePause
-//
-//  Created by  Mac on 10.05.2024.
-//
-
 import SwiftUI
 import OpenAPIURLSession
 
@@ -32,12 +25,12 @@ class SettingsManager: ObservableObject {
     @AppStorage("translation") var translation: Int = 1 // syn
     @AppStorage("translationName") var translationName: String = "SYNO"
     @AppStorage("voice") var voice: Int = 1 // prozorovsky
-    @AppStorage("voiceName") var voiceName: String = "Александр Бондаренко"
+    @AppStorage("voiceName") var voiceName: String = "Alexander Bondarenko"
     @AppStorage("voiceMusic") var voiceMusic: Bool = true
     
     @AppStorage("currentExcerpt") var currentExcerpt: String = "jhn 1"
-    @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "От Иоанна святое благовествование"
-    @AppStorage("currentExcerptSubtitle") var currentExcerptSubtitle: String = "Глава 1"
+    @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "Gospel of John"
+    @AppStorage("currentExcerptSubtitle") var currentExcerptSubtitle: String = "Chapter 1"
     @AppStorage("currentBookId") var currentBookId: Int = 0
     @AppStorage("currentChapterId") var currentChapterId: Int = 0
     
@@ -48,12 +41,12 @@ class SettingsManager: ObservableObject {
     
     let client: any APIProtocol
     
-    // MARK: Кеширование книг и глав
+    // MARK: Book and chapter caching
     @Published var cachedBooks: [Components.Schemas.TranslationBookModel] = []
     @Published var cachedBooksTranslation: Int = 0
     @Published var cachedBooksVoice: Int = 0
     
-    // MARK: Прогресс чтения
+    // MARK: Reading progress
     @Published var readProgress: ReadProgress = ReadProgress()
     private let readProgressKey = "readProgress"
     
@@ -66,7 +59,7 @@ class SettingsManager: ObservableObject {
         let transport = URLSessionTransport(configuration: .init(session: session))
         self.client = Client(serverURL: URL(string: baseURLString)!, transport: transport)
         
-        // Загружаем прогресс чтения
+        // Load stored reading progress
         loadReadProgress()
     }
     
@@ -112,26 +105,26 @@ class SettingsManager: ObservableObject {
         return components.url ?? url
     }
     
-    // MARK: Получение книг с кешированием
-    /// Получает список книг для текущего перевода и голоса.
-    /// Использует кеш если данные уже загружены для этой комбинации translation/voice.
-    /// - Returns: Массив книг или throws error при ошибке загрузки
+    // MARK: Fetching books with caching
+    /// Returns books for the current translation and voice.
+    /// Uses cache if data was already loaded for this translation/voice pair.
+    /// - Returns: Array of books or throws on load error
     func getTranslationBooks() async throws -> [Components.Schemas.TranslationBookModel] {
-        // Проверяем, есть ли актуальный кеш
+        // Make sure cache is still valid
         if !cachedBooks.isEmpty && 
            cachedBooksTranslation == translation && 
            cachedBooksVoice == voice {
             return cachedBooks
         }
         
-        // Загружаем данные с API
+        // Fetch from API
         let response = try await client.get_translation_books(
             path: .init(translation_code: translation),
             query: .init(voice_code: voice)
         )
         let books = try response.ok.body.json
         
-        // Сохраняем в кеш
+        // Save to cache
         await MainActor.run {
             self.cachedBooks = books
             self.cachedBooksTranslation = translation
@@ -141,16 +134,16 @@ class SettingsManager: ObservableObject {
         return books
     }
     
-    /// Очищает кеш книг (например, при изменении настроек)
+    /// Clears book cache (e.g. when settings change)
     func clearBooksCache() {
         cachedBooks = []
         cachedBooksTranslation = 0
         cachedBooksVoice = 0
     }
     
-    // MARK: Методы работы с прогрессом чтения
+    // MARK: Reading progress helpers
     
-    /// Загружает прогресс чтения из UserDefaults
+    /// Loads reading progress from UserDefaults
     private func loadReadProgress() {
         if let data = UserDefaults.standard.data(forKey: readProgressKey),
            let progress = try? JSONDecoder().decode(ReadProgress.self, from: data) {
@@ -158,39 +151,39 @@ class SettingsManager: ObservableObject {
         }
     }
     
-    /// Сохраняет прогресс чтения в UserDefaults
+    /// Saves reading progress into UserDefaults
     private func saveReadProgress() {
         if let data = try? JSONEncoder().encode(readProgress) {
             UserDefaults.standard.set(data, forKey: readProgressKey)
         }
     }
     
-    /// Формирует ключ главы в формате "bookAlias_chapterNumber"
+    /// Builds a chapter key formatted as "bookAlias_chapterNumber"
     private func chapterKey(book: String, chapter: Int) -> String {
         return "\(book)_\(chapter)"
     }
     
-    /// Отмечает главу как прочитанную
+    /// Marks a chapter as read
     func markChapterAsRead(book: String, chapter: Int) {
         let key = chapterKey(book: book, chapter: chapter)
         readProgress.readChapters.insert(key)
         saveReadProgress()
     }
     
-    /// Отмечает главу как непрочитанную
+    /// Marks a chapter as unread
     func markChapterAsUnread(book: String, chapter: Int) {
         let key = chapterKey(book: book, chapter: chapter)
         readProgress.readChapters.remove(key)
         saveReadProgress()
     }
     
-    /// Проверяет, прочитана ли глава
+    /// Checks whether a chapter is read
     func isChapterRead(book: String, chapter: Int) -> Bool {
         let key = chapterKey(book: book, chapter: chapter)
         return readProgress.readChapters.contains(key)
     }
     
-    /// Получает прогресс по книге
+    /// Returns progress for a specific book
     func getBookProgress(book: String, totalChapters: Int) -> (read: Int, total: Int) {
         var readCount = 0
         for chapter in 1...totalChapters {
@@ -201,7 +194,7 @@ class SettingsManager: ObservableObject {
         return (readCount, totalChapters)
     }
     
-    /// Получает общий прогресс (требует информацию о всех книгах)
+    /// Returns total progress (requires info for all books)
     func getTotalProgress(books: [Components.Schemas.TranslationBookModel]) -> (read: Int, total: Int) {
         var totalRead = 0
         var totalChapters = 0
@@ -215,27 +208,27 @@ class SettingsManager: ObservableObject {
         return (totalRead, totalChapters)
     }
     
-    /// Сбрасывает весь прогресс
+    /// Resets all progress
     func resetProgress() {
         readProgress = ReadProgress()
         saveReadProgress()
     }
     
-    /// Сбрасывает прогресс по конкретной книге
+    /// Resets progress for a specific book
     func resetBookProgress(book: String, totalChapters: Int) {
         for chapter in 1...totalChapters {
             markChapterAsUnread(book: book, chapter: chapter)
         }
     }
     
-    /// Отмечает всю книгу как прочитанную
+    /// Marks an entire book as read
     func markBookAsRead(book: String, totalChapters: Int) {
         for chapter in 1...totalChapters {
             markChapterAsRead(book: book, chapter: chapter)
         }
     }
     
-    /// Получает алиас книги по её номеру из кешированных данных
+    /// Finds a book alias by its number using cached data
     func getBookAlias(bookNumber: Int) -> String {
         if let book = cachedBooks.first(where: { $0.book_number == bookNumber }) {
             return book.alias
@@ -249,7 +242,7 @@ struct SkeletonView: View {
     @StateObject private var settingsManager = SettingsManager()
     @ObservedObject private var localizationManager = LocalizationManager.shared
     
-    // не имеет значения здесь
+    // Not relevant here
     @State private var showAsPartOfRead: Bool = false
     
     var body: some View {

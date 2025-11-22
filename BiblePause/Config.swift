@@ -1,10 +1,3 @@
-//
-//  Config.swift
-//  BiblePause
-//
-//  Configuration manager for reading settings from Configuration.plist
-//
-
 import Foundation
 
 enum Config {

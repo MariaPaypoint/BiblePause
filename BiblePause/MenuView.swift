@@ -1,10 +1,3 @@
-//
-//  MenuView.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 09.05.2024.
-//
-
 import SwiftUI
 
 enum MenuItem {
@@ -17,9 +10,6 @@ enum MenuItem {
 }
 
 struct MenuView: View{
-    
-    //@Binding var showMenu: Bool
-    //@Binding var selectedMenuItem: MenuItem
     
     @EnvironmentObject var settingsManager: SettingsManager
     
@@ -102,7 +92,7 @@ struct MenuView: View{
         }
     }
     
-    // MARK: Закрытие меню по выбору пункта
+    // MARK: Close menu when selecting an item
     func changeSelected(selected: MenuItem) {
         toggleWithAnimation()
         settingsManager.selectedMenuItem = selected
@@ -128,7 +118,7 @@ struct MenuView: View{
     }
 }
 
-// MARK: Изгиб
+// MARK: Curve shape
 struct MenuShape: Shape{
     
     var value: CGFloat
@@ -162,7 +152,7 @@ struct MenuShape: Shape{
     }
 }
 
-// MARK: Кнопка меню др.окон
+// MARK: Menu button for other screens
 struct MenuButtonView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
@@ -173,12 +163,6 @@ struct MenuButtonView: View {
                 settingsManager.showMenu.toggle()
             }
         } label: {
-            /*
-             Image(systemName: "line.3.horizontal")
-             .foregroundColor(.white)
-             .font(.largeTitle)
-             .fontWeight(.light)
-             */
             Image("Menu")
                 .resizable()
                 .aspectRatio(contentMode: .fit)

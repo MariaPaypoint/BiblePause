@@ -1,10 +1,3 @@
-//
-//  PageSetupView.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 15.06.2024.
-//
-
 import SwiftUI
 import AVFoundation
 import Combine
@@ -17,18 +10,18 @@ struct PageSetupView: View {
     
     @Binding var showFromRead: Bool
     
-    // Для примера отображения текста
+    // Sample text preview state
     @State private var isExampleLoading: Bool = true
     @State private var exampleVerses: [BibleTextualVerseFull] = []
     @State private var exampleErrorText: String = ""
     
-    // MARK: Языки и переводы
+    // MARK: Languages and translations
     
-    // отдельные настройки нужны для того, чтобы не соохранять некорректные данные
+    // Separate state values so we don't persist invalid data
     @State private var isLanguagesLoading: Bool = true
     @State private var languageTexts: [String] = []
     @State private var languageKeys: [String]  = []
-    @State private var language: String = "" // инициализируется в onAppear
+    @State private var language: String = "" // initialized in onAppear
     
     @State private var translationsResponse: [Components.Schemas.TranslationModel] = []
     
@@ -36,18 +29,18 @@ struct PageSetupView: View {
     @State private var translationKeys: [String]  = []
     @State private var translationTexts: [String] = []
     @State private var translationNames: [String] = []
-    @State private var translation: String = "" // инициализируется в onAppear
+    @State private var translation: String = "" // initialized in onAppear
     @State private var translationName: String = ""
     
     @State private var voiceTexts: [String] = []
     @State private var voiceKeys: [String]  = []
     @State private var voiceMusics: [Bool]  = []
     @State private var voiceDescriptions: [String] = []
-    @State private var voice: String = "" // инициализируется в onAppear
+    @State private var voice: String = "" // initialized in onAppear
     @State private var voiceName: String = ""
     @State private var voiceMusic: Bool = false
     
-    // Для предпрослушивания голосов
+    // Voice preview helpers
     @State private var previewPlayer: AVPlayer?
     @State private var previewVoiceIndex: Int? = nil
     @State private var previewTimer: AnyCancellable? = nil
@@ -60,7 +53,7 @@ struct PageSetupView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 10) {
-                // MARK: шапка
+                // MARK: Header
                 HStack {
                     if showFromRead {
                         
@@ -81,7 +74,7 @@ struct PageSetupView: View {
                     
                     Text("page.settings.title".localized)
                         .fontWeight(.bold)
-                        .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру
+                        .padding(.trailing, 32) // compensate menu button to keep title centered
                         .foregroundColor(.white)
                     
                     Spacer()
@@ -107,14 +100,14 @@ struct PageSetupView: View {
                     .foregroundColor(.white)
                 }
             }
-            // слой меню
+            // Menu layer
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
             
         }
         
-        // подложка
+        // Background
         .background(
             Color("DarkGreen")
         )
@@ -127,12 +120,12 @@ struct PageSetupView: View {
             loadExampleText()
         }
         .onDisappear {
-            // Останавливаем предпрослушивание при закрытии экрана
+            // Stop preview when view disappears
             stopVoicePreview()
         }
     }
     
-    // MARK: Шрифт
+    // MARK: Font
     @ViewBuilder private func ViewFont() -> some View {
         VStack {
             viewGroupHeader(text: "settings.font".localized)
@@ -157,7 +150,7 @@ struct PageSetupView: View {
                             .foregroundColor(.white)
                     }
                     
-                    Divider() // Разделительная линия между кнопками
+                    Divider() // Divider between buttons
                         .background(Color.white)
                     
                     Button(action: {
@@ -215,14 +208,14 @@ struct PageSetupView: View {
         
     }
     
-    // MARK: Пауза
+    // MARK: Pause
     @ViewBuilder private func ViewPause() -> some View {
         viewGroupHeader(text: "settings.pause".localized)
         VStack(spacing: 15) {
             viewEnumPicker(title: settingsManager.pauseType.displayName, selection: $settingsManager.pauseType)
             
             if settingsManager.pauseType != .none {
-                // время
+                // Duration controls
                 if settingsManager.pauseType == .time {
                     HStack {
                         Text("settings.pause.make_pause".localized)
@@ -279,7 +272,7 @@ struct PageSetupView: View {
                     }
                 }
                 
-                // после чего
+                // Pause trigger
                 HStack {
                     Text("После каждого")
                         .frame(width: 140, alignment: .leading)
@@ -292,7 +285,7 @@ struct PageSetupView: View {
         .padding(1)
     }
     
-    // MARK: Автоматический переход к следующей главе
+    // MARK: Auto transition to next chapter
     @ViewBuilder private func ViewAutoNextChapter() -> some View {
         viewGroupHeader(text: "settings.player".localized)
         VStack(spacing: 15) {
@@ -304,7 +297,7 @@ struct PageSetupView: View {
         .padding(1)
     }
     
-    // MARK: Языки трио
+    // MARK: Language / translation / audio
     @ViewBuilder private func ViewLangTranslateAudio(proxy: ScrollViewProxy) -> some View {
         
         viewGroupHeader(text: "settings.bible_language".localized)
@@ -365,16 +358,13 @@ struct PageSetupView: View {
         .padding(.vertical, -5)
         
         
-        // кнопки
+        // Action buttons
         if settingsManager.language != self.language || String(settingsManager.translation) != self.translation || String(settingsManager.voice) != self.voice {
             
             let saveEnabled =  self.language != "" && self.translation != "" && self.voice != ""
             
             Button {
                 if saveEnabled {
-                    //settingsManager.language = self.language
-                    //settingsManager.translation = Int(self.translation) ?? 0
-                    //settingsManager.voice = Int(self.voice) ?? 0
                     settingsManager.language = self.language
                     settingsManager.translation = Int(self.translation)!
                     settingsManager.translationName = self.translationName
@@ -382,10 +372,6 @@ struct PageSetupView: View {
                     settingsManager.voiceName = self.voiceName
                     settingsManager.voiceMusic = self.voiceMusic
                     
-                    // загрузить инфу о переводе
-                    //fetchTranslationInfo()
-                    
-                    //toast = FancyToast(type: .success, title: "Успех", message: "Настройки сохранены")
                 }
                 else {
                     toast = FancyToast(type: .warning, title: "settings.warning".localized, message: self.translation == "" ? "settings.select_translation".localized : "settings.select_reader".localized)
@@ -401,7 +387,6 @@ struct PageSetupView: View {
             .buttonStyle(.borderedProminent)
             .tint(saveEnabled ? Color("Marigold") : .white.opacity(0.2))
             .padding(.top, 25)
-            //.disabled(saveDisabled)
             
             
             Button {
@@ -410,8 +395,6 @@ struct PageSetupView: View {
                 self.voice = String(settingsManager.voice)
                 fetchLanguages()
                 showAudios()
-                //scrollToBottom(proxy: proxy)
-                //toast = FancyToast(type: .info, title: "OK", message: "Значения восстановлены")
             } label: {
                 VStack {
                     Text("settings.cancel_choice".localized)
@@ -442,7 +425,7 @@ struct PageSetupView: View {
         }
     }
     
-    // Загрузка примера текста
+    // Load example text
     func loadExampleText() {
         Task {
             do {
@@ -463,7 +446,7 @@ struct PageSetupView: View {
         }
     }
     
-    // MARK: Api-запросы
+    // MARK: API requests
     
     func fetchLanguages() {
         Task {
@@ -550,23 +533,23 @@ struct PageSetupView: View {
         }
     }
     
-    // MARK: Предпрослушивание голоса
+    // MARK: Voice preview
     func toggleVoicePreview(index: Int) {
-        // Если уже играет этот голос - остановить
+        // Stop if this voice is already playing
         if previewVoiceIndex == index {
             stopVoicePreview()
             return
         }
         
-        // Остановить предыдущее воспроизведение
+        // Stop previous playback
         stopVoicePreview()
         
-        // Начать воспроизведение нового голоса
+        // Start playback for the new voice
         let voiceCode = Int(voiceKeys[index]) ?? 0
         
         Task {
             do {
-                // Загружаем аудио для Иоанна 1 главы
+                // Load audio for John chapter 1
                 let (_, audioVerses, firstUrl, _, _) = try await getExcerptTextualVersesOnline(
                     excerpts: "jhn 1",
                     client: settingsManager.client,
@@ -579,18 +562,18 @@ struct PageSetupView: View {
                     return
                 }
                 
-                // Создаем плеер
+                // Create player
                 let playerItem = AVPlayerItem(url: url)
                 previewPlayer = AVPlayer(playerItem: playerItem)
                 previewVoiceIndex = index
                 
-                // Позиционируем на начало первого стиха
+                // Seek to the beginning of the first verse
                 if let firstVerse = audioVerses.first {
                     let startTime = CMTime(seconds: firstVerse.begin, preferredTimescale: 600)
                     await previewPlayer?.seek(to: startTime, toleranceBefore: .zero, toleranceAfter: .zero)
                 }
                 
-                // Устанавливаем наблюдатель для остановки в конце третьего стиха
+                // Add observer to stop at the end of the third verse
                 if audioVerses.count >= 3 {
                     let thirdVerseEndTime = CMTime(seconds: audioVerses[2].end, preferredTimescale: 600)
                     previewTimeObserver = previewPlayer?.addBoundaryTimeObserver(
@@ -601,7 +584,7 @@ struct PageSetupView: View {
                     }
                 }
                 
-                // Воспроизводим
+                // Start playback
                 previewPlayer?.play()
                 
             } catch {
@@ -611,7 +594,7 @@ struct PageSetupView: View {
     }
     
     func stopVoicePreview() {
-        // Удаляем наблюдатель времени
+        // Remove time observer
         if let observer = previewTimeObserver {
             previewPlayer?.removeTimeObserver(observer)
             previewTimeObserver = nil

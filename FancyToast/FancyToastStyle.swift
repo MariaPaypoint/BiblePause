@@ -1,5 +1,3 @@
-//  Created by Maria Novikova on 24.12.2022.
-
 import Foundation
 import SwiftUI
 

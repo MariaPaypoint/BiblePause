@@ -1,13 +1,6 @@
-//
-//  advElements.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 08.06.2024.
-//
-
 import SwiftUI
 
-// красивые кнопки-переключалки
+// Nice toggle buttons
 @ViewBuilder 
 func viewSegmentedButtons(arr: [String], selIndex: Int, baseColor: Color, bgColor: Color, closure:@escaping (_ selectedIndex: Int) -> Void) -> some View {
     
@@ -22,13 +15,10 @@ func viewSegmentedButtons(arr: [String], selIndex: Int, baseColor: Color, bgColo
                 
                 Rectangle()
                     .foregroundColor(index == selIndex ? baseColor : bgColor)
-                    //.cornerRadius(radius: index == 0 ? globalCornerRadius : 0, corners: [.topLeft, .bottomLeft])
-                    //.cornerRadius(radius: index == arr.count-1 ? globalCornerRadius : 0, corners: [.topRight, .bottomRight])
                 
                 Text(name)
                     .padding(.vertical, 10)
                     .font(.callout)
-                    //.foregroundColor(index != selIndex ? baseColor : bgColor )
                     .foregroundColor(Color("localAccentColor"))
                 
             }
@@ -43,18 +33,12 @@ func viewSegmentedButtons(arr: [String], selIndex: Int, baseColor: Color, bgColo
          
     }
     .foregroundColor(baseColor)
-    //.overlay(
-    //    RoundedRectangle(cornerRadius: globalCornerRadius)
-    //        .stroke(baseColor, lineWidth: 2)
-    //)
     .font(.callout)
-    //.background(baseColor)
     .cornerRadius(globalCornerRadius)
-    //.padding(.bottom, 10)
      
 }
 
-// заголовок группы
+// Group header
 @ViewBuilder
 func viewGroupHeader(text: String) -> some View {
     Text(text)
@@ -65,7 +49,7 @@ func viewGroupHeader(text: String) -> some View {
         .frame(maxWidth: .infinity, alignment: .leading)
 }
 
-// выбор из листа
+// List selection
 @ViewBuilder
 func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String>,
                     onSelect: @escaping (Int) -> Void = { _ in }) -> some View {
@@ -93,7 +77,7 @@ func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String
     }
 }
 
-// выбор из листа с кнопкой предпрослушивания
+// List selection with preview button
 @ViewBuilder
 func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Binding<String>,
                                 descriptions: [String] = [],
@@ -124,7 +108,7 @@ func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Bin
                     
                     Spacer()
                     
-                    // Кнопка предпрослушивания
+                    // Preview button
                     Button {
                         onPreview(index)
                     } label: {
@@ -135,7 +119,7 @@ func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Bin
                     .frame(width: 32)
                     .padding(.top, 10)
                     
-                    // Галочка с фиксированной шириной
+                    // Checkmark with fixed width
                     Image(systemName: "checkmark")
                         .foregroundColor(Color("Mustard"))
                         .frame(width: 20)
@@ -152,7 +136,7 @@ func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Bin
     }
 }
 
-// выбор из выпадающего списка
+// Selection from dropdown
 @ViewBuilder
 func viewEnumPicker<T: RawRepresentable & CaseIterable & Identifiable & Hashable & DisplayNameProvider>(
     title: String,

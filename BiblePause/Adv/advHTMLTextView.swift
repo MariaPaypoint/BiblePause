@@ -1,28 +1,21 @@
-//
-//  HTMLTextView.swift
-//  BiblePause
-//
-//  Created by  Mac on 14.09.2024.
-//
-
 import SwiftUI
 import WebKit
 
 struct HTMLTextView: UIViewRepresentable {
     let htmlContent: String
     let jsTemplate = """
-        // Удаляем класс выделения с предыдущего стиха
+        // Remove highlight class from the previous verse
         var previous = document.querySelector('.highlighted-verse');
         if (previous) {
             previous.classList.remove('highlighted-verse');
         }
     
-        // Прокручиваем к текущему стиху
+        // Scroll to the current verse
         var target = document.getElementById('{elementId}');
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
     
-            // Добавляем класс выделения к текущему стиху
+            // Add highlight class to the current verse
             target.classList.add('highlighted-verse');
         }
     """
@@ -40,7 +33,7 @@ struct HTMLTextView: UIViewRepresentable {
         webView.scrollView.alwaysBounceVertical = true
         webView.scrollView.decelerationRate = .normal
 
-        // Устанавливаем прозрачность
+        // Set transparent background
         webView.isOpaque = false
         webView.backgroundColor = UIColor.clear
         webView.scrollView.backgroundColor = UIColor.clear

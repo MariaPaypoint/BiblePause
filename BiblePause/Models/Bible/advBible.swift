@@ -1,10 +1,3 @@
-//
-//  advExcerpt.swift
-//  cep
-//
-//  Created by Maria Novikova on 31.12.2022.
-//
-
 import SwiftUI
 import OpenAPIURLSession
 
@@ -28,8 +21,6 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
         var resPart: Components.Schemas.PartsWithAlignmentModel?
         let resSingleChapter = answer.is_single_chapter
         
-        //var oldBook: Int = 0
-        //var oldChapter: Int = 0
         var oldVerse: Int = 0
         
         for part in parts {
@@ -42,8 +33,6 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     join: verse.join,
                     bookDigitCode: part.book.number,
                     chapterDigitCode: part.chapter_number,
-                    //changedBook: !(oldBook == part.book_number || oldBook == 0),
-                    //changedChapter: !(oldChapter == part.chapter_number || oldChapter == 0),
                     skippedVerses: !(verse.number - oldVerse == 1 || oldVerse == 0),
                     startParagraph: verse.start_paragraph
                 )
@@ -56,7 +45,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     if title.before_verse_code == verse.code {
                         var titleWithNotes = BibleTitle(id: title.code, text: title.text, metadata: title.metadata, reference: title.reference)
                         
-                        // Добавляем примечания к заголовку
+                        // Add notes to the title
                         for note in part.notes {
                             if note.title_code == title.code {
                                 titleWithNotes.notes.append(BibleNote(id: note.code, text: note.text, positionHtml: note.position_html))
@@ -74,8 +63,6 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     begin: verse.begin,
                     end: verse.end
                 ))
-                //oldBook =  part.book_number
-                //oldChapter = part.chapter_number
                 oldVerse = verse.number
             }
         }
@@ -95,7 +82,7 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
 
 // MARK: Utility functions
 
-// Начало и конец отрывка в текущей озвучке
+// Start and end of the excerpt in the current narration
 func getExcerptPeriod(audioVerses: [BibleAcousticalVerseFull]) -> (Double, Double) {
     
     guard audioVerses.count > 0 else {

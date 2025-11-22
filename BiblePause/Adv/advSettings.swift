@@ -1,13 +1,6 @@
-//
-//  advSettings.swift
-//  BiblePause
-//
-//  Created by Maria Novikova on 16.06.2024.
-//
-
 import SwiftUI
 
-// MARK: Константы
+// MARK: Constants
 protocol DisplayNameProvider {
     var displayName: String { get }
 }

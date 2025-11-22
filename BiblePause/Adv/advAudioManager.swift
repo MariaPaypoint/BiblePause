@@ -1,10 +1,3 @@
-//
-//  advAudioManager.swift
-//  cep
-//
-//  Created by Maria Novikova on 27.08.2022.
-//
-
 import AVFoundation
 import Combine
 import MediaPlayer
@@ -65,34 +58,11 @@ class PlayerDurationObserver {
 }
 
 
-/*
-// в отрефакторенной версии не нужно
-class PlayerItemObserver {
-    let publisher = PassthroughSubject<Bool, Never>()
-    private var itemObservation: NSKeyValueObservation?
-    
-    init(player: AVPlayer) {
-        // Observe the current item changing
-        itemObservation = player.observe(\.currentItem) { [weak self] player, change in
-            guard let self = self else { return }
-            // Publish whether the player has an item or not
-            self.publisher.send(player.currentItem != nil)
-        }
-    }
-    
-    deinit {
-        if let observer = itemObservation {
-            observer.invalidate()
-        }
-    }
-}
-*/
- 
 // MARK: PlayerModel
 
 class PlayerModel: ObservableObject {
     
-    enum PlaybackState: Int { // private
+    enum PlaybackState: Int {
         case waitingForSelection
         case waitingForPlay
         case waitingForPause
@@ -113,7 +83,7 @@ class PlayerModel: ObservableObject {
     
     @Published var state = PlaybackState.waitingForSelection
     @Published var periodFrom: Double = 0
-    @Published var periodTo: Double = 0 // 0 означает отсутствие конца отрывка, но оно потом перекроется
+    @Published var periodTo: Double = 0
     @Published var currentDuration: TimeInterval = 0
     @Published var currentTime: TimeInterval = 0
     @Published private(set) var currentSpeed: Float = 1.0
@@ -123,9 +93,9 @@ class PlayerModel: ObservableObject {
     private var currentVerseIndex: Int = -1
     private var stopAtEnd = true
     
-    var onStartVerse: ((Int) -> Void)? // устанавливается снаружи, поэтому без private
-    var onEndVerse: (() -> Void)? // устанавливается снаружи, поэтому без private
-    var smoothPauseLength = 0.3 // устанавливается снаружи, поэтому без private
+    var onStartVerse: ((Int) -> Void)?
+    var onEndVerse: (() -> Void)?
+    var smoothPauseLength = 0.3
     
     private var pauseTimer: Timer?
     
@@ -145,7 +115,7 @@ class PlayerModel: ObservableObject {
         self.setupNowPlaying()
         self.setupRemoteTransportControls()
         
-        // наблюдаем, когда подгрузится песня и определится ее длина
+        // Observe when media duration becomes available
         durationObserver.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] duration in
@@ -165,10 +135,10 @@ class PlayerModel: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Подписка на уведомления о прерываниях
+        // Subscribe to interruption notifications
         NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
             
-        // наблюдаем за изменением позиции
+        // Observe position changes
         timeObserver.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] time in
@@ -176,21 +146,20 @@ class PlayerModel: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Пример подписки на окончание трека
+        // Example subscription to track completion
         endPlayingObserver = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
             object: nil,
             queue: .main
         ) { [weak self] notification in
             guard let self = self else { return }
-            // Здесь меняем state и делаем что нужно, когда трек доиграл
-            //print("Reached the absolute end of the file.")
+            // Update state and perform cleanup when track reaches the end
             self.state = .finished
         }
     }
     
     deinit {
-        // Важно не забыть убрать подписку
+        // Important: remove observer to avoid leaks
         if let endPlayingObserver = endPlayingObserver {
             NotificationCenter.default.removeObserver(endPlayingObserver)
         }
@@ -204,10 +173,10 @@ class PlayerModel: ObservableObject {
         }
         
         if type == .began {
-            // Прерывание началось, приостановить воспроизведение
+            // Interruption began, pause playback
             pauseSimple()
         } else if type == .ended {
-            // Прерывание закончилось, можно возобновить воспроизведение
+            // Interruption ended, resume playback if allowed
             if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
                 let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
                 if options.contains(.shouldResume) {
@@ -221,7 +190,7 @@ class PlayerModel: ObservableObject {
         var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = itemTitle
         nowPlayingInfo[MPMediaItemPropertyArtist] = itemSubtitle
-        // Добавьте дополнительные метаданные по необходимости
+        // Add extra metadata if needed
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
@@ -239,10 +208,10 @@ class PlayerModel: ObservableObject {
             return .success
         }
         
-        // Добавьте другие команды по необходимости
+        // Add other commands if needed
     }
 
-    // MARK: установка параметров новой композиции
+    // MARK: Set up new track parameters
     func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAcousticalVerseFull], itemTitle: String, itemSubtitle: String) {
         
         self.oldState = self.state
@@ -271,7 +240,7 @@ class PlayerModel: ObservableObject {
         
     }
     
-    // Удаление предыдущих наблюдателей, если они существуют
+    // Remove previous observers if needed
     private func deleteObservation() {
         if let observerBegin = boundaryObserverBegin {
             player.removeTimeObserver(observerBegin)
@@ -284,7 +253,7 @@ class PlayerModel: ObservableObject {
     }
     
     private func setObservation() {
-        // вычисляем время
+        // Build time arrays
         var timesBegin: [NSValue] = []
         var timesEnd: [NSValue] = []
         
@@ -295,35 +264,31 @@ class PlayerModel: ObservableObject {
             timesEnd.append(NSValue(time: verseEndTime))
         }
         
-        // наблюдаем за началом стиха, чтобы позиционировать
+        // Observe verse start to position playback
         boundaryObserverBegin = player.addBoundaryTimeObserver(forTimes: timesBegin, queue: .main) {
-            //print("Reached verse BEGIN")
             self.currentTime = CMTimeGetSeconds(self.player.currentTime())
             self.findAndSetCurrentVerseIndex()
         }
         
-        // наблюдаем за концом стиха, чтобы делать паузы
+        // Observe verse end to trigger pauses
         boundaryObserverEnd = player.addBoundaryTimeObserver(forTimes: timesEnd, queue: .main) {
-            //print("Reached verse END")
-            // остановка при достижении конца отрывка
+            // Stop when excerpt end is reached
             if self.stopAtEnd && self.currentVerseIndex == self.audioVerses.count - 1 {
                 self.pauseSimple()
             }
-            // не вызывать событие конца стиха на последнем стихе (чтобы не было пауз) (тем более что последний стих почему-то выравнивается плохо, последнее слово на середине обрезается)
+            // Skip end-of-verse event on last verse (prevents extra pauses and layout glitches)
             else if self.currentVerseIndex != self.audioVerses.count - 1 {
                 self.onEndVerse?()
             }
         }
     }
     
-    // ищем стих, в который точно попадает текущее положение
+    // Find verse that matches current position
     private func findAndSetCurrentVerseIndex() {
         for (index, verse) in audioVerses.enumerated() {
-            // +0.1, т.к. позиционирование не точное, может сработать чуть раньше
+            // +0.1 because positioning is not exact and may trigger earlier
             if currentTime + 0.1 >= verse.begin && currentTime + 0.1 <= verse.end {
-                //print("index \(index), currentVerseIndex \(currentVerseIndex), currentTime + 0.1 \(currentTime + 0.1), begin \(verse.begin), end \(verse.end)")
                 if index != currentVerseIndex {
-                    //print("cur changed from", currentVerseIndex, "to", index)
                 }
                 
                 setCurrentVerseIndex(index)
@@ -332,29 +297,28 @@ class PlayerModel: ObservableObject {
         }
     }
     
-    private func setCurrentVerseIndex(_ cur: Int) { //
-        //print("setCurrentVerseIndex \(cur)")
-        if cur != self.currentVerseIndex { //  && cur != -1
+    private func setCurrentVerseIndex(_ cur: Int) {
+        if cur != self.currentVerseIndex {
             self.currentVerseIndex = cur
             self.onStartVerse?(cur)
         }
     }
     
-    // MARK: воспр/пауза
+    // MARK: Play/Pause handling
     func doPlayOrPause() {
         if self.state == .playing {
             let safeDuration = calculateSafeSmoothPauseDuration()
             pauseSmoothly(duration: safeDuration)
         }
         else if state == .buffering {
-            // ничего не делать
+            // Do nothing while buffering
         }
         else if state == .finished {
             self.restart()
             self.playSimple()
         }
         else {
-            // если воспроизведение запущено после конца отрывка, то уже не стопаться
+            // If playback starts after excerpt end, don't stop automatically anymore
             if self.currentTime >= self.periodTo {
                 self.stopAtEnd = false
             }
@@ -363,13 +327,11 @@ class PlayerModel: ObservableObject {
     }
     
     private func playSimple() {
-        //self.timeObserver.pause(false)
         self.player.play()
         self.state = .playing
     }
     
     private func pauseSimple() {
-        //self.timeObserver.pause(true)
         self.player.pause()
         self.state = .pausing
     }
@@ -428,26 +390,24 @@ class PlayerModel: ObservableObject {
         self.state = .autopausing
         
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
-            // проверим, а то вдруг уже совсем остановили
+            // Ensure playback wasn't fully stopped meanwhile
             if self.state == .autopausing {
                 self.playSimple()
             }
         }
     }
     
-    // MARK: перемотка
+    // MARK: Seeking
     func sliderEditingChanged(editingStarted: Bool) { // private
         
         if editingStarted {
-            // Tell the PlayerTimeObserver to stop publishing updates while the user is interacting with the slider
-            // (otherwise it would keep jumping from where they've moved it to, back to where the player is currently at)
+            // Tell PlayerTimeObserver to stop publishing while user drags the slider
             self.timeObserver.pause(true)
         }
         else {
             // Editing finished, start the seek
             let targetTime = CMTime(seconds: currentTime, preferredTimescale: 600)
             player.seek(to: targetTime) { _ in
-                // Now the (async) seek is completed, resume normal operation
                 self.timeObserver.pause(false)
             }
             if currentTime >= Double(periodTo == 0 ? currentDuration : periodTo) {
@@ -479,14 +439,14 @@ class PlayerModel: ObservableObject {
         if state == .playing && currentVerseIndex+1 < audioVerses.count {
             setCurrentVerseIndex(currentVerseIndex + 1)
             let begin = audioVerses[currentVerseIndex].begin
-            // чуть-чуть назад при переходе, а то резко
+            // Step slightly back to make the transition smoother
             let minus = currentVerseIndex >= 1 ? min(abs((audioVerses[currentVerseIndex-1].end - begin) / 2), 0.1) : 0
             player.seek(to: CMTimeMake(value: Int64((begin-minus)*100), timescale: 100))
             currentTime = begin
         }
     }
     
-    // MARK: скорость
+    // MARK: Playback speed
     func changeSpeed() {
         if currentSpeed >= 2 || currentSpeed < 0.6 {
             currentSpeed = 0.6
@@ -498,7 +458,6 @@ class PlayerModel: ObservableObject {
         player.defaultRate = currentSpeed
         if state == .playing {
             player.rate = currentSpeed
-            //player.setRate(currentSpeed, time: .invalid, atHostTime: .invalid)
         }
     }
     

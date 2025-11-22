@@ -1,10 +1,3 @@
-//
-//  PageSelectView.swift
-//  BiblePause
-//
-//  Created by  Mac on 10.05.2024.
-//
-
 import SwiftUI
 
 struct PageSelectView: View {
@@ -14,7 +7,7 @@ struct PageSelectView: View {
     @Binding var showFromRead: Bool
     @State private var scrollToTop = false
     
-    @State private var selectedBiblePartIndex: Int = -1 // 0 - ВЗ, 1 - НЗ
+    @State private var selectedBiblePartIndex: Int = -1 // 0 - OT, 1 - NT
     @State private var expandedBook: Int = 0
     @State private var needSelectedBookOpen: Bool = true
     
@@ -29,7 +22,7 @@ struct PageSelectView: View {
             VStack(spacing: 0) {
                 
                 VStack(spacing: 0) {
-                    // MARK: шапка
+                    // MARK: Header
                     HStack {
                         if showFromRead {
                             
@@ -50,7 +43,7 @@ struct PageSelectView: View {
                         
                         Text("page.select.title".localized)
                             .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
-                            .padding(.trailing, 32) // компенсация меню, чтобы надпись была по центру
+                            .padding(.trailing, 32) // compensate menu so title stays centered
                             .foregroundColor(.white)
                         
                         Spacer()
@@ -76,13 +69,13 @@ struct PageSelectView: View {
                 }
                 .padding(.horizontal, globalBasePadding)
             }
-            // подложка
+            // Background layer
             .background(
                 Color("DarkGreen")
             )
             
             
-            // слой меню
+            // Menu layer
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
@@ -100,7 +93,7 @@ struct PageSelectView: View {
                 self.isLoading = true
                 self.loadingError = ""
                 
-                // Используем кешированный метод из SettingsManager
+                // Use cached method from SettingsManager
                 let books = try await settingsManager.getTranslationBooks()
                 
                 self.booksInfo = books
@@ -112,7 +105,7 @@ struct PageSelectView: View {
         }
     }
     
-    // MARK: Выбор завета
+    // MARK: Testament selection
     fileprivate func viewSelectTestament() -> some View {
         return viewSegmentedButtons(arr: bibleParts,
                              selIndex: selectedBiblePartIndex,
@@ -120,7 +113,7 @@ struct PageSelectView: View {
                              bgColor: Color("DarkGreen-light")
         ) { selectedIndex in
             if selectedBiblePartIndex == selectedIndex {
-                // повторный клик - отмена выделения
+                // Second tap clears selection
                 selectedBiblePartIndex = -1
             }
             else {
@@ -132,7 +125,7 @@ struct PageSelectView: View {
         .font(.title)
     }
     
-    // MARK: Список глав
+    // MARK: Chapter list
     @ViewBuilder fileprivate func viewChaptersList(_ book: Components.Schemas.TranslationBookModel) -> some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 15), count: 6), spacing: 15) {
             ForEach(1...book.chapters_count, id: \.self) { chapter_number in
@@ -143,7 +136,7 @@ struct PageSelectView: View {
                 let isRead = settingsManager.isChapterRead(book: book.alias, chapter: chapter_number)
                 
                 Button(action: {
-                    // MARK: При выборе главы
+                    // MARK: On chapter selection
                     settingsManager.currentExcerpt = "\(book.alias) \(chapter_number)"
                     settingsManager.currentExcerptTitle = book.name
                     settingsManager.currentExcerptSubtitle = "chapter.title".localized(chapter_number)
@@ -165,7 +158,7 @@ struct PageSelectView: View {
                             )
                             .fontWeight(.bold)
                         
-                        // Значок отсутствия аудио (слева вверху)
+                        // No-audio badge (top-left)
                         if hasNoAudio {
                             VStack {
                                 Spacer()
@@ -179,7 +172,7 @@ struct PageSelectView: View {
                             }
                         }
                         
-                        // Галочка прочитанной главы (справа вверху)
+                        // Checkmark for read chapter (top-right)
                         if isRead {
                             VStack {
                                 HStack {
@@ -217,7 +210,7 @@ struct PageSelectView: View {
         .padding(1)
     }
     
-    // MARK: Список книг
+    // MARK: Book list
     @ViewBuilder fileprivate func viewBooksList() -> ScrollViewReader<some View> {
         ScrollViewReader { proxy in
             ScrollView() {
@@ -234,7 +227,7 @@ struct PageSelectView: View {
                                     viewGroupHeader(text: headerTitle)
                                 }
                                 
-                                // Разворачивание книги
+                                // Expand / collapse book
                                 Button {
                                     
                                      withAnimation {
@@ -253,7 +246,7 @@ struct PageSelectView: View {
                                             .multilineTextAlignment(.leading)
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                         
-                                        // Иконка отсутствия аудио у всей книги
+                                        // Icon when entire book lacks audio
                                         let chaptersWithoutAudioCount = book.chapters_without_audio?.count ?? 0
                                         let hasNoAudioForWholeBook = chaptersWithoutAudioCount == book.chapters_count
                                         if hasNoAudioForWholeBook {
@@ -262,7 +255,7 @@ struct PageSelectView: View {
                                                 .foregroundColor(Color("Mustard"))
                                         }
                                         
-                                        // Прогресс-бар справа от названия
+                                        // Progress bar near the title
                                         let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
                                         if progress.read > 0 {
                                             let isCompleted = progress.read == progress.total
@@ -271,12 +264,12 @@ struct PageSelectView: View {
                                             ZStack {
                                                 GeometryReader { geometry in
                                                     ZStack(alignment: .leading) {
-                                                        // Фон
+                                                        // Background
                                                         RoundedRectangle(cornerRadius: 6)
                                                             .fill(Color.white.opacity(0.15))
                                                             .frame(height: 20)
                                                         
-                                                        // Прогресс
+                                                        // Progress fill
                                                         let progressWidth = geometry.size.width * CGFloat(progress.read) / CGFloat(progress.total)
                                                         let progressPercent = CGFloat(progress.read) / CGFloat(progress.total)
                                                         
@@ -301,7 +294,7 @@ struct PageSelectView: View {
                                                 }
                                                 .frame(height: 20)
                                                 
-                                                // Счетчик поверх прогресс-бара
+                                                // Counter on top of progress bar
                                                 Text("\(progress.read) / \(progress.total)")
                                                     .font(.footnote)
                                                     .fontWeight(.bold)
@@ -334,7 +327,7 @@ struct PageSelectView: View {
                     withAnimation {
                         proxy.scrollTo("top", anchor: .top)
                     }
-                    // Сбрасываем флаг после прокрутки
+                    // Reset the flag after scrolling
                     scrollToTop = false
                 }
             }
