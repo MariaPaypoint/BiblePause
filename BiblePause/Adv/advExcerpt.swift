@@ -260,7 +260,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             prevNotesOffset += noteHTML.count
         }
         // Paragraphs
-        let id_info = verse.join == 0 ? "\(verse.number)" : "\(verse.number)-\(verse.number+verse.join)"
+        let id_info = verse.join > 0 ? "\(verse.number)-\(verse.number+verse.join)" : "\(verse.number)"
         
         let quoteContainer = verse.html.contains("class=\"quote\"") ? "quote-container" : ""
         if verse.startParagraph {

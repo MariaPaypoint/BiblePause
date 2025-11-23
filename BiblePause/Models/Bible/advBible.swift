@@ -61,11 +61,28 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                     number: verse.number,
                     text: verse.text,
                     begin: verse.begin,
-                    end: verse.end
+                    end: verse.end,
+                    join: verse.join
                 ))
                 oldVerse = verse.number
             }
         }
+        
+        // Sort verses based on join property
+        // We use a stable sort to preserve relative order of verses with the same target position
+        // The sort key is (verse.number + verse.join)
+        let sortClosure: (Int, Int, Int, Int) -> Bool = { (num1, join1, num2, join2) in
+            let pos1 = num1 + join1
+            let pos2 = num2 + join2
+            
+            if pos1 != pos2 {
+                return pos1 < pos2
+            }
+            return num1 < num2
+        }
+        
+        resTextVerses.sort { sortClosure($0.number, $0.join, $1.number, $1.join) }
+        resAudioVerses.sort { sortClosure($0.number, $0.join, $1.number, $1.join) }
         
         // Ensure the first audio URL includes the api_key as a query parameter
         var firstURLWithKey = resFirstUrl

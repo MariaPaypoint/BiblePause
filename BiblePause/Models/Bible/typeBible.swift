@@ -43,5 +43,6 @@ struct BibleAcousticalVerseFull: Hashable {
     let text: String
     let begin: Double
     let end: Double
+    var join: Int = 0
 }
 
