@@ -150,17 +150,19 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     font-weight: bold;
                 }
                                 
+                /* comment for BSB, Song 1
                 .subtitle:first-of-type {
                     display: inline;
                     text-align: center;
-                }
+                }*/
                 .subtitle {
                     font-size: 0.9rem;
                     color: rgba(255, 255, 255, 0.7);
-                    margin-top: 0.3rem;
+                    margin-top: 0.8rem;
                     margin-bottom: 0.8rem;
                     display: block;
                     text-align: center;
+                    font-weight: bold;
                 }
                 
                 .reference {
@@ -213,14 +215,14 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 <div id="top"></div>
                 <p id="title-\(title.id)" class="title">\(title.text)</p>
             """
-            
+
             // reference
             if let reference = title.reference, !reference.isEmpty {
                 htmlString += """
                     <p class="reference">\(reference)</p>
                 """
             }
-            
+
             // Subtitle metadata
             if let metadata = title.metadata, !metadata.isEmpty {
                 // Insert notes into metadata
@@ -230,7 +232,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 let sortedNotes = title.notes.sorted { $0.positionHtml < $1.positionHtml }
                 for note in sortedNotes {
                     let noteHTML = """
-                        <span class="note"> 
+                        <span class="note">
                             <span class="note-icon" onClick="document.getElementById('note\(note.id)').classList.toggle('off');"></span>
                             <span class="note-text off" id="note\(note.id)">\(note.text)</span>
                         </span>
@@ -238,7 +240,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     metadataHTML = insertSubstring(original: metadataHTML, substring: noteHTML, at: prevNotesOffset+note.positionHtml)
                     prevNotesOffset += noteHTML.count
                 }
-                
+
                 htmlString += """
                     <p class="subtitle">\(metadataHTML)</p>
                 """
@@ -251,7 +253,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
         let sortedVerseNotes = verse.notes.sorted { $0.positionHtml < $1.positionHtml }
         for note in sortedVerseNotes {
             let noteHTML = """
-                <span class="note"> 
+                <span class="note">
                     <span class="note-icon" onClick="document.getElementById('note\(note.id)').classList.toggle('off');"></span>
                     <span class="note-text off" id="note\(note.id)">\(note.text)</span>
                 </span>
@@ -261,7 +263,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
         }
         // Paragraphs
         let id_info = verse.join > 0 ? "\(verse.number)-\(verse.number+verse.join)" : "\(verse.number)"
-        
+
         let quoteContainer = verse.html.contains("class=\"quote\"") ? "quote-container" : ""
         if verse.startParagraph {
             htmlString += "<p>"
