@@ -208,9 +208,13 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
     """
 
     for verse in verses {
-        // Title
-        // Title
-        for title in verse.beforeTitles {
+        // Separate regular titles and subtitles
+        let regularTitles = verse.beforeTitles.filter { !$0.subtitle }
+        // Subtitles with position 0 go before the verse text
+        let subtitlesAtStart = verse.beforeTitles.filter { $0.subtitle && ($0.positionHtml ?? 0) == 0 }
+
+        // Regular titles (displayed before the verse)
+        for title in regularTitles {
             htmlString += """
                 <div id="top"></div>
                 <p id="title-\(title.id)" class="title">\(title.text)</p>
@@ -246,7 +250,15 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                 """
             }
         }
-        // Insert notes
+
+        // Subtitles at position 0 - display before verse text
+        for subtitle in subtitlesAtStart {
+            htmlString += """
+                <span class="subtitle">\(subtitle.text)</span>
+            """
+        }
+
+        // Insert notes into verse HTML
         var verseHTML = verse.html
         var prevNotesOffset = 0
         // Sort notes by position_html for proper insertion
@@ -261,6 +273,19 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             verseHTML = insertSubstring(original: verseHTML, substring: noteHTML, at: prevNotesOffset+note.positionHtml)
             prevNotesOffset += noteHTML.count
         }
+
+        // Subtitles with position > 0 - insert into current verse at their position
+        let subtitlesInline = verse.beforeTitles.filter { $0.subtitle && ($0.positionHtml ?? 0) > 0 }
+        // Sort by position_html descending to insert from end to beginning (to preserve positions)
+        let sortedSubtitles = subtitlesInline.sorted { ($0.positionHtml ?? 0) > ($1.positionHtml ?? 0) }
+        for subtitle in sortedSubtitles {
+            let subtitleHTML = """
+                <span class="subtitle">\(subtitle.text)</span>
+            """
+            let position = subtitle.positionHtml ?? 0
+            verseHTML = insertSubstring(original: verseHTML, substring: subtitleHTML, at: position)
+        }
+
         // Paragraphs
         let id_info = verse.join > 0 ? "\(verse.number)-\(verse.number+verse.join)" : "\(verse.number)"
 

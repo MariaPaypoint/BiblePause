@@ -43,15 +43,23 @@ func getExcerptTextualVersesOnline(excerpts: String, client: APIProtocol, transl
                 }
                 for title in part.titles {
                     if title.before_verse_code == verse.code {
-                        var titleWithNotes = BibleTitle(id: title.code, text: title.text, metadata: title.metadata, reference: title.reference)
-                        
+                        var titleWithNotes = BibleTitle(
+                            id: title.code,
+                            text: title.text,
+                            metadata: title.metadata,
+                            reference: title.reference,
+                            subtitle: title.subtitle ?? false,
+                            positionText: title.position_text,
+                            positionHtml: title.position_html
+                        )
+
                         // Add notes to the title
                         for note in part.notes {
                             if note.title_code == title.code {
                                 titleWithNotes.notes.append(BibleNote(id: note.code, text: note.text, positionHtml: note.position_html))
                             }
                         }
-                        
+
                         verseFull.beforeTitles.append(titleWithNotes)
                     }
                 }

@@ -30,6 +30,9 @@ struct BibleTitle: Hashable, Codable {
     let metadata: String?
     let reference: String?
     var notes: [BibleNote] = []
+    var subtitle: Bool = false
+    var positionText: Int? = nil
+    var positionHtml: Int? = nil
 }
 
 struct BibleNote: Hashable, Codable {
