@@ -258,32 +258,45 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
             """
         }
 
-        // Insert notes into verse HTML
+        // Insert notes and inline subtitles into verse HTML
+        // Combine notes and subtitles into a single list with position and type
         var verseHTML = verse.html
-        var prevNotesOffset = 0
-        // Sort notes by position_html for proper insertion
-        let sortedVerseNotes = verse.notes.sorted { $0.positionHtml < $1.positionHtml }
-        for note in sortedVerseNotes {
+        var insertions: [(position: Int, isNote: Bool, html: String)] = []
+
+        // Add notes
+        for note in verse.notes {
             let noteHTML = """
                 <span class="note">
                     <span class="note-icon" onClick="document.getElementById('note\(note.id)').classList.toggle('off');"></span>
                     <span class="note-text off" id="note\(note.id)">\(note.text)</span>
                 </span>
             """
-            verseHTML = insertSubstring(original: verseHTML, substring: noteHTML, at: prevNotesOffset+note.positionHtml)
-            prevNotesOffset += noteHTML.count
+            insertions.append((position: note.positionHtml, isNote: true, html: noteHTML))
         }
 
-        // Subtitles with position > 0 - insert into current verse at their position
+        // Add inline subtitles (position > 0)
         let subtitlesInline = verse.beforeTitles.filter { $0.subtitle && ($0.positionHtml ?? 0) > 0 }
-        // Sort by position_html descending to insert from end to beginning (to preserve positions)
-        let sortedSubtitles = subtitlesInline.sorted { ($0.positionHtml ?? 0) > ($1.positionHtml ?? 0) }
-        for subtitle in sortedSubtitles {
+        for subtitle in subtitlesInline {
             let subtitleHTML = """
                 <span class="subtitle">\(subtitle.text)</span>
             """
-            let position = subtitle.positionHtml ?? 0
-            verseHTML = insertSubstring(original: verseHTML, substring: subtitleHTML, at: position)
+            insertions.append((position: subtitle.positionHtml ?? 0, isNote: false, html: subtitleHTML))
+        }
+
+        // Sort by position ascending, notes before subtitles when same position
+        insertions.sort { a, b in
+            if a.position != b.position {
+                return a.position < b.position
+            }
+            // Same position: notes come before subtitles
+            return a.isNote && !b.isNote
+        }
+
+        // Insert in order, tracking offset
+        var offset = 0
+        for insertion in insertions {
+            verseHTML = insertSubstring(original: verseHTML, substring: insertion.html, at: offset + insertion.position)
+            offset += insertion.html.count
         }
 
         // Paragraphs
