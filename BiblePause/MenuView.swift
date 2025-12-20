@@ -115,6 +115,7 @@ struct MenuView: View{
             Text(subTitle)
                 .font(.system(size: 14))
                 .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
+                .multilineTextAlignment(.leading)
         }
     }
 }

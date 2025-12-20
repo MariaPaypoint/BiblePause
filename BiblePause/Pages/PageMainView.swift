@@ -30,14 +30,15 @@ struct PageMainView: View {
                 Button {
                     settingsManager.selectedMenuItem = .read
                 } label: {
-                    VStack {
+                    VStack(alignment: .leading) {
                         Text("page.main.continue_reading".localized)
                             .foregroundColor(Color("ForestGreen"))
-                            .frame(maxWidth: .infinity)
                             .font(.system(.body, weight: .heavy))
+                            .multilineTextAlignment(.leading)
                         Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
                             .foregroundColor(Color("Chocolate"))
                             .font(.system(.subheadline))
+                            .multilineTextAlignment(.leading)
                     }
                     .padding(.vertical, 12)
                     .padding(.horizontal, 20)
