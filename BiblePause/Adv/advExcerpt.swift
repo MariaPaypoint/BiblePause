@@ -164,6 +164,10 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
                     text-align: center;
                     font-weight: bold;
                 }
+                .metadata {
+                    color: rgba(255, 255, 255, 0.7);
+                    font-style: italic;
+                }
                 
                 .reference {
                     font-size: 0.7rem;
