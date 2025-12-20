@@ -23,6 +23,7 @@ struct PageMainView: View {
                         .padding(.bottom, 50)
                     Spacer()
                 }
+                .padding(.top, 40)
                 // Title artwork
                 Image("TitleRus")
                 
