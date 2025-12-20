@@ -6,6 +6,7 @@ import OpenAPIRuntime
 struct PageReadView: View {
 
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
 
     @StateObject var audiopleer = PlayerModel()
     

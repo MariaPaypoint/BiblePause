@@ -3,6 +3,7 @@ import SwiftUI
 struct PageSelectView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     @Binding var showFromRead: Bool
     @State private var scrollToTop = false

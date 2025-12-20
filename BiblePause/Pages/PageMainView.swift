@@ -3,6 +3,7 @@ import SwiftUI
 struct PageMainView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var booksLoaded = false
     
     var body: some View {

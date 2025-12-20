@@ -6,6 +6,8 @@ struct PageSetupView: View {
     
     @State private var toast: FancyToast? = nil
     
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    
     @EnvironmentObject var settingsManager: SettingsManager
     
     @Binding var showFromRead: Bool
@@ -614,13 +616,13 @@ struct PageSetupView: View {
             
             ForEach(AppLanguage.allCases, id: \.self) { language in
                 Button {
-                    LocalizationManager.shared.currentLanguage = language
+                    localizationManager.currentLanguage = language
                 } label: {
                     HStack {
                         Text(language.displayName)
                             .foregroundColor(.white)
                         Spacer()
-                        if LocalizationManager.shared.currentLanguage == language {
+                        if localizationManager.currentLanguage == language {
                             Image(systemName: "checkmark")
                                 .foregroundColor(Color("Marigold"))
                         }
@@ -628,7 +630,7 @@ struct PageSetupView: View {
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(LocalizationManager.shared.currentLanguage == language ? Color("DarkGreen-light").opacity(0.8) : Color("DarkGreen-light").opacity(0.4))
+                            .fill(localizationManager.currentLanguage == language ? Color("DarkGreen-light").opacity(0.8) : Color("DarkGreen-light").opacity(0.4))
                     )
                 }
             }

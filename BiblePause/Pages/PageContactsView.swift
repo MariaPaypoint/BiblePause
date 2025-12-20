@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PageContactsView: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @Binding var showFromRead: Bool
     
     init(showFromRead: Binding<Bool> = .constant(false)) {

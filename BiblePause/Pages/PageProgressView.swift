@@ -3,6 +3,7 @@ import SwiftUI
 struct PageProgressView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showResetConfirmation = false
     @State private var booksInfo: [Components.Schemas.TranslationBookModel] = []
     @State private var isLoading = false

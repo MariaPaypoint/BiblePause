@@ -12,6 +12,7 @@ enum MenuItem {
 struct MenuView: View{
     
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     var body: some View{
         
