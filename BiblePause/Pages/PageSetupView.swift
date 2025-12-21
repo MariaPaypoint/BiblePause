@@ -87,8 +87,6 @@ struct PageSetupView: View {
                     ScrollView() {
                         VStack {
                             
-                            ViewInterfaceLanguage()
-                            
                             ViewFont()
                             
                             ViewPause()
@@ -96,6 +94,8 @@ struct PageSetupView: View {
                             ViewAutoNextChapter()
                             
                             ViewLangTranslateAudio(proxy: proxy)
+                            
+                            ViewInterfaceLanguage()
                         }
                         .padding(.horizontal, globalBasePadding)
                     }
@@ -624,26 +624,8 @@ struct PageSetupView: View {
         VStack(alignment: .leading, spacing: 10) {
             viewGroupHeader(text: "settings.language".localized)
             
-            ForEach(AppLanguage.allCases, id: \.self) { language in
-                Button {
-                    localizationManager.currentLanguage = language
-                } label: {
-                    HStack {
-                        Text(language.displayName)
-                            .foregroundColor(.white)
-                        Spacer()
-                        if localizationManager.currentLanguage == language {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(Color("Marigold"))
-                        }
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(localizationManager.currentLanguage == language ? Color("DarkGreen-light").opacity(0.8) : Color("DarkGreen-light").opacity(0.4))
-                    )
-                }
-            }
+            viewEnumPicker(title: localizationManager.currentLanguage.displayName, 
+                          selection: $localizationManager.currentLanguage)
         }
         .padding(.bottom, 10)
     }
