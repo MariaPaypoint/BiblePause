@@ -117,6 +117,7 @@ struct PageSetupView: View {
         .onAppear {
             self.language = settingsManager.language
             self.translation = String(settingsManager.translation)
+            self.translationName = settingsManager.translationName
             self.voice = String(settingsManager.voice)
             fetchLanguages()
             loadExampleText()
