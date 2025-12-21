@@ -87,3 +87,26 @@
 "bible.header.45" = "General Epistles";
 "bible.header.52" = "Paul's Epistles";
 "bible.header.66" = "Prophetic";
+
+/* Pause Settings Enums */
+"settings.pause.type.none" = "No pause";
+"settings.pause.type.time" = "Pause for duration";
+"settings.pause.type.full" = "Stop completely";
+
+"settings.pause.block.verse" = "verse";
+"settings.pause.block.paragraph" = "paragraph";
+"settings.pause.block.fragment" = "fragment";
+
+"settings.pause.unit.seconds" = "sec.";
+"settings.pause.after_every" = "After every";
+
+/* Global Errors & formatting */
+"error.title" = "Error";
+"error.loading.example" = "Error loading example";
+"error.loading.audio" = "Failed to load audio";
+"error.audio.unavailable" = "Audio unavailable for this voice";
+"page.read.chapter_subtitle" = "Chapter %@";
+
+"settings.pause.block.short.verse" = "verse";
+"settings.pause.block.short.paragraph" = "paragraph";
+"settings.pause.block.short.fragment" = "fragment";

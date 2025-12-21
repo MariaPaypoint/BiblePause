@@ -279,13 +279,13 @@ struct PageSetupView: View {
                                 .fill(Color.clear)
                         )
                         
-                        Text("сек.")
+                        Text("settings.pause.unit.seconds".localized)
                     }
                 }
                 
                 // Pause trigger
                 HStack {
-                    Text("После каждого")
+                    Text("settings.pause.after_every".localized)
                         .frame(width: 140, alignment: .leading)
                     Spacer()
                     
@@ -451,7 +451,7 @@ struct PageSetupView: View {
                 self.exampleVerses = verses
                 self.isExampleLoading = false
             } catch {
-                self.exampleErrorText = "Ошибка загрузки примера"
+                self.exampleErrorText = "error.loading.example".localized
                 self.isExampleLoading = false
             }
         }
@@ -476,7 +476,7 @@ struct PageSetupView: View {
                 self.isLanguagesLoading = false
             } catch {
                 self.isLanguagesLoading = false
-                toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+                toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
             }
         }
     }
@@ -501,7 +501,7 @@ struct PageSetupView: View {
                 self.isTranslationsLoading = false
             } catch {
                 self.isTranslationsLoading = false
-                toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+                toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
             }
         }
     }
@@ -570,7 +570,7 @@ struct PageSetupView: View {
                 )
                 
                 guard !firstUrl.isEmpty, let url = URL(string: firstUrl) else {
-                    toast = FancyToast(type: .error, title: "Ошибка", message: "Аудио недоступно для этого голоса")
+                    toast = FancyToast(type: .error, title: "error.title".localized, message: "error.audio.unavailable".localized)
                     return
                 }
                 
@@ -600,7 +600,7 @@ struct PageSetupView: View {
                 previewPlayer?.play()
                 
             } catch {
-                toast = FancyToast(type: .error, title: "Ошибка", message: "Не удалось загрузить аудио")
+                toast = FancyToast(type: .error, title: "error.title".localized, message: "error.loading.audio".localized)
             }
         }
     }

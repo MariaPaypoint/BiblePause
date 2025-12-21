@@ -13,9 +13,9 @@ enum PauseType: String, CaseIterable, Identifiable, DisplayNameProvider {
     
     var displayName: String {
         switch self {
-            case .none: return "Не делать пауз"
-            case .time: return "Приостанавливать на время"
-            case .full: return "Останавливать полностью"
+            case .none: return "settings.pause.type.none".localized
+            case .time: return "settings.pause.type.time".localized
+            case .full: return "settings.pause.type.full".localized
         }
     }
 }
@@ -29,17 +29,17 @@ enum PauseBlock: String, CaseIterable, Identifiable, DisplayNameProvider {
     
     var displayName: String {
         switch self {
-            case .verse: return "стиха"
-            case .paragraph: return "абзаца"
-            case .fragment: return "отрывка"
+            case .verse: return "settings.pause.block.verse".localized
+            case .paragraph: return "settings.pause.block.paragraph".localized
+            case .fragment: return "settings.pause.block.fragment".localized
         }
     }
     
     var shortName: String {
         switch self {
-            case .verse: return "стих"
-            case .paragraph: return "абзац"
-            case .fragment: return "отр."
+            case .verse: return "settings.pause.block.short.verse".localized
+            case .paragraph: return "settings.pause.block.short.paragraph".localized
+            case .fragment: return "settings.pause.block.short.fragment".localized
         }
     }
 }

@@ -264,7 +264,7 @@ struct PageReadView: View {
                 self.nextExcerpt = part!.next_excerpt
                 withAnimation() {
                     settingsManager.currentExcerptTitle = part!.book.name
-                    settingsManager.currentExcerptSubtitle = "Глава \(part!.chapter_number)"
+                    settingsManager.currentExcerptSubtitle = "page.read.chapter_subtitle".localized(String(part!.chapter_number))
                     settingsManager.currentBookId = part!.book.number
                     settingsManager.currentChapterId = part!.chapter_number
                 }

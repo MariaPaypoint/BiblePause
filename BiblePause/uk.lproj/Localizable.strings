@@ -87,3 +87,26 @@
 "bible.header.45" = "Соборні послання";
 "bible.header.52" = "Послання Павла";
 "bible.header.66" = "Пророчі";
+
+/* Pause Settings Enums */
+"settings.pause.type.none" = "Не робити пауз";
+"settings.pause.type.time" = "Призупиняти на час";
+"settings.pause.type.full" = "Зупиняти повністю";
+
+"settings.pause.block.verse" = "вірша";
+"settings.pause.block.paragraph" = "абзаца";
+"settings.pause.block.fragment" = "уривка";
+
+"settings.pause.unit.seconds" = "сек.";
+"settings.pause.after_every" = "Після кожного";
+
+/* Global Errors & formatting */
+"error.title" = "Помилка";
+"error.loading.example" = "Помилка завантаження прикладу";
+"error.loading.audio" = "Не вдалося завантажити аудіо";
+"error.audio.unavailable" = "Аудіо недоступне для цього голосу";
+"page.read.chapter_subtitle" = "Розділ %@";
+
+"settings.pause.block.short.verse" = "вірш";
+"settings.pause.block.short.paragraph" = "абзац";
+"settings.pause.block.short.fragment" = "урив.";
