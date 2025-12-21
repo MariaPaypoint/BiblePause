@@ -491,6 +491,7 @@ struct PageSetupView: View {
                 
                 self.translationKeys = []
                 self.translationTexts = []
+                self.translationNames = []
                 for translation in self.translationsResponse {
                     self.translationKeys.append("\(translation.code)")
                     self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
