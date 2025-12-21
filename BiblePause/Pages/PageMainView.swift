@@ -27,20 +27,20 @@ struct PageMainView: View {
                 // Title artwork
                 Image("TitleRus")
                 
-                // Continue button
                 Button {
                     settingsManager.selectedMenuItem = .read
                 } label: {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .center) {
                         Text("page.main.continue_reading".localized)
                             .foregroundColor(Color("ForestGreen"))
                             .font(.system(.body, weight: .heavy))
-                            .multilineTextAlignment(.leading)
+                            .multilineTextAlignment(.center)
                         Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
                             .foregroundColor(Color("Chocolate"))
                             .font(.system(.subheadline))
-                            .multilineTextAlignment(.leading)
+                            .multilineTextAlignment(.center)
                     }
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 20)
                     .background(Color.white.opacity(0.7))
