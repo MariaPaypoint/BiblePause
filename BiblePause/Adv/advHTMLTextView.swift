@@ -20,6 +20,7 @@ struct HTMLTextView: UIViewRepresentable {
         }
     """
     @Binding var scrollToVerse: Int?
+    var isScrollEnabled: Bool = true
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -28,7 +29,7 @@ struct HTMLTextView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.navigationDelegate = context.coordinator
-        webView.scrollView.isScrollEnabled = true
+        webView.scrollView.isScrollEnabled = isScrollEnabled
         webView.scrollView.bounces = true
         webView.scrollView.alwaysBounceVertical = true
         webView.scrollView.decelerationRate = .normal

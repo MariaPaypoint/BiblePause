@@ -191,21 +191,30 @@ struct PageSetupView: View {
             
             Text("settings.font.example".localized)
                 .foregroundColor(.white.opacity(0.5))
-            if isExampleLoading {
-                ProgressView()
-                    .tint(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 158)
-            } else if exampleErrorText != "" {
-                Text(exampleErrorText)
-                    .foregroundColor(.pink)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 158)
-            } else {
-                HTMLTextView(htmlContent: generateHTMLContent(verses: exampleVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: .constant(nil))
-                    .frame(height: 158)
-                    .id(settingsManager.fontIncreasePercent)
+            ZStack {
+                if isExampleLoading {
+                    ProgressView()
+                        .tint(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 158)
+                } else if exampleErrorText != "" {
+                    Text(exampleErrorText)
+                        .foregroundColor(.pink)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 158)
+                } else {
+                    HTMLTextView(htmlContent: generateHTMLContent(verses: exampleVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: .constant(nil), isScrollEnabled: false)
+                        .frame(height: 158)
+                        .frame(maxWidth: .infinity)
+                        .id(settingsManager.fontIncreasePercent)
+                }
             }
+            .background(Color.white.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+            )
         }
         
     }
