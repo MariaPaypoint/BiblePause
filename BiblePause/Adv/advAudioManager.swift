@@ -71,6 +71,7 @@ class PlayerModel: ObservableObject {
         case pausing
         case autopausing
         case finished
+        case segmentFinished
     }
     
     private let player: AVPlayer
@@ -128,9 +129,10 @@ class PlayerModel: ObservableObject {
                     self?.findAndSetCurrentVerseIndex()
                 }
                 
-                if self?.oldState == .playing {
-                    self?.playSimple()
-                }
+                // Disable internal auto-play to avoid race conditions with View logic
+                // if self?.oldState == .playing {
+                //     self?.playSimple()
+                // }
                 
             }
             .store(in: &cancellables)
@@ -153,6 +155,11 @@ class PlayerModel: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             guard let self = self else { return }
+            // Verify this notification is for the CURRENT item
+            guard let item = notification.object as? AVPlayerItem, item == self.player.currentItem else {
+                 return
+            }
+            
             // Update state and perform cleanup when track reaches the end
             self.state = .finished
         }
@@ -225,6 +232,8 @@ class PlayerModel: ObservableObject {
         self.audioVerses = audioVerses
         self.currentVerseIndex = -1
         
+        // Force state change to ensure observers are notified (even if already buffering)
+        self.state = .waitingForSelection
         self.state = .buffering
         self.currentTime = 0
         self.currentDuration = 0
@@ -274,7 +283,8 @@ class PlayerModel: ObservableObject {
         boundaryObserverEnd = player.addBoundaryTimeObserver(forTimes: timesEnd, queue: .main) {
             // Stop when excerpt end is reached
             if self.stopAtEnd && self.currentVerseIndex == self.audioVerses.count - 1 {
-                self.pauseSimple()
+                self.player.pause()
+                self.state = .segmentFinished
             }
             // Skip end-of-verse event on last verse (prevents extra pauses and layout glitches)
             else if self.currentVerseIndex != self.audioVerses.count - 1 {

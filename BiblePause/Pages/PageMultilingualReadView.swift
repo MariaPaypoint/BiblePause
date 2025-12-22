@@ -29,10 +29,12 @@ struct PageMultilingualReadView: View {
     @State private var isPlaying: Bool = false
     @State private var isPausing: Bool = false
     @State private var isAutopausing: Bool = false
+    @State private var lastSwitchTime: Date = Date()
     
     // Audio player for current step
     @StateObject private var audiopleer = PlayerModel()
     @State private var audioStateObserver: AnyCancellable?
+    @State private var playbackSessionID: UUID = UUID()
     
     // Units (indices into verses based on unit mode)
     @State private var unitRanges: [(start: Int, end: Int)] = [] // verse index ranges for each unit
@@ -217,6 +219,9 @@ struct PageMultilingualReadView: View {
                 
                 // Restart unit
                 Button {
+                    // Cancel auto-pause if active
+                    isAutopausing = false
+                    isPlaying = false // Stop responding to old events
                     currentStepIndex = 0
                     playCurrentStep()
                 } label: {
@@ -225,16 +230,12 @@ struct PageMultilingualReadView: View {
                 }
                 Spacer()
                 
-                // Previous unit
+                // Previous content (step or unit)
                 Button {
-                    if currentUnitIndex > 0 {
-                        currentUnitIndex -= 1
-                        currentStepIndex = 0
-                        playCurrentStep()
-                    }
+                    moveToPreviousSection()
                 } label: {
                     Image(systemName: "arrow.turn.left.up")
-                        .foregroundColor(currentUnitIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                        .foregroundColor(currentUnitIndex > 0 || currentStepIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
                 }
                 Spacer()
                 
@@ -256,9 +257,9 @@ struct PageMultilingualReadView: View {
                 }
                 Spacer()
                 
-                // Next unit
+                // Next content (step or unit)
                 Button {
-                    moveToNextUnit()
+                    moveToNextSection()
                 } label: {
                     Image(systemName: "arrow.turn.right.down")
                         .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
@@ -452,15 +453,22 @@ struct PageMultilingualReadView: View {
     
     // MARK: Playback Control
     private func togglePlayPause() {
+        if isAutopausing {
+            // Cancel the auto-pause timer
+            isAutopausing = false
+            return
+        }
+
         if isPlaying {
             audiopleer.doPlayOrPause()
             isPlaying = false
         } else {
-            playCurrentStep()
+            // If we are resuming manually, skip any current pause step to move on
+            playCurrentStep(skipPause: true)
         }
     }
     
-    private func playCurrentStep() {
+    private func playCurrentStep(skipPause: Bool = false) {
         guard currentStepIndex < allSteps.count else {
             moveToNextUnit()
             return
@@ -470,9 +478,13 @@ struct PageMultilingualReadView: View {
         print("[MultiRead] Playing step \(currentStepIndex): \(step.type == .read ? step.translationName : "pause")")
         
         if step.type == .pause {
+            if skipPause {
+                print("[MultiRead] Skipping pause on manual resume")
+                moveToNextStep()
+                return
+            }
+            
             // Pause step - wait for duration then move to next
-            isAutopausing = true
-            isPlaying = false
             isAutopausing = true
             isPlaying = false
             print("[MultiRead] Starting pause for \(step.pauseDuration)s")
@@ -564,8 +576,10 @@ struct PageMultilingualReadView: View {
                 }
             }
             
-            isPlaying = true
-            // Observer will call doPlayOrPause when state becomes waitingForPlay
+
+            
+            // Start monitoring for this new session
+            startAudioMonitoring()
         }
     }
     
@@ -580,15 +594,60 @@ struct PageMultilingualReadView: View {
         }
     }
     
+    // Manual navigation to next content logic
+    private func moveToNextSection() {
+        // 1. Stop monitoring immediately to prevent jumping
+        stopAudioMonitoring()
+        isAutopausing = false
+        isPlaying = false
+        
+        // Find next read step in current unit
+        if let nextIndex = allSteps.indices.first(where: { $0 > currentStepIndex && allSteps[$0].type == .read }) {
+             currentStepIndex = nextIndex
+             playCurrentStep()
+        } else {
+             moveToNextUnit()
+        }
+    }
+    
+    // Manual navigation to previous content logic
+    private func moveToPreviousSection() {
+        stopAudioMonitoring()
+        isAutopausing = false
+        isPlaying = false
+        
+        // Find previous read step in current unit
+        if let prevIndex = allSteps.indices.last(where: { $0 < currentStepIndex && allSteps[$0].type == .read }) {
+            currentStepIndex = prevIndex
+            playCurrentStep()
+        } else {
+            // Go to previous unit's LAST read step
+            if currentUnitIndex > 0 {
+                 currentUnitIndex -= 1
+                 // Find last read step index in the pattern
+                 if let lastReadIndex = allSteps.indices.last(where: { allSteps[$0].type == .read }) {
+                     currentStepIndex = lastReadIndex
+                 } else {
+                     currentStepIndex = 0 // Fallback
+                 }
+                 playCurrentStep()
+            }
+        }
+    }
+    
     private func moveToNextUnit() {
+        stopAudioMonitoring()
+        isAutopausing = false
+        isPlaying = false
+        
         currentStepIndex = 0
         currentUnitIndex += 1
         
         if currentUnitIndex >= unitRanges.count {
-            // Chapter finished
+            // Chapter finished logic...
             isPlaying = false
             
-            // Auto-advance to next chapter if available
+            // Auto-advance
             if !nextExcerpt.isEmpty && settingsManager.autoNextChapter {
                 Task {
                     settingsManager.currentExcerpt = nextExcerpt
@@ -602,33 +661,69 @@ struct PageMultilingualReadView: View {
     }
     
     // MARK: Audio Observer
-    private func setupAudioObserver() {
+    private func stopAudioMonitoring() {
+        print("[MultiRead] Stopping audio monitoring")
         audioStateObserver?.cancel()
+        audioStateObserver = nil
+    }
+    
+    private func startAudioMonitoring() {
+        stopAudioMonitoring()
+        
+        // Create new session ID
+        let sessionID = UUID()
+        self.playbackSessionID = sessionID
+        
+        print("[MultiRead] Starting audio monitoring for session \(sessionID)")
+        
+        // Capture start time for safety window
+        let sessionStartTime = Date()
+        
         audioStateObserver = audiopleer.$state
             .receive(on: DispatchQueue.main)
             .sink { newState in
+                // Verify session match (though cancellation handles most cases, this is extra safety)
+                guard self.playbackSessionID == sessionID else {
+                    print("[MultiRead] Ignoring event for old session")
+                    return
+                }
+                
                 print("[MultiRead] Audio state changed to: \(newState)")
                 
                 // When audio is ready to play, start it
                 if newState == .waitingForPlay {
-                    if self.isPlaying {
-                        print("[MultiRead] State is waitingForPlay, starting playback")
+                    print("[MultiRead] State is waitingForPlay")
+                    // Check if PlayerModel already auto-started playback to avoid toggling to PAUSE
+                    if self.audiopleer.state != .playing {
+                        print("[MultiRead] Starting playback (manual)")
                         self.audiopleer.doPlayOrPause()
+                    } else {
+                        print("[MultiRead] Already playing (auto-started), skipping toggle")
                     }
+                    self.isPlaying = true
                 }
                 
-                // Move to next step when audio finishes or pauses naturally
-                // .pausing happens when audio reaches periodTo (end of excerpt)
-                // .finished happens when entire audio file ends
-                // We check isPlaying to distinguish natural end from user-initiated pause
-                if newState == .finished || newState == .pausing {
+                // Move to next step when audio finishes naturally (logic end or file end)
+                if newState == .finished || newState == .segmentFinished {
+                    // SAFETY WINDOW: Ignore completion events immediately after start (1.0s)
+                    if Date().timeIntervalSince(sessionStartTime) < 1.0 {
+                        print("[MultiRead] Ignoring early completion event (safety window)")
+                        return
+                    }
+                    
+                    // Only advance if we are supposed to be playing
                     if self.isPlaying {
                         print("[MultiRead] Audio ended (state: \(newState)), moving to next step")
-                        self.isPlaying = false
+                        self.isPlaying = false // Logical stop
                         self.moveToNextStep()
                     }
                 }
             }
+    }
+    
+    // Legacy setup function redirect
+    private func setupAudioObserver() {
+       // No-op or start initial monitoring if needed, but playCurrentStep handles it.
     }
     
     // MARK: HTML Generation
