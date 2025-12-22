@@ -70,8 +70,6 @@ struct PageMultilingualView: View {
                     Text("multilingual.read_by".localized) // Localized
                         .foregroundColor(.white)
                     
-                    Spacer()
-                    
                     Menu {
                         Picker("multilingual.read_by".localized, selection: $settingsManager.multilingualReadUnitRaw) {
                             ForEach(MultilingualReadUnit.allCases, id: \.self) { unit in
@@ -81,11 +79,13 @@ struct PageMultilingualView: View {
                     } label: {
                         HStack {
                             Text(settingsManager.multilingualReadUnit.localized)
+                            Spacer()
                             Image(systemName: "chevron.down")
                         }
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
                         .background(Color.white.opacity(0.1))
                         .cornerRadius(8)
                     }

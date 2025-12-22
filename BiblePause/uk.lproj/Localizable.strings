@@ -69,8 +69,8 @@
 "settings.bible_language" = "Мова Біблії";
 "settings.translation" = "Переклад";
 "settings.reader" = "Читає";
-"settings.save_choice" = "Зберегти вибір";
-"settings.cancel_choice" = "Скасувати вибір";
+"settings.save_choice" = "Зберегти";
+"settings.cancel_choice" = "Скасувати";
 "settings.warning" = "Увага!";
 "settings.select_translation" = "Виберіть переклад";
 "settings.select_reader" = "Виберіть хто читає";

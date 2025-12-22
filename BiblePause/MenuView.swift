@@ -28,7 +28,7 @@ struct MenuView: View{
                 .blur(radius: 15)
             
             // Content...
-            VStack(alignment: .leading, spacing: UIScreen.main.bounds.height < 750 ? 20 : 25) {
+            VStack(alignment: .leading, spacing: UIScreen.main.bounds.height < 750 ? 20 : 35) {
                 
                 // MARK: Close Button
                 Button {
@@ -39,16 +39,15 @@ struct MenuView: View{
                         .fontWeight(.light)
                 }
                 .foregroundColor(Color.white.opacity(0.5))
-                .padding(.bottom, 15)
+                //.padding(.bottom, 15)
 
                 // MARK: Menu Buttons
-                Button { changeSelected(selected: .main)     } label: { MenuItem(title: "menu.main".localized, selected: (settingsManager.selectedMenuItem == .main)) }
-                Button { changeSelected(selected: .read)     } label: { MenuItem(title: "menu.continue_reading".localized, subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
-                Button { changeSelected(selected: .select)   } label: { MenuItem(title: "menu.select".localized, subTitle: "menu.select.subtitle".localized, selected: (settingsManager.selectedMenuItem == .select)) }
-                Button { changeSelected(selected: .progress) } label: { MenuItem(title: "menu.progress".localized, subTitle: "menu.progress.subtitle".localized, selected: (settingsManager.selectedMenuItem == .progress)) }
+                Button { changeSelected(selected: .main)         } label: { MenuItem(title: "menu.main".localized, selected: (settingsManager.selectedMenuItem == .main)) }
+                Button { changeSelected(selected: .read)         } label: { MenuItem(title: "menu.continue_reading".localized, subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
                 Button { changeSelected(selected: .multilingual) } label: { MenuItem(title: "menu.multilingual".localized, selected: (settingsManager.selectedMenuItem == .multilingual)) }
-                Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "menu.settings".localized, selected: (settingsManager.selectedMenuItem == .setup)) }
-                Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "menu.contacts".localized, subTitle: "menu.contacts.subtitle".localized, selected: (settingsManager.selectedMenuItem == .contacts)) }
+                Button { changeSelected(selected: .progress)     } label: { MenuItem(title: "menu.progress".localized, subTitle: "menu.progress.subtitle".localized, selected: (settingsManager.selectedMenuItem == .progress)) }
+                Button { changeSelected(selected: .setup)        } label: { MenuItem(title: "menu.settings".localized, selected: (settingsManager.selectedMenuItem == .setup)) }
+                Button { changeSelected(selected: .contacts)     } label: { MenuItem(title: "menu.contacts".localized, selected: (settingsManager.selectedMenuItem == .contacts)) }
                 
                 Spacer(minLength: 10)
                 
@@ -114,10 +113,12 @@ struct MenuView: View{
                 .fontWeight(.bold)
                 .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
             
-            Text(subTitle)
-                .font(.system(size: 14))
-                .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
-                .multilineTextAlignment(.leading)
+            if !subTitle.isEmpty {
+                Text(subTitle)
+                    .font(.system(size: 14))
+                    .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
+                    .multilineTextAlignment(.leading)
+            }
         }
     }
 }

@@ -69,8 +69,8 @@
 "settings.bible_language" = "Bible Language";
 "settings.translation" = "Translation";
 "settings.reader" = "Reader";
-"settings.save_choice" = "Save choice";
-"settings.cancel_choice" = "Cancel choice";
+"settings.save_choice" = "Save";
+"settings.cancel_choice" = "Cancel";
 "settings.warning" = "Warning!";
 "settings.select_translation" = "Select translation";
 "settings.select_reader" = "Select who reads";
