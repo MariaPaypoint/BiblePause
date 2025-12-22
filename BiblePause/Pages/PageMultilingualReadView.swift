@@ -473,7 +473,13 @@ struct PageMultilingualReadView: View {
             // Pause step - wait for duration then move to next
             isAutopausing = true
             isPlaying = false
+            isAutopausing = true
+            isPlaying = false
             print("[MultiRead] Starting pause for \(step.pauseDuration)s")
+            
+            // Highlight the pause indicator - UNIQUE to this unit
+            // Format: stepIdx * 10000 + 5000 + unitIndex
+            self.highlightVerseNumber = currentStepIndex * 10000 + 5000 + currentUnitIndex
             
             DispatchQueue.main.asyncAfter(deadline: .now() + step.pauseDuration) {
                 if self.isAutopausing {
@@ -685,15 +691,29 @@ struct PageMultilingualReadView: View {
                 .pause-indicator {
                     display: flex;
                     align-items: center;
-                    font-size: 0.7rem;
-                    color: rgba(255,255,255,0.4);
                     padding: 0px 0;
                     margin: 0px 0;
+                    transition: all 0.3s ease;
+                    font-size: 0.75rem;
+                    opacity: 0.5;
+                }
+                .pause-indicator.highlighted-verse {
+                    color: \(selectedColor);
+                    opacity: 1.0;
+                }
+                .pause-indicator.highlighted-verse::before, 
+                .pause-indicator.highlighted-verse::after {
+                    border-top-color: \(selectedColor);
+                    /* Opacity is inherited/set on base element, but we want LINES to be 50% transparent */
+                    opacity: 0.3;
                 }
                 .pause-indicator::before, .pause-indicator::after {
                     content: '';
                     flex: 1;
-                    border-top: 1px solid rgba(255,255,255,0.2);
+                    /* Default white line */
+                    border-top: 1px solid white;
+                    /* 50% transparency as requested */
+                    opacity: 0.3;
                 }
                 .pause-indicator span {
                     padding: 0 12px;
@@ -756,7 +776,9 @@ struct PageMultilingualReadView: View {
                 } else if step.type == .pause {
                     // Pause indicator between translations
                     let pauseSeconds = Int(step.pauseDuration)
-                    htmlString += "<div class=\"pause-indicator\"><span>\(pauseSeconds) sec.</span></div>"
+                    // Unique ID needing Unit Index to avoid duplicates across units
+                    let uniqueId = stepIdx * 10000 + 5000 + unitIdx
+                    htmlString += "<div id=\"verse-\(uniqueId)\" class=\"pause-indicator\"><span>\(pauseSeconds) sec.</span></div>"
                 }
             }
             
