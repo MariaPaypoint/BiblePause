@@ -130,3 +130,19 @@
 "multilingual.pause" = "Pause";
 "multilingual.seconds" = "sec.";
 "multilingual.config.title" = "Reading Step Setup";
+
+"multilingual.library.title" = "Templates Library";
+"multilingual.library.empty" = "No saved templates";
+"multilingual.library.new" = "New Template";
+"multilingual.save_alert.title" = "Save Template";
+"multilingual.save_alert.message" = "Enter a name for this configuration";
+"multilingual.save_alert.placeholder" = "Template Name";
+"multilingual.save_alert.save" = "Save & Read";
+"multilingual.save_alert.dont_save" = "Read without saving";
+"multilingual.save_alert.update" = "Update Template";
+"multilingual.save_alert.update_message" = "Update existing template \"%@\"?";
+
+"multilingual.rename" = "Rename";
+"multilingual.rename.title" = "Rename Template";
+"multilingual.rename.message" = "Enter new name";
+"multilingual.rename.action" = "Rename";

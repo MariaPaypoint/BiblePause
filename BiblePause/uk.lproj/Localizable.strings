@@ -128,3 +128,19 @@
 "multilingual.pause" = "Пауза";
 "multilingual.seconds" = "сек.";
 "multilingual.config.title" = "Налаштування читання";
+
+"multilingual.library.title" = "Бібліотека шаблонів";
+"multilingual.library.empty" = "Немає збережених шаблонів";
+"multilingual.library.new" = "Новий шаблон";
+"multilingual.save_alert.title" = "Зберегти шаблон";
+"multilingual.save_alert.message" = "Введіть назву для цього налаштування";
+"multilingual.save_alert.placeholder" = "Назва шаблону";
+"multilingual.save_alert.save" = "Зберегти і читати";
+"multilingual.save_alert.dont_save" = "Читати без збереження";
+"multilingual.save_alert.update" = "Оновити шаблон";
+"multilingual.save_alert.update_message" = "Оновити існуючий шаблон \"%@\"?";
+
+"multilingual.rename" = "Перейменувати";
+"multilingual.rename.title" = "Перейменувати шаблон";
+"multilingual.rename.message" = "Введіть нову назву";
+"multilingual.rename.action" = "Перейменувати";

@@ -8,9 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0458F5472CCE0FE20016C65F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0458F53C2CCE0AA20016C65F /* LaunchScreen.storyboard */; };
-		046B5DBB2EF8970E00653FA8 /* MultilingualConfigSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DB92EF8970E00653FA8 /* MultilingualConfigSheet.swift */; };
+		046B5DBB2EF8970E00653FA8 /* PageMultilingualConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DB92EF8970E00653FA8 /* PageMultilingualConfigView.swift */; };
 		046B5DBC2EF8970E00653FA8 /* PageMultilingualView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DBA2EF8970E00653FA8 /* PageMultilingualView.swift */; };
 		046B5DC02EF905AE00653FA8 /* MultilingualRead.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DBF2EF905AE00653FA8 /* MultilingualRead.swift */; };
+		046B5DD52EF9105D00653FA8 /* PageMultilingualTemplatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DD42EF9105D00653FA8 /* PageMultilingualTemplatesView.swift */; };
 		047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC42BEEB626009DEC11 /* SkeletonView.swift */; };
 		047B3BC72BEEBADD009DEC11 /* PageReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC62BEEBADD009DEC11 /* PageReadView.swift */; };
 		047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */; };
@@ -53,9 +54,10 @@
 /* Begin PBXFileReference section */
 		0458F53C2CCE0AA20016C65F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0458F54B2CCE111F0016C65F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		046B5DB92EF8970E00653FA8 /* MultilingualConfigSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultilingualConfigSheet.swift; sourceTree = "<group>"; };
+		046B5DB92EF8970E00653FA8 /* PageMultilingualConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMultilingualConfigView.swift; sourceTree = "<group>"; };
 		046B5DBA2EF8970E00653FA8 /* PageMultilingualView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMultilingualView.swift; sourceTree = "<group>"; };
 		046B5DBF2EF905AE00653FA8 /* MultilingualRead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultilingualRead.swift; sourceTree = "<group>"; };
+		046B5DD42EF9105D00653FA8 /* PageMultilingualTemplatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMultilingualTemplatesView.swift; sourceTree = "<group>"; };
 		047B3BC42BEEB626009DEC11 /* SkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonView.swift; sourceTree = "<group>"; };
 		047B3BC62BEEBADD009DEC11 /* PageReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReadView.swift; sourceTree = "<group>"; };
 		047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectView.swift; sourceTree = "<group>"; };
@@ -162,7 +164,8 @@
 		4C3F9EB62C148EA200EA807C /* Pages */ = {
 			isa = PBXGroup;
 			children = (
-				046B5DB92EF8970E00653FA8 /* MultilingualConfigSheet.swift */,
+				046B5DD42EF9105D00653FA8 /* PageMultilingualTemplatesView.swift */,
+				046B5DB92EF8970E00653FA8 /* PageMultilingualConfigView.swift */,
 				046B5DBA2EF8970E00653FA8 /* PageMultilingualView.swift */,
 				4C7691252BECEA1300C66FDC /* PageMainView.swift */,
 				047B3BC62BEEBADD009DEC11 /* PageReadView.swift */,
@@ -358,7 +361,8 @@
 				4C7691242BECEA1300C66FDC /* BiblePauseApp.swift in Sources */,
 				4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */,
 				4C749DFD2C149EF800CF4234 /* advCornerRadius.swift in Sources */,
-				046B5DBB2EF8970E00653FA8 /* MultilingualConfigSheet.swift in Sources */,
+				046B5DD52EF9105D00653FA8 /* PageMultilingualTemplatesView.swift in Sources */,
+				046B5DBB2EF8970E00653FA8 /* PageMultilingualConfigView.swift in Sources */,
 				046B5DBC2EF8970E00653FA8 /* PageMultilingualView.swift in Sources */,
 				047B3BC72BEEBADD009DEC11 /* PageReadView.swift in Sources */,
 			);

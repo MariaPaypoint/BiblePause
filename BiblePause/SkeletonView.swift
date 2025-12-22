@@ -72,6 +72,7 @@ class SettingsManager: ObservableObject {
         // Load stored reading progress
         loadReadProgress()
         loadMultilingualSteps()
+        loadMultilingualTemplates()
     }
     
     /// Builds a full audio URL by appending the api_key query parameter.
@@ -253,12 +254,44 @@ class SettingsManager: ObservableObject {
            let steps = try? JSONDecoder().decode([MultilingualStep].self, from: multilingualStepsData) {
             self.multilingualSteps = steps
         }
+        
+        if let idString = UserDefaults.standard.string(forKey: "currentTemplateId") {
+            currentTemplateId = UUID(uuidString: idString)
+        }
     }
     
     func saveMultilingualSteps() {
         if let data = try? JSONEncoder().encode(multilingualSteps) {
             multilingualStepsData = data
         }
+        
+        if let id = currentTemplateId {
+            UserDefaults.standard.set(id.uuidString, forKey: "currentTemplateId")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "currentTemplateId")
+        }
+    }
+    
+    // MARK: Multilingual Templates
+    @AppStorage("multilingualTemplatesData") var multilingualTemplatesData: Data = Data()
+    @Published var multilingualTemplates: [MultilingualTemplate] = []
+    @Published var currentTemplateId: UUID? = nil
+    
+    func loadMultilingualTemplates() {
+        if let templates = try? JSONDecoder().decode([MultilingualTemplate].self, from: multilingualTemplatesData) {
+            self.multilingualTemplates = templates
+        }
+    }
+    
+    func saveMultilingualTemplates() {
+        if let data = try? JSONEncoder().encode(multilingualTemplates) {
+            multilingualTemplatesData = data
+        }
+    }
+    
+    func deleteTemplate(at indexSet: IndexSet) {
+        multilingualTemplates.remove(atOffsets: indexSet)
+        saveMultilingualTemplates()
     }
 }
 

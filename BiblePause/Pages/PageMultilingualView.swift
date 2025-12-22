@@ -8,8 +8,23 @@ struct PageMultilingualView: View {
     @State private var showConfigSheet: Bool = false
     @State private var tempStep: MultilingualStep = MultilingualStep(type: .read)
     
+
+    @State private var showTemplatesSheet: Bool = false
+    @State private var showSaveAlert: Bool = false
+    @State private var templateName: String = ""
     @State private var toast: FancyToast? = nil
-    @State private var draggedStep: MultilingualStep? = nil
+    
+    var currentSubtitle: String {
+        if let id = settingsManager.currentTemplateId,
+           let template = settingsManager.multilingualTemplates.first(where: { $0.id == id }) {
+            
+            let isDirty = settingsManager.multilingualSteps != template.steps ||
+                          settingsManager.multilingualReadUnit != template.unit
+            
+            return isDirty ? "\(template.name)*" : template.name
+        }
+        return "multilingual.subtitle".localized
+    }
     
     var body: some View {
         ZStack {
@@ -31,7 +46,7 @@ struct PageMultilingualView: View {
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                         
-                        Text("multilingual.subtitle".localized) // Localized
+                        Text(currentSubtitle)
                             .font(.caption)
                             .foregroundColor(Color("Marigold"))
                     }
@@ -39,9 +54,9 @@ struct PageMultilingualView: View {
                     Spacer()
                     
                     Button {
-                        // TODO: Open saved configurations?
+                        showTemplatesSheet = true
                     } label: {
-                        Image(systemName: "folder")
+                        Image(systemName: "books.vertical.fill")
                             .font(.title2)
                             .foregroundColor(.white)
                     }
@@ -139,13 +154,7 @@ struct PageMultilingualView: View {
                 
                 // MARK: Save & Read Button
                 Button {
-                    settingsManager.saveMultilingualSteps()
-                    settingsManager.selectedMenuItem = .read // Or should we trigger a specific multilingual read mode?
-                    // For now, assume global state handles it if I knew where.
-                    // But maybe I should set some flag "isMultilingualMode = true"
-                    // The user image says "Save & Read".
-                    // I will just navigate to read page.
-                    settingsManager.showMenu = false // Ensure menu is closed
+                    handleSaveAndRead()
                 } label: {
                     Text("multilingual.save_and_read".localized)
                         .font(.headline)
@@ -160,23 +169,85 @@ struct PageMultilingualView: View {
                 .padding(.bottom, 30)
                 .padding(.top, 10)
             }
+            .blur(radius: showSaveAlert ? 3 : 0)
             
             // Menu layer (required for MenuButtonView to work correctly with logic)
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -UIScreen.main.bounds.width)
+            
+            // Custom Save Alert Overlay
+            if showSaveAlert {
+                Color.black.opacity(0.4)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        // Optional: dismiss on tap outside? Better not to avoid accidents.
+                    }
+                
+                VStack(spacing: 20) {
+                    Text("multilingual.save_alert.title".localized)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("multilingual.save_alert.message".localized)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                    
+                    TextField("multilingual.save_alert.placeholder".localized, text: $templateName)
+                        .padding(10)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .foregroundColor(.black)
+                    
+                    HStack {
+                        Button("multilingual.save_alert.dont_save".localized) {
+                            showSaveAlert = false
+                            proceedToRead()
+                        }
+                        .font(.footnote)
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.vertical, 10)
+                        
+                        Spacer()
+                        
+                        Button("multilingual.save_alert.save".localized) {
+                            saveNewTemplate()
+                            showSaveAlert = false
+                            proceedToRead()
+                        }
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("Marigold"))
+                        .disabled(templateName.isEmpty)
+                        .padding(.vertical, 10)
+                    }
+                }
+                .padding(25)
+                .background(Color("DarkGreen").brightness(0.1))
+                .cornerRadius(15)
+                .shadow(radius: 10)
+                .padding(.horizontal, 40)
+            }
         }
         .toastView(toast: $toast)
         .sheet(isPresented: $showConfigSheet) {
-            MultilingualConfigSheet(step: tempStep) { newStep in
+            PageMultilingualConfigView(step: tempStep) { newStep in
                 if let index = editingStepIndex {
                     settingsManager.multilingualSteps[index] = newStep
                 } else {
                     settingsManager.multilingualSteps.append(newStep)
                 }
+                // When we modify steps, it might still technically be the "active" template,
+                // BUT if we modify it, should we keep the currentTemplateId?
+                // Visual Studio Code behavior: yes, but it becomes "dirty".
+                // Here: we will keep it linked. Next Save will update it.
                 settingsManager.saveMultilingualSteps()
             }
             .environmentObject(settingsManager)
+        }
+        .sheet(isPresented: $showTemplatesSheet) {
+            PageMultilingualTemplatesView()
+                .environmentObject(settingsManager)
         }
     }
     
@@ -317,5 +388,49 @@ struct PageMultilingualView: View {
     func moveSteps(from source: IndexSet, to destination: Int) {
         settingsManager.multilingualSteps.move(fromOffsets: source, toOffset: destination)
         settingsManager.saveMultilingualSteps()
+    }
+    
+    // MARK: Template Logic
+    func handleSaveAndRead() {
+        if settingsManager.multilingualSteps.isEmpty {
+            // Cannot start without steps? Or maybe just read normally?
+            // Assuming at least one step needed.
+            toast = FancyToast(type: .warning, title: "settings.warning".localized, message: "settings.warning".localized) // TODO: Better message "Add at least one step"
+            return
+        }
+        
+        if settingsManager.currentTemplateId != nil {
+            // Update existing
+            updateCurrentTemplate()
+            proceedToRead()
+        } else {
+            // New template
+            templateName = ""
+            showSaveAlert = true
+        }
+    }
+    
+    func saveNewTemplate() {
+        let newTemplate = MultilingualTemplate(name: templateName, steps: settingsManager.multilingualSteps, unit: settingsManager.multilingualReadUnit)
+        settingsManager.multilingualTemplates.append(newTemplate)
+        settingsManager.currentTemplateId = newTemplate.id
+        settingsManager.saveMultilingualTemplates()
+    }
+    
+    func updateCurrentTemplate() {
+        if let index = settingsManager.multilingualTemplates.firstIndex(where: { $0.id == settingsManager.currentTemplateId }) {
+            settingsManager.multilingualTemplates[index].steps = settingsManager.multilingualSteps
+            settingsManager.multilingualTemplates[index].unit = settingsManager.multilingualReadUnit
+            settingsManager.saveMultilingualTemplates()
+            
+            // Optional: Toast "Template updated"
+            // toast = FancyToast(type: .success, title: "Updated", message: "Template saved")
+        }
+    }
+    
+    func proceedToRead() {
+        settingsManager.saveMultilingualSteps()
+        settingsManager.selectedMenuItem = .read
+        settingsManager.showMenu = false
     }
 }

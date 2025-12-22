@@ -130,3 +130,19 @@
 "multilingual.pause" = "Пауза";
 "multilingual.seconds" = "сек.";
 "multilingual.config.title" = "Настройка чтения";
+
+"multilingual.library.title" = "Библиотека шаблонов";
+"multilingual.library.empty" = "Нет сохраненных шаблонов";
+"multilingual.library.new" = "Новый шаблон";
+"multilingual.save_alert.title" = "Сохранить шаблон";
+"multilingual.save_alert.message" = "Введите название для этой настройки";
+"multilingual.save_alert.placeholder" = "Название шаблона";
+"multilingual.save_alert.save" = "Сохранить и читать";
+"multilingual.save_alert.dont_save" = "Читать без сохранения";
+"multilingual.save_alert.update" = "Обновить шаблон";
+"multilingual.save_alert.update_message" = "Обновить существующий шаблон \"%@\"?";
+
+"multilingual.rename" = "Переименовать";
+"multilingual.rename.title" = "Переименовать шаблон";
+"multilingual.rename.message" = "Введите новое имя";
+"multilingual.rename.action" = "Переименовать";

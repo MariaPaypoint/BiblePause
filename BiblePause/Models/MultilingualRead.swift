@@ -42,4 +42,21 @@ struct MultilingualStep: Identifiable, Codable, Equatable {
     
     // Pause properties
     var pauseDuration: Double = 2.0
+
+    static func == (lhs: MultilingualStep, rhs: MultilingualStep) -> Bool {
+        return lhs.id == rhs.id &&
+        lhs.type == rhs.type &&
+        lhs.languageCode == rhs.languageCode &&
+        lhs.translationCode == rhs.translationCode &&
+        lhs.voiceCode == rhs.voiceCode &&
+        lhs.pauseDuration == rhs.pauseDuration &&
+        lhs.fontIncreasePercent == rhs.fontIncreasePercent
+    }
+}
+
+struct MultilingualTemplate: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var name: String
+    var steps: [MultilingualStep]
+    var unit: MultilingualReadUnit
 }
