@@ -166,7 +166,7 @@ struct PageMultilingualView: View {
                         .cornerRadius(12)
                 }
                 .padding(.horizontal, globalBasePadding)
-                .padding(.bottom, 30)
+                .padding(.bottom, 5)
                 .padding(.top, 10)
             }
             .blur(radius: showSaveAlert ? 3 : 0)
