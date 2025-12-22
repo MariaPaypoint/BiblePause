@@ -45,7 +45,13 @@ struct MenuView: View{
                 // MARK: Menu Buttons
                 Button { changeSelected(selected: .main)         } label: { MenuItem(title: "menu.main".localized, selected: (settingsManager.selectedMenuItem == .main)) }
                 Button { changeSelected(selected: .read)         } label: { MenuItem(title: "menu.continue_reading".localized, subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
-                Button { changeSelected(selected: .multilingual) } label: { MenuItem(title: "menu.multilingual".localized, selected: (settingsManager.selectedMenuItem == .multilingual)) }
+                Button { 
+                    if settingsManager.isMultilingualReadingActive {
+                        changeSelected(selected: .multilingualRead)
+                    } else {
+                        changeSelected(selected: .multilingual)
+                    }
+                } label: { MenuItem(title: "menu.multilingual".localized, selected: (settingsManager.selectedMenuItem == .multilingual || settingsManager.selectedMenuItem == .multilingualRead)) }
                 Button { changeSelected(selected: .progress)     } label: { MenuItem(title: "menu.progress".localized, subTitle: "menu.progress.subtitle".localized, selected: (settingsManager.selectedMenuItem == .progress)) }
                 Button { changeSelected(selected: .setup)        } label: { MenuItem(title: "menu.settings".localized, selected: (settingsManager.selectedMenuItem == .setup)) }
                 Button { changeSelected(selected: .contacts)     } label: { MenuItem(title: "menu.contacts".localized, selected: (settingsManager.selectedMenuItem == .contacts)) }

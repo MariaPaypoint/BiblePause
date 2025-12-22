@@ -79,6 +79,7 @@ struct PageMultilingualReadView: View {
                     
                     // Back to config
                     Button {
+                        settingsManager.isMultilingualReadingActive = false
                         settingsManager.selectedMenuItem = .multilingual
                     } label: {
                         Image(systemName: "gearshape.fill")
@@ -140,12 +141,16 @@ struct PageMultilingualReadView: View {
         }
         .toastView(toast: $toast)
         .onAppear {
+            settingsManager.isMultilingualReadingActive = true
             Task {
                 await loadAllData()
             }
         }
         .onDisappear {
-            audiopleer.doPlayOrPause() // Pause on leave
+            // Only pause if actually playing
+            if audiopleer.state == .playing {
+                audiopleer.doPlayOrPause()
+            }
             audioStateObserver?.cancel()
         }
     }
@@ -348,6 +353,9 @@ struct PageMultilingualReadView: View {
     
     // MARK: Data Loading
     private func loadAllData() async {
+        // Avoid reloading if data exists (preserves state on return from Settings)
+        if !stepTextVerses.isEmpty { return }
+        
         isLoading = true
         errorDescription = ""
         stepTextVerses = [:]

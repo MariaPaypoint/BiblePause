@@ -249,6 +249,9 @@ struct PageMultilingualView: View {
             PageMultilingualTemplatesView()
                 .environmentObject(settingsManager)
         }
+        .onAppear {
+            settingsManager.isMultilingualReadingActive = false
+        }
     }
     
     // MARK: Drop Delegate Removed - using native List EditMode
