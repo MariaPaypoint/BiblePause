@@ -144,3 +144,7 @@
 "multilingual.rename.title" = "Перейменувати шаблон";
 "multilingual.rename.message" = "Введіть нову назву";
 "multilingual.rename.action" = "Перейменувати";
+
+/* Reading screen */
+"page.read.reader" = "ЧИТАЄ:";
+"page.read.of" = "з";

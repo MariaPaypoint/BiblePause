@@ -1,0 +1,775 @@
+import SwiftUI
+import AVFoundation
+import Combine
+
+struct PageMultilingualReadView: View {
+    
+    @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    
+    // Data for each read step (keyed by step index)
+    @State private var stepTextVerses: [Int: [BibleTextualVerseFull]] = [:]
+    @State private var stepAudioVerses: [Int: [BibleAcousticalVerseFull]] = [:]
+    @State private var stepAudioUrls: [Int: String] = [:]
+    
+    // Navigation
+    @State private var prevExcerpt: String = ""
+    @State private var nextExcerpt: String = ""
+    @State private var excerptTitle: String = ""
+    @State private var excerptSubtitle: String = ""
+    
+    // State
+    @State private var isLoading: Bool = true
+    @State private var errorDescription: String = ""
+    @State private var toast: FancyToast? = nil
+    
+    // Playback state
+    @State private var currentUnitIndex: Int = 0 // Which verse/paragraph/fragment are we on
+    @State private var currentStepIndex: Int = 0 // Which step within the unit flow
+    @State private var isPlaying: Bool = false
+    @State private var isPausing: Bool = false
+    @State private var isAutopausing: Bool = false
+    
+    // Audio player for current step
+    @StateObject private var audiopleer = PlayerModel()
+    @State private var audioStateObserver: AnyCancellable?
+    
+    // Units (indices into verses based on unit mode)
+    @State private var unitRanges: [(start: Int, end: Int)] = [] // verse index ranges for each unit
+    
+    // Current verse for highlighting
+    @State private var highlightVerseNumber: Int? = nil
+    
+    // Reading steps (only read steps from the template)
+    private var readSteps: [MultilingualStep] {
+        settingsManager.multilingualSteps.filter { $0.type == .read }
+    }
+    
+    private var allSteps: [MultilingualStep] {
+        settingsManager.multilingualSteps
+    }
+    
+    var body: some View {
+        ZStack {
+            Color("DarkGreen")
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack(spacing: 0) {
+                // MARK: Header
+                HStack(alignment: .center) {
+                    MenuButtonView()
+                        .environmentObject(settingsManager)
+                    
+                    Spacer()
+                    
+                    VStack(spacing: 0) {
+                        Text(excerptTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        Text(excerptSubtitle.uppercased())
+                            .foregroundColor(Color("Mustard"))
+                            .font(.footnote)
+                            .fontWeight(.bold)
+                    }
+                    .padding(.top, 6)
+                    
+                    Spacer()
+                    
+                    // Back to config
+                    Button {
+                        settingsManager.selectedMenuItem = .multilingual
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 26))
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.horizontal, globalBasePadding)
+                .padding(.bottom, 5)
+                
+                // MARK: Content
+                if isLoading {
+                    Spacer()
+                    ProgressView()
+                        .tint(.white)
+                    Spacer()
+                } else if !errorDescription.isEmpty {
+                    Spacer()
+                    Text(errorDescription)
+                        .foregroundColor(.pink)
+                        .padding(globalBasePadding)
+                    Spacer()
+                } else {
+                    // Text display using WebView for proper HTML formatting
+                    // highlightVerseNumber encodes stepIdx * 10000 + verseNumber for unique IDs
+                    HTMLTextView(
+                        htmlContent: generateMultilingualHTML(),
+                        scrollToVerse: $highlightVerseNumber
+                    )
+                    .mask(
+                        VStack(spacing: 0) {
+                            Color.black
+                            
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.black, Color.black.opacity(0)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(height: 50) // Small smooth fade
+                            
+                            Color.clear
+                                .frame(height: 140) // Reduced height to closer match panel top
+                        }
+                    )
+                }
+            }
+            
+            // Audio Panel Layer - aligned to bottom
+            VStack {
+                Spacer()
+                audioControlPanel()
+            }
+            .edgesIgnoringSafeArea(.bottom)
+            
+            // Menu layer
+            MenuView()
+                .environmentObject(settingsManager)
+                .offset(x: settingsManager.showMenu ? 0 : -UIScreen.main.bounds.width)
+        }
+        .toastView(toast: $toast)
+        .onAppear {
+            Task {
+                await loadAllData()
+            }
+        }
+        .onDisappear {
+            audiopleer.doPlayOrPause() // Pause on leave
+            audioStateObserver?.cancel()
+        }
+    }
+    
+    // MARK: Audio Control Panel
+    @ViewBuilder
+    private func audioControlPanel() -> some View {
+        VStack(spacing: 0) {
+            // Collapse/expand handle
+            Image(systemName: "chevron.compact.down")
+                .foregroundColor(.white.opacity(0.4))
+                .padding(.top, 8)
+            
+            // Reader info row
+            HStack(spacing: 12) {
+                // Current translation badge
+                if let currentReadStep = getCurrentReadStep() {
+                    Text(currentReadStep.translationName)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color("DarkGreen"))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color("localAccentColor"), lineWidth: 1)
+                                )
+                        )
+                    
+                    // Reader name
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("page.read.reader".localized())
+                            .font(.system(size: 10))
+                            .foregroundColor(.white.opacity(0.6))
+                        Text(currentReadStep.voiceName)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                    }
+                }
+                
+                Spacer()
+                
+                // Progress indicator
+                Text("\(currentUnitIndex + 1) " + "page.read.of".localized() + " \(unitRanges.count)")
+                    .font(.callout)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color("localAccentColor"))
+            }
+            .padding(.horizontal, globalBasePadding)
+            .padding(.vertical, 10)
+            
+            // Control buttons row - matching PageReadView style
+            HStack {
+                // Previous chapter
+                Button {
+                    if !prevExcerpt.isEmpty {
+                        Task {
+                            settingsManager.currentExcerpt = prevExcerpt
+                            await loadAllData()
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.backward.2")
+                        .foregroundColor(prevExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                }
+                Spacer()
+                
+                // Restart unit
+                Button {
+                    currentStepIndex = 0
+                    playCurrentStep()
+                } label: {
+                    Image(systemName: "gobackward")
+                        .foregroundColor(Color("localAccentColor"))
+                }
+                Spacer()
+                
+                // Previous unit
+                Button {
+                    if currentUnitIndex > 0 {
+                        currentUnitIndex -= 1
+                        currentStepIndex = 0
+                        playCurrentStep()
+                    }
+                } label: {
+                    Image(systemName: "arrow.turn.left.up")
+                        .foregroundColor(currentUnitIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                }
+                Spacer()
+                
+                // Play/Pause
+                Button {
+                    togglePlayPause()
+                } label: {
+                    HStack {
+                        if isPlaying {
+                            Image(systemName: "pause.circle.fill")
+                        } else if isAutopausing {
+                            Image(systemName: "hourglass.circle.fill")
+                        } else {
+                            Image(systemName: "play.circle.fill")
+                        }
+                    }
+                    .font(.system(size: 55))
+                    .foregroundColor(Color("localAccentColor"))
+                }
+                Spacer()
+                
+                // Next unit
+                Button {
+                    moveToNextUnit()
+                } label: {
+                    Image(systemName: "arrow.turn.right.down")
+                        .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                }
+                Spacer()
+                
+                // Speed button
+                Button {
+                    cycleSpeed()
+                } label: {
+                    Text(formatSpeedDisplay())
+                        .font(.system(size: 18))
+                        .foregroundColor(Color("localAccentColor"))
+                }
+                Spacer()
+                
+                // Next chapter
+                Button {
+                    if !nextExcerpt.isEmpty {
+                        Task {
+                            settingsManager.currentExcerpt = nextExcerpt
+                            await loadAllData()
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.forward.2")
+                        .foregroundColor(nextExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                }
+            }
+            .foregroundColor(Color("localAccentColor"))
+            .padding(.horizontal, globalBasePadding)
+            .padding(.top, 15)
+            .padding(.bottom, 30) // Extra padding for home indicator
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color("DarkGreen-light"))
+        .clipShape(
+            .rect(
+                topLeadingRadius: 25,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 25
+            )
+        )
+        .edgesIgnoringSafeArea(.bottom)
+    }
+    
+    // Get current read step
+    private func getCurrentReadStep() -> MultilingualStep? {
+        if currentStepIndex < allSteps.count {
+            let step = allSteps[currentStepIndex]
+            if step.type == .read {
+                return step
+            }
+            // If on pause, find the previous read step
+            for i in stride(from: currentStepIndex - 1, through: 0, by: -1) {
+                if allSteps[i].type == .read {
+                    return allSteps[i]
+                }
+            }
+        }
+        return readSteps.first
+    }
+    
+    // Cycle playback speed
+    private func cycleSpeed() {
+        let speeds: [Double] = [0.75, 1.0, 1.25, 1.5, 2.0]
+        if let currentIndex = speeds.firstIndex(of: settingsManager.currentSpeed) {
+            let nextIndex = (currentIndex + 1) % speeds.count
+            settingsManager.currentSpeed = speeds[nextIndex]
+        } else {
+            settingsManager.currentSpeed = 1.0
+        }
+        audiopleer.setSpeed(speed: Float(settingsManager.currentSpeed))
+    }
+    
+    // Format speed for display (matching PageReadView)
+    private func formatSpeedDisplay() -> String {
+        let speed = settingsManager.currentSpeed
+        if speed == 1.0 {
+            return "x1"
+        } else {
+            return String(format: "%.1f", speed)
+        }
+    }
+    
+    // MARK: Data Loading
+    private func loadAllData() async {
+        isLoading = true
+        errorDescription = ""
+        stepTextVerses = [:]
+        stepAudioVerses = [:]
+        stepAudioUrls = [:]
+        
+        // Load data for each read step
+        for (index, step) in readSteps.enumerated() {
+            do {
+                let (textVerses, audioVerses, audioUrl, _, part) = try await getExcerptTextualVersesOnline(
+                    excerpts: settingsManager.currentExcerpt,
+                    client: settingsManager.client,
+                    translation: step.translationCode,
+                    voice: step.voiceCode
+                )
+                
+                stepTextVerses[index] = textVerses
+                stepAudioVerses[index] = audioVerses
+                stepAudioUrls[index] = audioUrl
+                
+                // Use first step's data for navigation info
+                if index == 0, let part = part {
+                    prevExcerpt = part.prev_excerpt
+                    nextExcerpt = part.next_excerpt
+                    excerptTitle = part.book.name
+                    excerptSubtitle = "page.read.chapter_subtitle".localized(String(part.chapter_number))
+                }
+            } catch {
+                errorDescription = "Error loading \(step.translationName): \(error.localizedDescription)"
+            }
+        }
+        
+        // Build unit ranges based on first translation's structure
+        buildUnitRanges()
+        
+        // Reset playback state
+        currentUnitIndex = 0
+        currentStepIndex = 0
+        isPlaying = false
+        
+        isLoading = false
+        
+        // Setup audio completion observer
+        setupAudioObserver()
+    }
+    
+    // Build unit ranges based on selected unit type
+    private func buildUnitRanges() {
+        guard let verses = stepTextVerses[0], !verses.isEmpty else {
+            unitRanges = []
+            return
+        }
+        
+        unitRanges = []
+        
+        switch settingsManager.multilingualReadUnit {
+        case .verse:
+            // Each verse is a unit
+            for i in 0..<verses.count {
+                unitRanges.append((start: i, end: i))
+            }
+            
+        case .paragraph:
+            // Group by paragraph
+            var start = 0
+            for i in 0..<verses.count {
+                if i > 0 && verses[i].startParagraph {
+                    unitRanges.append((start: start, end: i - 1))
+                    start = i
+                }
+            }
+            unitRanges.append((start: start, end: verses.count - 1))
+            
+        case .fragment:
+            // Group by fragment (title before verse)
+            var start = 0
+            for i in 0..<verses.count {
+                if i > 0 && !verses[i].beforeTitles.isEmpty {
+                    unitRanges.append((start: start, end: i - 1))
+                    start = i
+                }
+            }
+            unitRanges.append((start: start, end: verses.count - 1))
+            
+        case .chapter:
+            // Entire chapter is one unit
+            unitRanges = [(start: 0, end: verses.count - 1)]
+        }
+    }
+    
+    // Get verses for a specific unit from a translation's verses
+    private func getVersesForUnit(unitIndex: Int, allVerses: [BibleTextualVerseFull]) -> [BibleTextualVerseFull] {
+        guard unitIndex < unitRanges.count else { return [] }
+        let range = unitRanges[unitIndex]
+        
+        // Ensure range is valid for this translation's verses
+        let start = min(range.start, allVerses.count - 1)
+        let end = min(range.end, allVerses.count - 1)
+        
+        guard start <= end && start >= 0 else { return [] }
+        return Array(allVerses[start...end])
+    }
+    
+    // MARK: Playback Control
+    private func togglePlayPause() {
+        if isPlaying {
+            audiopleer.doPlayOrPause()
+            isPlaying = false
+        } else {
+            playCurrentStep()
+        }
+    }
+    
+    private func playCurrentStep() {
+        guard currentStepIndex < allSteps.count else {
+            moveToNextUnit()
+            return
+        }
+        
+        let step = allSteps[currentStepIndex]
+        print("[MultiRead] Playing step \(currentStepIndex): \(step.type == .read ? step.translationName : "pause")")
+        
+        if step.type == .pause {
+            // Pause step - wait for duration then move to next
+            isAutopausing = true
+            isPlaying = false
+            print("[MultiRead] Starting pause for \(step.pauseDuration)s")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + step.pauseDuration) {
+                if self.isAutopausing {
+                    print("[MultiRead] Pause ended, moving to next step")
+                    self.isAutopausing = false
+                    self.moveToNextStep()
+                }
+            }
+        } else {
+            // Read step - play audio
+            isAutopausing = false
+            
+            // Find which read step index this is
+            guard let readIndex = readSteps.firstIndex(where: { $0.id == step.id }) else {
+                print("[MultiRead] ERROR: Could not find read step index")
+                moveToNextStep()
+                return
+            }
+            
+            guard let audioVerses = stepAudioVerses[readIndex] else {
+                print("[MultiRead] ERROR: No audio verses for readIndex \(readIndex)")
+                moveToNextStep()
+                return
+            }
+            
+            guard let audioUrl = stepAudioUrls[readIndex], let url = URL(string: audioUrl) else {
+                print("[MultiRead] ERROR: No audio URL for readIndex \(readIndex)")
+                moveToNextStep()
+                return
+            }
+            
+            print("[MultiRead] Audio URL: \(audioUrl)")
+            
+            // Get verse range for current unit
+            guard currentUnitIndex < unitRanges.count else {
+                print("[MultiRead] ERROR: currentUnitIndex out of range")
+                moveToNextStep()
+                return
+            }
+            
+            let unitRange = unitRanges[currentUnitIndex]
+            
+            // Make sure indices are valid
+            let startIdx = min(unitRange.start, audioVerses.count - 1)
+            let endIdx = min(unitRange.end, audioVerses.count - 1)
+            
+            guard startIdx >= 0 && startIdx <= endIdx else {
+                print("[MultiRead] ERROR: Invalid verse range \(startIdx)-\(endIdx)")
+                moveToNextStep()
+                return
+            }
+            
+            let unitAudioVerses = Array(audioVerses[startIdx...endIdx])
+            
+            guard !unitAudioVerses.isEmpty else {
+                print("[MultiRead] ERROR: No unit audio verses")
+                moveToNextStep()
+                return
+            }
+            
+            // Set up audio player
+            let playerItem = AVPlayerItem(url: url)
+            let from = unitAudioVerses.first!.begin
+            let to = unitAudioVerses.last!.end
+            
+            print("[MultiRead] Setting up audio from \(from) to \(to) with \(unitAudioVerses.count) verses")
+            
+            audiopleer.setItem(
+                playerItem: playerItem,
+                periodFrom: from,
+                periodTo: to,
+                audioVerses: unitAudioVerses,
+                itemTitle: excerptTitle,
+                itemSubtitle: step.translationName
+            )
+            
+            audiopleer.onStartVerse = { verseIdx in
+                if verseIdx >= 0 && verseIdx < unitAudioVerses.count {
+                    // Encode step index into highlight ID: stepIdx * 10000 + verseNumber
+                    let verseNumber = unitAudioVerses[verseIdx].number
+                    self.highlightVerseNumber = self.currentStepIndex * 10000 + verseNumber
+                }
+            }
+            
+            isPlaying = true
+            // Observer will call doPlayOrPause when state becomes waitingForPlay
+        }
+    }
+    
+    private func moveToNextStep() {
+        currentStepIndex += 1
+        
+        if currentStepIndex >= allSteps.count {
+            // Done with all steps for this unit, move to next unit
+            moveToNextUnit()
+        } else {
+            playCurrentStep()
+        }
+    }
+    
+    private func moveToNextUnit() {
+        currentStepIndex = 0
+        currentUnitIndex += 1
+        
+        if currentUnitIndex >= unitRanges.count {
+            // Chapter finished
+            isPlaying = false
+            
+            // Auto-advance to next chapter if available
+            if !nextExcerpt.isEmpty && settingsManager.autoNextChapter {
+                Task {
+                    settingsManager.currentExcerpt = nextExcerpt
+                    await loadAllData()
+                    playCurrentStep()
+                }
+            }
+        } else {
+            playCurrentStep()
+        }
+    }
+    
+    // MARK: Audio Observer
+    private func setupAudioObserver() {
+        audioStateObserver?.cancel()
+        audioStateObserver = audiopleer.$state
+            .receive(on: DispatchQueue.main)
+            .sink { newState in
+                print("[MultiRead] Audio state changed to: \(newState)")
+                
+                // When audio is ready to play, start it
+                if newState == .waitingForPlay {
+                    if self.isPlaying {
+                        print("[MultiRead] State is waitingForPlay, starting playback")
+                        self.audiopleer.doPlayOrPause()
+                    }
+                }
+                
+                // Move to next step when audio finishes or pauses naturally
+                // .pausing happens when audio reaches periodTo (end of excerpt)
+                // .finished happens when entire audio file ends
+                // We check isPlaying to distinguish natural end from user-initiated pause
+                if newState == .finished || newState == .pausing {
+                    if self.isPlaying {
+                        print("[MultiRead] Audio ended (state: \(newState)), moving to next step")
+                        self.isPlaying = false
+                        self.moveToNextStep()
+                    }
+                }
+            }
+    }
+    
+    // MARK: HTML Generation
+    private func generateMultilingualHTML() -> String {
+        let selectedColor = getCSSColor(named: "DarkGreen-accent")
+        let jesusColor = getCSSColor(named: "Jesus")
+        let jesusSelectedColor = getCSSColor(named: "JesusSelected")
+        let translationLabelColor = getCSSColor(named: "Marigold")
+        let darkGreenColor = getCSSColor(named: "DarkGreen") // Background color for pause masking
+        
+        var htmlString = """
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <style>
+                * { box-sizing: border-box; }
+                html {
+                    scroll-behavior: smooth;
+                }
+                body {
+                    background-color: transparent;
+                    color: #ffffff;
+                    font-family: -apple-system, Helvetica, Arial, sans-serif;
+                    line-height: 1.6;
+                    margin: 0;
+                    padding: 0 22px;
+                    padding-bottom: 220px; /* Space for audio panel */
+                }
+                .unit {
+                    margin-bottom: 24px;
+                    padding: 12px 22px;
+                    margin-left: -22px;
+                    margin-right: -22px;
+                }
+                /* Dynamic unit highlighting - unit containing highlighted verse gets background */
+                .unit:has(.highlighted-verse) {
+                    background-color: rgba(255,255,255,0.05);
+                }
+                .translation-label {
+                    font-size: 0.75rem;
+                    font-weight: bold;
+                    color: \(translationLabelColor);
+                    opacity: 0.8;
+                    margin-top: 8px;
+                    margin-bottom: 4px;
+                }
+                .verse-block {
+                    margin-bottom: 4px;
+                }
+                .verse-number {
+                    font-size: 0.7rem;
+                    color: rgba(255,255,255,0.5);
+                    margin-right: 4px;
+                }
+                .separator {
+                    border: none;
+                    border-top: 1px solid rgba(255,255,255,0.2);
+                    margin: 8px 0;
+                }
+                .pause-indicator {
+                    display: flex;
+                    align-items: center;
+                    font-size: 0.7rem;
+                    color: rgba(255,255,255,0.4);
+                    padding: 0px 0;
+                    margin: 0px 0;
+                }
+                .pause-indicator::before, .pause-indicator::after {
+                    content: '';
+                    flex: 1;
+                    border-top: 1px solid rgba(255,255,255,0.2);
+                }
+                .pause-indicator span {
+                    padding: 0 12px;
+                }
+                em, i { font-style: italic; }
+                strong, b { font-weight: bold; }
+                .jesus { color: \(jesusColor); }
+                .e { opacity: 0.7; }
+                .gray { opacity: 0.5; }
+                .highlighted-verse { color: \(selectedColor); }
+                .highlighted-verse .jesus { color: \(jesusSelectedColor); }
+                
+                .quote-container {
+                    padding-left: 1.1rem;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .quote {
+                    display: block;
+                    font-family: serif;
+                    font-style: italic;
+                }
+            </style>
+        </head>
+        <body>
+        """
+        
+        // Generate content for each unit
+        for (unitIdx, unitRange) in unitRanges.enumerated() {
+            htmlString += "<div id=\"unit-\(unitIdx)\" class=\"unit\">"
+            
+            // For each step, show the translation block
+            for (stepIdx, step) in allSteps.enumerated() {
+                if step.type == .read {
+                    // Find read step index
+                    if let readStepIndex = readSteps.firstIndex(where: { $0.id == step.id }),
+                       let verses = stepTextVerses[readStepIndex] {
+                        
+                        let fontSize = 10 * (1 + step.fontIncreasePercent / 100)
+                        
+                        // Verses for this unit (no translation label, as per mockup)
+                        let startIdx = min(unitRange.start, verses.count - 1)
+                        let endIdx = min(unitRange.end, verses.count - 1)
+                        
+                        if startIdx >= 0 && startIdx <= endIdx {
+                            for i in startIdx...endIdx {
+                                let verse = verses[i]
+                                // Use unique ID: stepIdx * 10000 + verseNumber
+                                let uniqueId = stepIdx * 10000 + verse.number
+                                
+                                htmlString += """
+                                <div id="verse-\(uniqueId)" class="verse-block" style="font-size: \(fontSize)px;">
+                                    <span class="verse-number">\(verse.number).</span>
+                                    <span>\(verse.html)</span>
+                                </div>
+                                """
+                            }
+                        }
+                    }
+                } else if step.type == .pause {
+                    // Pause indicator between translations
+                    let pauseSeconds = Int(step.pauseDuration)
+                    htmlString += "<div class=\"pause-indicator\"><span>\(pauseSeconds) sec.</span></div>"
+                }
+            }
+            
+            htmlString += "</div>"
+        }
+        
+        htmlString += """
+            <div style="height: 100px;"></div>
+        </body>
+        </html>
+        """
+        
+        return htmlString
+    }
+}
+

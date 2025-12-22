@@ -344,6 +344,11 @@ struct SkeletonView: View {
                 .environmentObject(settingsManager)
             }
             
+            else if settingsManager.selectedMenuItem == .multilingualRead {
+                PageMultilingualReadView()
+                .environmentObject(settingsManager)
+            }
+            
             /// menu layer
             MenuView()
                 .environmentObject(settingsManager)

@@ -8,6 +8,7 @@ enum MenuItem {
     case setup
     case contacts
     case multilingual
+    case multilingualRead
 }
 
 struct MenuView: View{

@@ -430,7 +430,7 @@ struct PageMultilingualView: View {
     
     func proceedToRead() {
         settingsManager.saveMultilingualSteps()
-        settingsManager.selectedMenuItem = .read
+        settingsManager.selectedMenuItem = .multilingualRead
         settingsManager.showMenu = false
     }
 }

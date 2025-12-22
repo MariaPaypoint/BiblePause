@@ -12,6 +12,7 @@
 		046B5DBC2EF8970E00653FA8 /* PageMultilingualView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DBA2EF8970E00653FA8 /* PageMultilingualView.swift */; };
 		046B5DC02EF905AE00653FA8 /* MultilingualRead.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DBF2EF905AE00653FA8 /* MultilingualRead.swift */; };
 		046B5DD52EF9105D00653FA8 /* PageMultilingualTemplatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DD42EF9105D00653FA8 /* PageMultilingualTemplatesView.swift */; };
+		046B5DFC2EF9534600653FA8 /* PageMultilingualReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046B5DFB2EF9534600653FA8 /* PageMultilingualReadView.swift */; };
 		047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC42BEEB626009DEC11 /* SkeletonView.swift */; };
 		047B3BC72BEEBADD009DEC11 /* PageReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC62BEEBADD009DEC11 /* PageReadView.swift */; };
 		047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */; };
@@ -58,6 +59,7 @@
 		046B5DBA2EF8970E00653FA8 /* PageMultilingualView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMultilingualView.swift; sourceTree = "<group>"; };
 		046B5DBF2EF905AE00653FA8 /* MultilingualRead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultilingualRead.swift; sourceTree = "<group>"; };
 		046B5DD42EF9105D00653FA8 /* PageMultilingualTemplatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMultilingualTemplatesView.swift; sourceTree = "<group>"; };
+		046B5DFB2EF9534600653FA8 /* PageMultilingualReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMultilingualReadView.swift; sourceTree = "<group>"; };
 		047B3BC42BEEB626009DEC11 /* SkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonView.swift; sourceTree = "<group>"; };
 		047B3BC62BEEBADD009DEC11 /* PageReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReadView.swift; sourceTree = "<group>"; };
 		047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectView.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 		4C3F9EB62C148EA200EA807C /* Pages */ = {
 			isa = PBXGroup;
 			children = (
+				046B5DFB2EF9534600653FA8 /* PageMultilingualReadView.swift */,
 				046B5DD42EF9105D00653FA8 /* PageMultilingualTemplatesView.swift */,
 				046B5DB92EF8970E00653FA8 /* PageMultilingualConfigView.swift */,
 				046B5DBA2EF8970E00653FA8 /* PageMultilingualView.swift */,
@@ -338,6 +341,7 @@
 				0497A9662C6BFEA6008A5D7F /* FancyToastStyle.swift in Sources */,
 				4CA027002EA43D4E004A6FD1 /* PageProgressView.swift in Sources */,
 				0497A9672C6BFEA6008A5D7F /* FancyToastModifier.swift in Sources */,
+				046B5DFC2EF9534600653FA8 /* PageMultilingualReadView.swift in Sources */,
 				4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Sources */,
 				4C7691262BECEA1300C66FDC /* PageMainView.swift in Sources */,
 				047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */,

@@ -13,7 +13,7 @@ struct HTMLTextView: UIViewRepresentable {
         // Scroll to the current verse
         var target = document.getElementById('{elementId}');
         if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
+            target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     
             // Add highlight class to the current verse
             target.classList.add('highlighted-verse');

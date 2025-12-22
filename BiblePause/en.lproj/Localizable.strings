@@ -146,3 +146,7 @@
 "multilingual.rename.title" = "Rename Template";
 "multilingual.rename.message" = "Enter new name";
 "multilingual.rename.action" = "Rename";
+
+/* Reading screen */
+"page.read.reader" = "READER:";
+"page.read.of" = "of";
