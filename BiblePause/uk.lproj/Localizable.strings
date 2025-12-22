@@ -110,3 +110,21 @@
 "settings.pause.block.short.verse" = "вірш";
 "settings.pause.block.short.paragraph" = "абзац";
 "settings.pause.block.short.fragment" = "урив.";
+
+/* Multilingual */
+"menu.multilingual" = "Багатомовне читання";
+"unit.verse" = "віршу";
+"unit.chapter" = "розділу";
+"unit.paragraph" = "абзацу";
+"unit.fragment" = "фрагменту";
+"settings.setup" = "Налаштування"; 
+"multilingual.title" = "Багатомовне читання";
+"multilingual.subtitle" = "Нове налаштування";
+"multilingual.read_by" = "Читати по";
+"multilingual.add_read_step" = "+ Читання";
+"multilingual.add_pause_step" = "+ Пауза";
+"multilingual.save_and_read" = "Зберегти і читати";
+"multilingual.select_translation" = "Оберіть переклад";
+"multilingual.pause" = "Пауза";
+"multilingual.seconds" = "сек.";
+"multilingual.config.title" = "Налаштування читання";

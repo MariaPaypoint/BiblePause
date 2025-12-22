@@ -36,6 +36,16 @@ class SettingsManager: ObservableObject {
     
     @AppStorage("currentSpeed") var currentSpeed: Double = 1.0
     
+    // MARK: Multilingual
+    @AppStorage("multilingualStepsData") var multilingualStepsData: Data = Data()
+    @Published var multilingualSteps: [MultilingualStep] = []
+    @AppStorage("multilingualReadUnit") var multilingualReadUnitRaw: String = MultilingualReadUnit.verse.rawValue
+    
+    var multilingualReadUnit: MultilingualReadUnit {
+        get { MultilingualReadUnit(rawValue: multilingualReadUnitRaw) ?? .verse }
+        set { multilingualReadUnitRaw = newValue.rawValue }
+    }
+    
     private let baseURLString: String = Config.baseURL
     static let apiKey: String = Config.apiKey
     
@@ -61,6 +71,7 @@ class SettingsManager: ObservableObject {
         
         // Load stored reading progress
         loadReadProgress()
+        loadMultilingualSteps()
     }
     
     /// Builds a full audio URL by appending the api_key query parameter.
@@ -235,6 +246,20 @@ class SettingsManager: ObservableObject {
         }
         return ""
     }
+    
+    // MARK: Multilingual storage
+    func loadMultilingualSteps() {
+        if !multilingualStepsData.isEmpty,
+           let steps = try? JSONDecoder().decode([MultilingualStep].self, from: multilingualStepsData) {
+            self.multilingualSteps = steps
+        }
+    }
+    
+    func saveMultilingualSteps() {
+        if let data = try? JSONEncoder().encode(multilingualSteps) {
+            multilingualStepsData = data
+        }
+    }
 }
 
 struct SkeletonView: View {
@@ -278,6 +303,11 @@ struct SkeletonView: View {
             
             else if settingsManager.selectedMenuItem == .contacts {
                 PageContactsView()
+                .environmentObject(settingsManager)
+            }
+            
+            else if settingsManager.selectedMenuItem == .multilingual {
+                PageMultilingualView()
                 .environmentObject(settingsManager)
             }
             

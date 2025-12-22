@@ -110,3 +110,23 @@
 "settings.pause.block.short.verse" = "verse";
 "settings.pause.block.short.paragraph" = "paragraph";
 "settings.pause.block.short.fragment" = "fragment";
+
+/* Multilingual */
+"menu.multilingual" = "Multilingual Reading";
+"unit.verse" = "verse";
+"unit.chapter" = "chapter";
+"settings.setup" = "Setup";
+
+/* Multilingual */
+"unit.paragraph" = "paragraph";
+"unit.fragment" = "fragment";
+"multilingual.title" = "Multilingual Reading";
+"multilingual.subtitle" = "New configuration";
+"multilingual.read_by" = "Read by";
+"multilingual.add_read_step" = "+ Read";
+"multilingual.add_pause_step" = "+ Pause";
+"multilingual.save_and_read" = "Save & Read";
+"multilingual.select_translation" = "Select Translation";
+"multilingual.pause" = "Pause";
+"multilingual.seconds" = "sec.";
+"multilingual.config.title" = "Reading Step Setup";

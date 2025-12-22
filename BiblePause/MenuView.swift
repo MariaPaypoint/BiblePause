@@ -7,6 +7,7 @@ enum MenuItem {
     case progress
     case setup
     case contacts
+    case multilingual
 }
 
 struct MenuView: View{
@@ -45,6 +46,7 @@ struct MenuView: View{
                 Button { changeSelected(selected: .read)     } label: { MenuItem(title: "menu.continue_reading".localized, subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
                 Button { changeSelected(selected: .select)   } label: { MenuItem(title: "menu.select".localized, subTitle: "menu.select.subtitle".localized, selected: (settingsManager.selectedMenuItem == .select)) }
                 Button { changeSelected(selected: .progress) } label: { MenuItem(title: "menu.progress".localized, subTitle: "menu.progress.subtitle".localized, selected: (settingsManager.selectedMenuItem == .progress)) }
+                Button { changeSelected(selected: .multilingual) } label: { MenuItem(title: "menu.multilingual".localized, selected: (settingsManager.selectedMenuItem == .multilingual)) }
                 Button { changeSelected(selected: .setup)    } label: { MenuItem(title: "menu.settings".localized, selected: (settingsManager.selectedMenuItem == .setup)) }
                 Button { changeSelected(selected: .contacts) } label: { MenuItem(title: "menu.contacts".localized, subTitle: "menu.contacts.subtitle".localized, selected: (settingsManager.selectedMenuItem == .contacts)) }
                 
