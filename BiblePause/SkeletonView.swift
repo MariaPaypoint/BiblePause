@@ -29,8 +29,19 @@ class SettingsManager: ObservableObject {
     @AppStorage("voiceMusic") var voiceMusic: Bool = true
     
     @AppStorage("currentExcerpt") var currentExcerpt: String = "jhn 1"
-    @AppStorage("currentExcerptTitle") var currentExcerptTitle: String = "Gospel of John"
-    @AppStorage("currentExcerptSubtitle") var currentExcerptSubtitle: String = "Chapter 1"
+    
+    @Published var currentExcerptTitle: String = UserDefaults.standard.string(forKey: "currentExcerptTitle") ?? "Gospel of John" {
+        didSet {
+            UserDefaults.standard.set(currentExcerptTitle, forKey: "currentExcerptTitle")
+        }
+    }
+    
+    @Published var currentExcerptSubtitle: String = UserDefaults.standard.string(forKey: "currentExcerptSubtitle") ?? "Chapter 1" {
+        didSet {
+            UserDefaults.standard.set(currentExcerptSubtitle, forKey: "currentExcerptSubtitle")
+        }
+    }
+    
     @AppStorage("currentBookId") var currentBookId: Int = 0
     @AppStorage("currentChapterId") var currentChapterId: Int = 0
     
@@ -354,6 +365,7 @@ struct SkeletonView: View {
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
+                .id(settingsManager.currentExcerptTitle + settingsManager.currentExcerptSubtitle)
         }
         
     }

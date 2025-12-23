@@ -23,6 +23,9 @@ struct PageMultilingualReadView: View {
     @State private var errorDescription: String = ""
     @State private var toast: FancyToast? = nil
     
+    @State private var showSelection = false
+    @State private var oldExcerpt: String = ""
+    
     // Playback state
     @State private var currentUnitIndex: Int = 0 // Which verse/paragraph/fragment are we on
     @State private var currentStepIndex: Int = 0 // Which step within the unit flow
@@ -64,16 +67,23 @@ struct PageMultilingualReadView: View {
                     
                     Spacer()
                     
-                    VStack(spacing: 0) {
-                        Text(excerptTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        Text(excerptSubtitle.uppercased())
-                            .foregroundColor(Color("Mustard"))
-                            .font(.footnote)
-                            .fontWeight(.bold)
+                    Button {
+                        withAnimation(Animation.easeInOut(duration: 1)) {
+                            oldExcerpt = settingsManager.currentExcerpt
+                            showSelection = true
+                        }
+                    } label: {
+                        VStack(spacing: 0) {
+                            Text(excerptTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            Text(excerptSubtitle.uppercased())
+                                .foregroundColor(Color("Mustard"))
+                                .font(.footnote)
+                                .fontWeight(.bold)
+                        }
+                        .padding(.top, 6)
                     }
-                    .padding(.top, 6)
                     
                     Spacer()
                     
@@ -140,6 +150,18 @@ struct PageMultilingualReadView: View {
                 .offset(x: settingsManager.showMenu ? 0 : -UIScreen.main.bounds.width)
         }
         .toastView(toast: $toast)
+        .fullScreenCover(isPresented: $showSelection, onDismiss: {
+            Task {
+                if oldExcerpt != settingsManager.currentExcerpt {
+                    // Force reload
+                    stepTextVerses = [:]
+                    await loadAllData()
+                }
+            }
+        }) {
+            PageSelectView(showFromRead: $showSelection)
+                .environmentObject(settingsManager)
+        }
         .onAppear {
             settingsManager.isMultilingualReadingActive = true
             Task {
@@ -382,6 +404,12 @@ struct PageMultilingualReadView: View {
                     nextExcerpt = part.next_excerpt
                     excerptTitle = part.book.name
                     excerptSubtitle = "page.read.chapter_subtitle".localized(String(part.chapter_number))
+                    
+                    // Sync with SettingsManager for Menu display
+                    DispatchQueue.main.async {
+                        settingsManager.currentExcerptTitle = excerptTitle
+                        settingsManager.currentExcerptSubtitle = excerptSubtitle
+                    }
                 }
             } catch {
                 errorDescription = "Error loading \(step.translationName): \(error.localizedDescription)"
