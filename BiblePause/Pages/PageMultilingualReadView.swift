@@ -839,6 +839,37 @@ struct PageMultilingualReadView: View {
                     font-family: serif;
                     font-style: italic;
                 }
+                
+                /* Title Styles */
+                .title {
+                    font-size: 1.3rem;
+                    font-weight: bold;
+                    margin-top: 0.5rem;
+                    margin-bottom: 0.2rem;
+                }
+                
+                .subtitle {
+                    font-size: 0.9rem;
+                    color: rgba(255, 255, 255, 0.7);
+                    margin-top: 0.8rem;
+                    margin-bottom: 0.8rem;
+                    display: block;
+                    text-align: center;
+                    font-weight: bold;
+                }
+                
+                .reference {
+                    font-size: 0.7rem;
+                    font-weight: bold;
+                    color: rgba(255, 255, 255, 0.8);
+                    margin-top: 0;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .metadata {
+                    color: rgba(255, 255, 255, 0.7);
+                    font-style: italic;
+                }
             </style>
         </head>
         <body>
@@ -864,8 +895,25 @@ struct PageMultilingualReadView: View {
                         if startIdx >= 0 && startIdx <= endIdx {
                             for i in startIdx...endIdx {
                                 let verse = verses[i]
-                                // Use unique ID: stepIdx * 10000 + verseNumber
                                 let uniqueId = stepIdx * 10000 + verse.number
+                                
+                                // Display headers (titles/subtitles) if in Fragment mode
+                                if settingsManager.multilingualReadUnit == .fragment {
+                                    // Regular titles
+                                    let regularTitles = verse.beforeTitles.filter { !$0.subtitle }
+                                    for title in regularTitles {
+                                        htmlString += "<p class=\"title\">\(title.text)</p>"
+                                        if let reference = title.reference, !reference.isEmpty {
+                                            htmlString += "<p class=\"reference\">\(reference)</p>"
+                                        }
+                                    }
+                                    
+                                    // Subtitles at start
+                                    let startSubtitles = verse.beforeTitles.filter { $0.subtitle && ($0.positionHtml ?? 0) == 0 }
+                                    for sub in startSubtitles {
+                                        htmlString += "<p class=\"subtitle\">\(sub.text)</p>"
+                                    }
+                                }
                                 
                                 htmlString += """
                                 <div id="verse-\(uniqueId)" class="verse-block" style="font-size: \(fontSize)px;">

@@ -1,7 +1,7 @@
 import UniformTypeIdentifiers
 import SwiftUI
 
-struct PageMultilingualView: View {
+struct PageMultilingualSetupView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
     @State private var editingStepIndex: Int? = nil

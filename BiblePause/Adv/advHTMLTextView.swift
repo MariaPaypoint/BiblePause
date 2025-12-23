@@ -13,20 +13,17 @@ struct HTMLTextView: UIViewRepresentable {
         // Scroll to the current verse
         var target = document.getElementById('{elementId}');
         if (target) {
-            // Find the parent unit
-            var unit = target.closest('.unit');
-            if (unit) {
-                 // Scroll the unit into view
-                 unit.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                 
-                 // Highlight the unit (if needed, or just let CSS .highlighted-verse inside handle it?)
-                 // The user said "positioning should be on the block".
-                 // BUT highlighting is handled by CSS on the *element* currently?
-                 // No, '.unit:has(.highlighted-verse)' handles the background.
-                 // So we must add 'highlighted-verse' to the ELEMENT, but scroll the UNIT.
-            } else {
-                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+             // Directly scroll the verse/element into view to ensure it is visible,
+             // regardless of how large the parent unit is.
+             // We position it at 1/5 of the screen height to account for the bottom panel.
+             var headerOffset = window.innerHeight / 5;
+             var elementPosition = target.getBoundingClientRect().top;
+             var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+             
+             window.scrollTo({
+                  top: offsetPosition,
+                  behavior: "smooth"
+             });
     
             // Add highlight class to the current verse element
             target.classList.add('highlighted-verse');

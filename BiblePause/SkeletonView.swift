@@ -341,7 +341,7 @@ struct SkeletonView: View {
             }
             
             else if settingsManager.selectedMenuItem == .multilingual {
-                PageMultilingualView()
+                PageMultilingualSetupView()
                 .environmentObject(settingsManager)
             }
             
