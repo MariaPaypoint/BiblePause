@@ -110,7 +110,7 @@ struct PageSelectView: View {
     fileprivate func viewSelectTestament() -> some View {
         return viewSegmentedButtons(arr: bibleParts,
                              selIndex: selectedBiblePartIndex,
-                             baseColor: Color("Marigold"),
+                             baseColor: Color("Mustard"),
                              bgColor: Color("DarkGreen-light")
         ) { selectedIndex in
             if selectedBiblePartIndex == selectedIndex {
@@ -260,7 +260,7 @@ struct PageSelectView: View {
                                         let progress = settingsManager.getBookProgress(book: book.alias, totalChapters: book.chapters_count)
                                         if progress.read > 0 {
                                             let isCompleted = progress.read == progress.total
-                                            let progressColor = isCompleted ? Color("Success") : Color("Marigold")
+                                            let progressColor = isCompleted ? Color("Success") : Color("Mustard")
                                             
                                             ZStack {
                                                 GeometryReader { geometry in

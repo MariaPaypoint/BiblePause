@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 import Combine
 
-struct PageMultilingualConfigView: View {
+struct MultilingualConfigSheet: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var settingsManager: SettingsManager
     

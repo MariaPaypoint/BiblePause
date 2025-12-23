@@ -220,7 +220,7 @@ struct PageProgressView: View {
                         let segmentWidth = (geometry.size.width - totalSpacing) / CGFloat(progress.total)
                         
                         Rectangle()
-                            .fill(isRead ? (isCompleted ? Color.green : Color("Marigold")) : Color.white.opacity(0.2))
+                            .fill(isRead ? (isCompleted ? Color.green : Color("Mustard")) : Color.white.opacity(0.2))
                             .frame(width: segmentWidth, height: 8)
                     }
                 }

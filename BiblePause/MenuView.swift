@@ -80,7 +80,7 @@ struct MenuView: View{
                         Color("ForestGreen"),
                         Color("Mustard")
                             .opacity(0.7),
-                        Color("Marigold")
+                        Color("Mustard")
                             .opacity(0.7),
                         //Color.clear,
                         
@@ -118,12 +118,12 @@ struct MenuView: View{
             Text(title)
                 .font(.system(.headline))
                 .fontWeight(.bold)
-                .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
+                .foregroundColor(selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9))
             
             if !subTitle.isEmpty {
                 Text(subTitle)
                     .font(.system(size: 14))
-                    .foregroundColor(selected ? Color("Marigold").opacity(0.9) : Color.white.opacity(0.9))
+                    .foregroundColor(selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9))
                     .multilineTextAlignment(.leading)
             }
         }

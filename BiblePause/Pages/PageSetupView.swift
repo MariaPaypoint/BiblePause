@@ -375,30 +375,30 @@ struct PageSetupView: View {
             
             let saveEnabled =  self.language != "" && self.translation != "" && self.voice != ""
             
-            Button {
-                if saveEnabled {
-                    settingsManager.language = self.language
-                    settingsManager.translation = Int(self.translation)!
-                    settingsManager.translationName = self.translationName
-                    settingsManager.voice = Int(self.voice)!
-                    settingsManager.voiceName = self.voiceName
-                    settingsManager.voiceMusic = self.voiceMusic
-                    
-                }
-                else {
-                    toast = FancyToast(type: .warning, title: "settings.warning".localized, message: self.translation == "" ? "settings.select_translation".localized : "settings.select_reader".localized)
-                }
-            } label: {
-                VStack {
+                Button {
+                    if saveEnabled {
+                        settingsManager.language = self.language
+                        settingsManager.translation = Int(self.translation)!
+                        settingsManager.translationName = self.translationName
+                        settingsManager.voice = Int(self.voice)!
+                        settingsManager.voiceName = self.voiceName
+                        settingsManager.voiceMusic = self.voiceMusic
+                        
+                    }
+                    else {
+                        toast = FancyToast(type: .warning, title: "settings.warning".localized, message: self.translation == "" ? "settings.select_translation".localized : "settings.select_reader".localized)
+                    }
+                } label: {
                     Text("settings.save_choice".localized)
-                        .foregroundColor(.white)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
-                        .padding(5)
+                        .padding(.vertical, 12)
+                        .background(saveEnabled ? Color("Mustard") : Color.white.opacity(0.2))
+                        .cornerRadius(12)
                 }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(saveEnabled ? Color("Marigold") : .white.opacity(0.2))
-            .padding(.top, 25)
+                .padding(.top, 25)
             
             
             Button {
@@ -408,21 +408,18 @@ struct PageSetupView: View {
                 fetchLanguages()
                 showAudios()
             } label: {
-                VStack {
-                    Text("settings.cancel_choice".localized)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(13)
-                }
+                Text("settings.cancel_choice".localized)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 11)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white, lineWidth: 2)
+                    )
             }
-            .buttonStyle(.plain)
-            .background(Color.clear)
-            .overlay(
-                Capsule()
-                    .stroke(Color.white, lineWidth: 2)
-            )
-            .clipShape(Capsule())
-            .padding(.top, 5)
+            .padding(.top, 8)
         }
         
         Spacer()

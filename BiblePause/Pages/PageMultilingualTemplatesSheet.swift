@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PageMultilingualTemplatesView: View {
+struct PageMultilingualTemplatesSheet: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var settingsManager: SettingsManager
     

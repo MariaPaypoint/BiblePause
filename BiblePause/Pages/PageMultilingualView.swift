@@ -1,7 +1,7 @@
 import UniformTypeIdentifiers
 import SwiftUI
 
-struct PageMultilingualSetupView: View {
+struct PageMultilingualView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
     @State private var editingStepIndex: Int? = nil
@@ -162,7 +162,7 @@ struct PageMultilingualSetupView: View {
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color("Marigold"))
+                        .background(Color("Mustard"))
                         .cornerRadius(12)
                 }
                 .padding(.horizontal, globalBasePadding)
