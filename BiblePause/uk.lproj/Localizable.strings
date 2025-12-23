@@ -148,3 +148,6 @@
 /* Reading screen */
 "page.read.reader" = "ЧИТАЄ:";
 "page.read.of" = "з";
+
+"settings.speed" = "Швидкість";
+

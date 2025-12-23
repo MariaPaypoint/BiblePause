@@ -244,16 +244,12 @@ struct PageMultilingualReadView: View {
                 }
                 Spacer()
                 
-                // Restart unit
+                // Previous Unit (Block)
                 Button {
-                    // Cancel auto-pause if active
-                    isAutopausing = false
-                    isPlaying = false // Stop responding to old events
-                    currentStepIndex = 0
-                    playCurrentStep()
+                    moveToPreviousUnit()
                 } label: {
-                    Image(systemName: "gobackward")
-                        .foregroundColor(Color("localAccentColor"))
+                    Image(systemName: "backward.end.fill")
+                        .foregroundColor(currentUnitIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
                 }
                 Spacer()
                 
@@ -293,13 +289,16 @@ struct PageMultilingualReadView: View {
                 }
                 Spacer()
                 
-                // Speed button
+                // Next Unit (Block)
                 Button {
-                    cycleSpeed()
+                    moveToNextUnit()
                 } label: {
-                    Text(formatSpeedDisplay())
-                        .font(.system(size: 18))
-                        .foregroundColor(Color("localAccentColor"))
+                    Image(systemName: "forward.end.fill")
+                        // Disable if strictly at last unit. Logic elsewhere handles chapter transition?
+                        // Original 'Next Section' handled chapter, but 'Next Unit' usually stays in chapter?
+                        // User said "transition to next block". I will keep it within chapter for now, or use same logic as 'next section' button:
+                        // "currentUnitIndex < unitRanges.count - 1" styling.
+                        .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
                 }
                 Spacer()
                 
@@ -604,6 +603,9 @@ struct PageMultilingualReadView: View {
                 itemSubtitle: step.translationName
             )
             
+            // Set speed for this step
+            audiopleer.setSpeed(speed: Float(step.playbackSpeed))
+            
             audiopleer.onStartVerse = { verseIdx in
                 if verseIdx >= 0 && verseIdx < unitAudioVerses.count {
                     // Encode step index into highlight ID: stepIdx * 10000 + verseNumber
@@ -671,30 +673,30 @@ struct PageMultilingualReadView: View {
         }
     }
     
+    private func moveToPreviousUnit() {
+        guard currentUnitIndex > 0 else { return }
+        stopAudioMonitoring()
+        isAutopausing = false
+        isPlaying = false
+        
+        currentUnitIndex -= 1
+        currentStepIndex = 0
+        playCurrentStep()
+    }
+
     private func moveToNextUnit() {
         stopAudioMonitoring()
         isAutopausing = false
         isPlaying = false
         
-        currentStepIndex = 0
-        currentUnitIndex += 1
-        
-        if currentUnitIndex >= unitRanges.count {
-            // Chapter finished logic...
-            isPlaying = false
-            
-            // Auto-advance
-            if !nextExcerpt.isEmpty && settingsManager.autoNextChapter {
-                Task {
-                    settingsManager.currentExcerpt = nextExcerpt
-                    await loadAllData()
-                    playCurrentStep()
-                }
-            }
-        } else {
+        if currentUnitIndex < unitRanges.count - 1 {
+            currentUnitIndex += 1
+            currentStepIndex = 0
             playCurrentStep()
         }
+        // If at end, do nothing (button disabled) OR could trigger next chapter if desired.
     }
+
     
     // MARK: Audio Observer
     private func stopAudioMonitoring() {

@@ -7,7 +7,14 @@ struct PageMultilingualConfigView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     
     @State var step: MultilingualStep
+    private let initialStep: MultilingualStep
     var onSave: (MultilingualStep) -> Void
+    
+    init(step: MultilingualStep, onSave: @escaping (MultilingualStep) -> Void) {
+        self.initialStep = step
+        self._step = State(initialValue: step)
+        self.onSave = onSave
+    }
     
     // MARK: Languages and translations state
     @State private var isLanguagesLoading: Bool = true
@@ -73,7 +80,7 @@ struct PageMultilingualConfigView: View {
                 .background(Color("DarkGreen").brightness(0.05))
                 
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 0) {
                         
                         // Language
                         viewGroupHeader(text: "settings.bible_language".localized)
@@ -132,12 +139,54 @@ struct PageMultilingualConfigView: View {
                             )
                         }
                         
-                        // Font Settings (as requested: "настройку шрифта")
+                        // Speed Settings
+                        viewGroupHeader(text: "settings.speed".localized)
+                        HStack(spacing: 0) {
+                            Button(action: {
+                                if step.playbackSpeed > 0.5 {
+                                    step.playbackSpeed -= 0.1
+                                }
+                            }) {
+                                Image(systemName: "minus")
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .background(Color.clear)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(width: 50, height: 40)
+                            
+                            Divider().background(Color.white)
+                            
+                            Text(String(format: "%.1fx", step.playbackSpeed))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, maxHeight: 40)
+                            
+                            Divider().background(Color.white)
+                            
+                            Button(action: {
+                                if step.playbackSpeed < 2.5 {
+                                    step.playbackSpeed += 0.1
+                                }
+                            }) {
+                                Image(systemName: "plus")
+                                    .font(.title3)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .background(Color.clear)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(width: 50, height: 40)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(Color.white, lineWidth: 1)
+                        )
+                        .padding(.horizontal, 3)
+
+                        // Font Settings
                         viewGroupHeader(text: "settings.font".localized)
-                         HStack {
+                        HStack {
                             Text("\(Int(step.fontIncreasePercent))%")
                                 .foregroundColor(.white)
-                                .frame(width: 50)
+                                .frame(width: 70)
                             
                             Spacer()
                             
@@ -147,33 +196,44 @@ struct PageMultilingualConfigView: View {
                                         step.fontIncreasePercent -= 10
                                     }
                                 }) {
-                                    Image(systemName: "minus")
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    Text("A")
+                                        .font(.title3)
+                                        .frame(maxWidth: .infinity)
                                         .background(Color.clear)
                                         .foregroundColor(.white)
                                 }
-                                .frame(width: 50)
                                 
-                                Divider().background(Color.white)
+                                Divider() // Divider between buttons
+                                    .background(Color.white)
                                 
                                 Button(action: {
                                     if step.fontIncreasePercent < 500 {
                                         step.fontIncreasePercent += 10
                                     }
                                 }) {
-                                    Image(systemName: "plus")
-                                        .font(.title3)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    Text("A")
+                                        .font(.title)
+                                        .frame(maxWidth: .infinity)
                                         .background(Color.clear)
                                         .foregroundColor(.white)
                                 }
-                                .frame(width: 50)
                             }
-                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.white, lineWidth: 1)
                             )
+                            .frame(maxWidth: 200)
+                            .frame(maxHeight: 42)
+                            
+                            Spacer()
+                            
+                            Button {
+                                step.fontIncreasePercent = 100.0
+                            } label: {
+                                Text("settings.font.reset".localized)
+                                    .foregroundColor(Color("Mustard"))
+                                    .frame(width: 70)
+                            }
                         }
                         .padding(.horizontal)
                         
@@ -197,11 +257,14 @@ struct PageMultilingualConfigView: View {
     }
     
     func initializeState() {
+        // Force update state from init parameter (fix for sticky state issues in sheets)
+        self.step = self.initialStep
+        
         // Prepare initial state from step
         if !step.languageCode.isEmpty {
             selectedLanguage = step.languageCode
-            selectedTranslation = String(step.translationCode)
-            selectedTranslationName = step.translationName
+             selectedTranslation = String(step.translationCode)
+             selectedTranslationName = step.translationName
             selectedVoice = String(step.voiceCode)
             selectedVoiceName = step.voiceName
             selectedVoiceMusic = step.voiceMusic
@@ -216,6 +279,10 @@ struct PageMultilingualConfigView: View {
              selectedVoice = String(settingsManager.voice)
              selectedVoiceName = settingsManager.voiceName
              selectedVoiceMusic = settingsManager.voiceMusic
+             
+             // Initialize font and speed from global settings / defaults
+             step.fontIncreasePercent = settingsManager.fontIncreasePercent
+             step.playbackSpeed = 1.0
         }
         
         fetchLanguages()

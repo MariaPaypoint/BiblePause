@@ -39,6 +39,7 @@ struct MultilingualStep: Identifiable, Codable, Equatable {
     var voiceName: String = ""
     var voiceMusic: Bool = false
     var fontIncreasePercent: Double = 100.0
+    var playbackSpeed: Double = 1.0
     
     // Pause properties
     var pauseDuration: Double = 2.0
@@ -50,7 +51,8 @@ struct MultilingualStep: Identifiable, Codable, Equatable {
         lhs.translationCode == rhs.translationCode &&
         lhs.voiceCode == rhs.voiceCode &&
         lhs.pauseDuration == rhs.pauseDuration &&
-        lhs.fontIncreasePercent == rhs.fontIncreasePercent
+        lhs.fontIncreasePercent == rhs.fontIncreasePercent &&
+        lhs.playbackSpeed == rhs.playbackSpeed
     }
 }
 

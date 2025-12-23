@@ -5,8 +5,7 @@ struct PageMultilingualSetupView: View {
     
     @EnvironmentObject var settingsManager: SettingsManager
     @State private var editingStepIndex: Int? = nil
-    @State private var showConfigSheet: Bool = false
-    @State private var tempStep: MultilingualStep = MultilingualStep(type: .read)
+    @State private var stepToEdit: MultilingualStep? = nil
     
 
     @State private var showTemplatesSheet: Bool = false
@@ -230,18 +229,15 @@ struct PageMultilingualSetupView: View {
             }
         }
         .toastView(toast: $toast)
-        .sheet(isPresented: $showConfigSheet) {
-            PageMultilingualConfigView(step: tempStep) { newStep in
+        .sheet(item: $stepToEdit) { step in
+            PageMultilingualConfigView(step: step) { newStep in
                 if let index = editingStepIndex {
                     settingsManager.multilingualSteps[index] = newStep
                 } else {
                     settingsManager.multilingualSteps.append(newStep)
                 }
-                // When we modify steps, it might still technically be the "active" template,
-                // BUT if we modify it, should we keep the currentTemplateId?
-                // Visual Studio Code behavior: yes, but it becomes "dirty".
-                // Here: we will keep it linked. Next Save will update it.
                 settingsManager.saveMultilingualSteps()
+                stepToEdit = nil
             }
             .environmentObject(settingsManager)
         }
@@ -358,16 +354,16 @@ struct PageMultilingualSetupView: View {
     
     // MARK: Logic
     func addNewReadStep() {
-        tempStep = MultilingualStep(type: .read)
-        // Set defaults from current settings if needed
+        var newStep = MultilingualStep(type: .read)
+        newStep.id = UUID() // Ensure unique ID for fresh sheet
+        
         editingStepIndex = nil
-        showConfigSheet = true
+        stepToEdit = newStep
     }
     
     func editReadStep(index: Int) {
-        tempStep = settingsManager.multilingualSteps[index]
         editingStepIndex = index
-        showConfigSheet = true
+        stepToEdit = settingsManager.multilingualSteps[index]
     }
     
     func addNewPauseStep() {

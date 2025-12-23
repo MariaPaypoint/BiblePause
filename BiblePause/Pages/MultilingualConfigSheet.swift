@@ -132,6 +132,58 @@ struct MultilingualConfigSheet: View {
                             )
                         }
                         
+                        // Speed Settings
+                        Text("settings.speed".localized.uppercased())
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white.opacity(0.6))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        
+                         HStack {
+                            Text(String(format: "%.1fx", step.playbackSpeed))
+                                .foregroundColor(.white)
+                                .frame(width: 50)
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 0) {
+                                Button(action: {
+                                    if step.playbackSpeed > 0.5 {
+                                        step.playbackSpeed -= 0.1
+                                    }
+                                }) {
+                                    Image(systemName: "minus")
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .background(Color.clear)
+                                        .foregroundColor(.white)
+                                }
+                                .frame(width: 50)
+                                
+                                Divider().background(Color.white)
+                                
+                                Button(action: {
+                                    if step.playbackSpeed < 2.5 {
+                                        step.playbackSpeed += 0.1
+                                    }
+                                }) {
+                                    Image(systemName: "plus")
+                                        .font(.title3)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .background(Color.clear)
+                                        .foregroundColor(.white)
+                                }
+                                .frame(width: 50)
+                            }
+                            .frame(height: 40)
+                            .background(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.white, lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal)
+
                         // Font Settings (as requested: "настройку шрифта")
                         viewGroupHeader(text: "settings.font".localized)
                          HStack {
