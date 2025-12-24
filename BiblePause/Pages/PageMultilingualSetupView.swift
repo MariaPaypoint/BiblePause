@@ -357,6 +357,18 @@ struct PageMultilingualSetupView: View {
         var newStep = MultilingualStep(type: .read)
         newStep.id = UUID() // Ensure unique ID for fresh sheet
         
+        // Only pre-fill defaults if this is the FIRST read step
+        let existingReadSteps = settingsManager.multilingualSteps.filter { $0.type == .read }
+        if existingReadSteps.isEmpty {
+            newStep.languageCode = settingsManager.language
+            newStep.translationCode = settingsManager.translation
+            newStep.translationName = settingsManager.translationName
+            newStep.voiceCode = settingsManager.voice
+            newStep.voiceName = settingsManager.voiceName
+            newStep.voiceMusic = settingsManager.voiceMusic
+            newStep.fontIncreasePercent = settingsManager.fontIncreasePercent
+        }
+        
         editingStepIndex = nil
         stepToEdit = newStep
     }

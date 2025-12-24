@@ -268,21 +268,15 @@ struct PageMultilingualConfigView: View {
             selectedVoice = String(step.voiceCode)
             selectedVoiceName = step.voiceName
             selectedVoiceMusic = step.voiceMusic
+            selectedVoiceMusic = step.voiceMusic
         } else {
-            // Default to current settings if new step
-            selectedLanguage = settingsManager.language
-            // Don't auto-set translation/voice for new step to force choice? 
-            // Or better, set defaults.
-            // Let's set defaults.
-             selectedTranslation = String(settingsManager.translation)
-             selectedTranslationName = settingsManager.translationName
-             selectedVoice = String(settingsManager.voice)
-             selectedVoiceName = settingsManager.voiceName
-             selectedVoiceMusic = settingsManager.voiceMusic
-             
-             // Initialize font and speed from global settings / defaults
-             step.fontIncreasePercent = settingsManager.fontIncreasePercent
-             step.playbackSpeed = 1.0
+            // New empty step - do NOT set defaults here. 
+            // Defaults are handled in setup view for first step only.
+            // Leave everything empty to force user selection.
+            
+             // Initialize font and speed from global settings / defaults (safe to have defaults)
+             if step.fontIncreasePercent == 0 { step.fontIncreasePercent = 100.0 }
+             if step.playbackSpeed == 0 { step.playbackSpeed = 1.0 }
         }
         
         fetchLanguages()
@@ -359,12 +353,17 @@ struct PageMultilingualConfigView: View {
             self.languageTexts.append("\(language.name_national) (\(language.name_en))")
         }
         
-        // If selected language not in list, fallback
-        if !languageKeys.contains(selectedLanguage), let first = languageKeys.first {
+        // If selected language not in list, fallback ONLY if it was set but invalid
+        if !selectedLanguage.isEmpty && !languageKeys.contains(selectedLanguage), let first = languageKeys.first {
             selectedLanguage = first
         }
         
-        fetchTranslations()
+        // If no language selected at all, verify if we need to show nothing or empty?
+        // fetchTranslations relies on selectedLanguage. If empty, it might fail or return nothing.
+        // If empty, we wait for user.
+        if !selectedLanguage.isEmpty {
+             fetchTranslations()
+        }
         self.isLanguagesLoading = false
     }
     
@@ -394,8 +393,8 @@ struct PageMultilingualConfigView: View {
             self.translationNames.append(translation.name)
         }
         
-        // If selected translation not in list, select first
-        if !translationKeys.contains(selectedTranslation), let firstReference = translationKeys.first, let firstName = translationNames.first {
+        // If selected translation not in list, select first ONLY if it was set
+        if !selectedTranslation.isEmpty && !translationKeys.contains(selectedTranslation), let firstReference = translationKeys.first, let firstName = translationNames.first {
             selectedTranslation = firstReference
             selectedTranslationName = firstName
             // Also reset voice
@@ -421,8 +420,8 @@ struct PageMultilingualConfigView: View {
             }
         }
         
-        // If selected voice not in list, select first
-        if (!voiceKeys.contains(selectedVoice) || selectedVoice.isEmpty), let firstVoiceKey = voiceKeys.first {
+        // If selected voice not in list, select first ONLY if it was set
+        if (!voiceKeys.contains(selectedVoice) && !selectedVoice.isEmpty), let firstVoiceKey = voiceKeys.first {
             selectedVoice = firstVoiceKey
             if !voiceTexts.isEmpty {
                 selectedVoiceName = voiceTexts[0]

@@ -121,29 +121,20 @@ struct PageMultilingualReadView: View {
                         scrollToVerse: $highlightVerseNumber
                     )
                     .mask(
-                        VStack(spacing: 0) {
-                            Color.black
-                            
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.black, Color.black.opacity(0)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .frame(height: 50) // Small smooth fade
-                            
-                            Color.clear
-                                .frame(height: showAudioPanel ? 140 : 20) // Adjust mask based on panel state
-                        }
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
+                            startPoint: .init(x: 0.5, y: 0.95),
+                            endPoint: .bottom
+                        )
                     )
+                    .layoutPriority(1) // Ensure text view takes available space
                 }
-            }
-            
-            // Audio Panel Layer - aligned to bottom
-            VStack {
-                Spacer()
+                
+                // Audio Panel Layer - now part of the main stack
                 audioControlPanel()
             }
             .edgesIgnoringSafeArea(.bottom)
+
             
             // Floating navigation buttons when panel is hidden
             if !showAudioPanel {
@@ -867,13 +858,16 @@ struct PageMultilingualReadView: View {
                     line-height: 1.6;
                     margin: 0;
                     padding: 0 22px;
-                    padding-bottom: 220px; /* Space for audio panel */
+                    padding-bottom: 10px; /* Minimal space, panel handles the rest */
                 }
                 .unit {
                     margin-bottom: 24px;
                     padding: 12px 22px;
                     margin-left: -22px;
                     margin-right: -22px;
+                }
+                .unit:last-child {
+                    margin-bottom: 0;
                 }
                 /* Dynamic unit highlighting - unit containing highlighted verse gets background */
                 .unit:has(.highlighted-verse) {
@@ -1046,7 +1040,6 @@ struct PageMultilingualReadView: View {
         }
         
         htmlString += """
-            <div style="height: 100px;"></div>
         </body>
         </html>
         """
