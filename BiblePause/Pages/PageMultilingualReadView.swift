@@ -485,6 +485,8 @@ struct PageMultilingualReadView: View {
                     DispatchQueue.main.async {
                         settingsManager.currentExcerptTitle = excerptTitle
                         settingsManager.currentExcerptSubtitle = excerptSubtitle
+                        settingsManager.currentBookId = part.book.number
+                        settingsManager.currentChapterId = part.chapter_number
                     }
                 }
             } catch {
