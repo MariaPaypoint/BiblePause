@@ -514,7 +514,7 @@ struct PageMultilingualReadView: View {
             unitRanges = []
             return
         }
-        
+         
         unitRanges = []
         
         switch settingsManager.multilingualReadUnit {
