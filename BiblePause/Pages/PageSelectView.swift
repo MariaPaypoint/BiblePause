@@ -141,7 +141,11 @@ struct PageSelectView: View {
                     settingsManager.currentExcerpt = "\(book.alias) \(chapter_number)"
                     settingsManager.currentExcerptTitle = book.name
                     settingsManager.currentExcerptSubtitle = "chapter.title".localized(chapter_number)
-                    settingsManager.selectedMenuItem = .read
+                    
+                    if !showFromRead {
+                        settingsManager.selectedMenuItem = .read
+                    }
+                    
                     withAnimation(Animation.easeInOut(duration: 1)) {
                         showFromRead = false
                     }

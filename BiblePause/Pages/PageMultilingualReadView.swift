@@ -25,6 +25,7 @@ struct PageMultilingualReadView: View {
     
     @State private var showSelection = false
     @State private var oldExcerpt: String = ""
+    @State private var showAudioPanel = true
     
     // Playback state
     @State private var currentUnitIndex: Int = 0 // Which verse/paragraph/fragment are we on
@@ -131,7 +132,7 @@ struct PageMultilingualReadView: View {
                             .frame(height: 50) // Small smooth fade
                             
                             Color.clear
-                                .frame(height: 140) // Reduced height to closer match panel top
+                                .frame(height: showAudioPanel ? 140 : 20) // Adjust mask based on panel state
                         }
                     )
                 }
@@ -143,6 +144,49 @@ struct PageMultilingualReadView: View {
                 audioControlPanel()
             }
             .edgesIgnoringSafeArea(.bottom)
+            
+            // Floating navigation buttons when panel is hidden
+            if !showAudioPanel {
+                VStack {
+                    Spacer()
+                    HStack {
+                        // Previous Chapter
+                        Button {
+                            if !prevExcerpt.isEmpty {
+                                Task {
+                                    settingsManager.currentExcerpt = prevExcerpt
+                                    await loadAllData(force: true)
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "chevron.backward.2")
+                                .font(.system(size: 18))
+                                .foregroundColor(prevExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                                .padding(10)
+                        }
+                        
+                        Spacer()
+                        
+                        // Next Chapter
+                        Button {
+                            if !nextExcerpt.isEmpty {
+                                Task {
+                                    settingsManager.currentExcerpt = nextExcerpt
+                                    await loadAllData(force: true)
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "chevron.forward.2")
+                                .font(.system(size: 18))
+                                .foregroundColor(nextExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                                .padding(10)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 10) 
+                }
+                .edgesIgnoringSafeArea(.bottom)
+            }
             
             // Menu layer
             MenuView()
@@ -181,146 +225,148 @@ struct PageMultilingualReadView: View {
     @ViewBuilder
     private func audioControlPanel() -> some View {
         VStack(spacing: 0) {
-            // Collapse/expand handle
-            Image(systemName: "chevron.compact.down")
-                .foregroundColor(.white.opacity(0.4))
-                .padding(.top, 8)
             
-            // Reader info row
-            HStack(spacing: 12) {
-                // Current translation badge
-                if let currentReadStep = getCurrentReadStep() {
-                    Text(currentReadStep.translationName)
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(Color("DarkGreen"))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Color("localAccentColor"), lineWidth: 1)
-                                )
-                        )
-                    
-                    // Reader name
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("page.read.reader".localized())
-                            .font(.system(size: 10))
-                            .foregroundColor(.white.opacity(0.6))
-                        Text(currentReadStep.voiceName)
+            viewAudioHide()
+            
+            VStack(spacing: 0) {
+                // Reader info row
+                HStack(spacing: 12) {
+                    // Current translation badge
+                    if let currentReadStep = getCurrentReadStep() {
+                        Text(currentReadStep.translationName)
                             .font(.caption)
-                            .fontWeight(.medium)
+                            .fontWeight(.bold)
                             .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color("DarkGreen"))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color("localAccentColor"), lineWidth: 1)
+                                    )
+                            )
+                        
+                        // Reader name
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("page.read.reader".localized())
+                                .font(.system(size: 10))
+                                .foregroundColor(.white.opacity(0.6))
+                            Text(currentReadStep.voiceName)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // Progress indicator
+                    Text("\(currentUnitIndex + 1) " + "page.read.of".localized() + " \(unitRanges.count)")
+                        .font(.callout)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("localAccentColor"))
+                }
+                .padding(.horizontal, globalBasePadding)
+                .padding(.vertical, 10)
+                
+                // Control buttons row - matching PageReadView style
+                HStack {
+                    // Previous chapter
+                    Button {
+                        if !prevExcerpt.isEmpty {
+                            Task {
+                                settingsManager.currentExcerpt = prevExcerpt
+                                await loadAllData(force: true)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.backward.2")
+                            .foregroundColor(prevExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                    }
+                    Spacer()
+                    
+                    // Previous Unit (Block)
+                    Button {
+                        moveToPreviousUnit()
+                    } label: {
+                        Image(systemName: "arrow.up.square")
+                            .font(.system(size: 22))
+                            .foregroundColor(currentUnitIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                    }
+                    Spacer()
+                    
+                    // Previous content (step or unit)
+                    Button {
+                        moveToPreviousSection()
+                    } label: {
+                        Image(systemName: "arrow.turn.left.up")
+                            .foregroundColor(currentUnitIndex > 0 || currentStepIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                    }
+                    Spacer()
+                    
+                    // Play/Pause
+                    Button {
+                        togglePlayPause()
+                    } label: {
+                        HStack {
+                            if isPlaying {
+                                Image(systemName: "pause.circle.fill")
+                            } else if isAutopausing {
+                                Image(systemName: "hourglass.circle.fill")
+                            } else {
+                                Image(systemName: "play.circle.fill")
+                            }
+                        }
+                        .font(.system(size: 55))
+                        .foregroundColor(Color("localAccentColor"))
+                    }
+                    Spacer()
+                    
+                    // Next content (step or unit)
+                    Button {
+                        moveToNextSection()
+                    } label: {
+                        Image(systemName: "arrow.turn.right.down")
+                            .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                    }
+                    Spacer()
+                    
+                    // Next Unit (Block)
+                    Button {
+                        moveToNextUnit()
+                    } label: {
+                        Image(systemName: "arrow.down.square")
+                            .font(.system(size: 22))
+                            .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                    }
+                    Spacer()
+                    
+                    // Next chapter
+                    Button {
+                        if !nextExcerpt.isEmpty {
+                            Task {
+                                settingsManager.currentExcerpt = nextExcerpt
+                                await loadAllData(force: true)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.forward.2")
+                            .foregroundColor(nextExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
                     }
                 }
-                
-                Spacer()
-                
-                // Progress indicator
-                Text("\(currentUnitIndex + 1) " + "page.read.of".localized() + " \(unitRanges.count)")
-                    .font(.callout)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color("localAccentColor"))
+                .foregroundColor(Color("localAccentColor"))
+                .padding(.horizontal, globalBasePadding)
+                .padding(.top, 15)
+                .padding(.bottom, 30) // Extra padding for home indicator
             }
-            .padding(.horizontal, globalBasePadding)
-            .padding(.vertical, 10)
-            
-            // Control buttons row - matching PageReadView style
-            HStack {
-                // Previous chapter
-                Button {
-                    if !prevExcerpt.isEmpty {
-                        Task {
-                            settingsManager.currentExcerpt = prevExcerpt
-                            await loadAllData()
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.backward.2")
-                        .foregroundColor(prevExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
-                }
-                Spacer()
-                
-                // Previous Unit (Block)
-                Button {
-                    moveToPreviousUnit()
-                } label: {
-                    Image(systemName: "backward.end.fill")
-                        .foregroundColor(currentUnitIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
-                }
-                Spacer()
-                
-                // Previous content (step or unit)
-                Button {
-                    moveToPreviousSection()
-                } label: {
-                    Image(systemName: "arrow.turn.left.up")
-                        .foregroundColor(currentUnitIndex > 0 || currentStepIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
-                }
-                Spacer()
-                
-                // Play/Pause
-                Button {
-                    togglePlayPause()
-                } label: {
-                    HStack {
-                        if isPlaying {
-                            Image(systemName: "pause.circle.fill")
-                        } else if isAutopausing {
-                            Image(systemName: "hourglass.circle.fill")
-                        } else {
-                            Image(systemName: "play.circle.fill")
-                        }
-                    }
-                    .font(.system(size: 55))
-                    .foregroundColor(Color("localAccentColor"))
-                }
-                Spacer()
-                
-                // Next content (step or unit)
-                Button {
-                    moveToNextSection()
-                } label: {
-                    Image(systemName: "arrow.turn.right.down")
-                        .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
-                }
-                Spacer()
-                
-                // Next Unit (Block)
-                Button {
-                    moveToNextUnit()
-                } label: {
-                    Image(systemName: "forward.end.fill")
-                        // Disable if strictly at last unit. Logic elsewhere handles chapter transition?
-                        // Original 'Next Section' handled chapter, but 'Next Unit' usually stays in chapter?
-                        // User said "transition to next block". I will keep it within chapter for now, or use same logic as 'next section' button:
-                        // "currentUnitIndex < unitRanges.count - 1" styling.
-                        .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
-                }
-                Spacer()
-                
-                // Next chapter
-                Button {
-                    if !nextExcerpt.isEmpty {
-                        Task {
-                            settingsManager.currentExcerpt = nextExcerpt
-                            await loadAllData()
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.forward.2")
-                        .foregroundColor(nextExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
-                }
-            }
-            .foregroundColor(Color("localAccentColor"))
-            .padding(.horizontal, globalBasePadding)
-            .padding(.top, 15)
-            .padding(.bottom, 30) // Extra padding for home indicator
+            .frame(height: showAudioPanel ? nil : 0)
+            .opacity(showAudioPanel ? 1 : 0)
+
         }
         .frame(maxWidth: .infinity)
+        .frame(height: showAudioPanel ? 180 : 45) // Adjust height as needed
         .background(Color("DarkGreen-light"))
         .clipShape(
             .rect(
@@ -331,6 +377,37 @@ struct PageMultilingualReadView: View {
             )
         )
         .edgesIgnoringSafeArea(.bottom)
+        .gesture(DragGesture(minimumDistance: 20, coordinateSpace: .local)
+            .onEnded { value in
+                if value.translation.height > 50 {
+                    withAnimation {
+                        showAudioPanel = false
+                    }
+                } else if value.translation.height < -50 {
+                    withAnimation {
+                        showAudioPanel = true
+                    }
+                }
+            }
+        )
+    }
+    
+    // MARK: Panel – expand/collapse
+    @ViewBuilder private func viewAudioHide() -> some View {
+        Button {
+            withAnimation {
+                showAudioPanel.toggle()
+            }
+        } label: {
+            VStack {
+                Image(systemName: showAudioPanel ? "chevron.compact.down" : "chevron.compact.up")
+                    .font(.system(size: 36))
+                    .padding(.top, 7)
+                    .padding(.bottom, 7)
+                    .foregroundColor(Color("DarkGreen"))
+            }
+            .frame(maxWidth: .infinity)
+        }
     }
     
     // Get current read step
@@ -373,9 +450,9 @@ struct PageMultilingualReadView: View {
     }
     
     // MARK: Data Loading
-    private func loadAllData() async {
+    private func loadAllData(force: Bool = false) async {
         // Avoid reloading if data exists (preserves state on return from Settings)
-        if !stepTextVerses.isEmpty { return }
+        if !force && !stepTextVerses.isEmpty { return }
         
         isLoading = true
         errorDescription = ""

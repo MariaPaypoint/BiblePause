@@ -129,6 +129,43 @@ class SettingsManager: ObservableObject {
         return components.url ?? url
     }
     
+    // MARK: Translations Caching
+    @Published var cachedAllTranslations: [Components.Schemas.TranslationModel] = []
+    
+    /// Fetches all translations once and caches them.
+    /// Thread-safe update to published property.
+    func fetchAllTranslations() async throws {
+        if !cachedAllTranslations.isEmpty { return }
+        
+        // Pass empty language to get all translations
+        let response = try await client.get_translations(query: .init(language: ""))
+        let translations = try response.ok.body.json
+        
+        await MainActor.run {
+            self.cachedAllTranslations = translations
+        }
+    }
+    
+    /// Returns translations filtered by language from cache.
+    func getTranslations(for languageCode: String) -> [Components.Schemas.TranslationModel] {
+        return cachedAllTranslations.filter { $0.language == languageCode }
+    }
+    
+    // MARK: Languages Caching
+    @Published var cachedLanguages: [Components.Schemas.LanguageModel] = []
+    
+    /// Fetches languages once and caches them.
+    func fetchLanguages() async throws {
+        if !cachedLanguages.isEmpty { return }
+        
+        let response = try await client.get_languages()
+        let languages = try response.ok.body.json
+        
+        await MainActor.run {
+            self.cachedLanguages = languages
+        }
+    }
+    
     // MARK: Fetching books with caching
     /// Returns books for the current translation and voice.
     /// Uses cache if data was already loaded for this translation/voice pair.

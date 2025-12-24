@@ -458,50 +458,82 @@ struct PageSetupView: View {
     // MARK: API requests
     
     func fetchLanguages() {
-        Task {
-            do {
-                self.languageKeys = []
-                self.languageTexts = []
-                
-                let response = try await settingsManager.client.get_languages()
-                let languages = try response.ok.body.json
-                
-                for language in languages {
-                    self.languageKeys.append(language.alias)
-                    self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+        // Optimistically use cached data if available
+        if !settingsManager.cachedLanguages.isEmpty {
+             if settingsManager.cachedAllTranslations.isEmpty {
+                 Task {
+                     async let _ = settingsManager.fetchAllTranslations()
+                     self.updateLanguagesList()
+                 }
+             } else {
+                 self.updateLanguagesList()
+             }
+        } else {
+            Task {
+                do {
+                    self.languageKeys = []
+                    self.languageTexts = []
+                    
+                    // Fetch both concurrently
+                    async let _ = settingsManager.fetchLanguages()
+                    async let _ = settingsManager.fetchAllTranslations()
+                    
+                    // Wait for both
+                    let _ = try await [try await settingsManager.fetchLanguages(), try await settingsManager.fetchAllTranslations()]
+                    
+                    self.updateLanguagesList()
+                   
+                    self.isLanguagesLoading = false
+                } catch {
+                    self.isLanguagesLoading = false
+                    toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
                 }
-                fetchTranslations()
-                self.isLanguagesLoading = false
-            } catch {
-                self.isLanguagesLoading = false
-                toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
             }
         }
     }
     
+    func updateLanguagesList() {
+        self.languageKeys = []
+        self.languageTexts = []
+        
+        let languages = settingsManager.cachedLanguages
+        
+        for language in languages {
+            self.languageKeys.append(language.alias)
+            self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+        }
+        
+        fetchTranslations()
+        self.isLanguagesLoading = false
+    }
+    
     func fetchTranslations() {
-        Task {
-            do {
-                self.isTranslationsLoading = true
-                
-                let response = try await settingsManager.client.get_translations(query: .init(language: self.language))
-                self.translationsResponse = try response.ok.body.json
-                
-                self.translationKeys = []
-                self.translationTexts = []
-                self.translationNames = []
-                for translation in self.translationsResponse {
-                    self.translationKeys.append("\(translation.code)")
-                    self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
-                    self.translationNames.append(translation.name)
-                }
-                showAudios()
-                self.isTranslationsLoading = false
-            } catch {
-                self.isTranslationsLoading = false
-                toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
+        // Use cached translations if available
+        if !settingsManager.cachedAllTranslations.isEmpty {
+            self.updateTranslationsList()
+        } else {
+            Task {
+                try? await settingsManager.fetchAllTranslations()
+                self.updateTranslationsList()
             }
         }
+    }
+    
+    func updateTranslationsList() {
+        self.isTranslationsLoading = true
+        
+        self.translationsResponse = settingsManager.getTranslations(for: self.language)
+        
+        self.translationKeys = []
+        self.translationTexts = []
+        self.translationNames = []
+        for translation in self.translationsResponse {
+            self.translationKeys.append("\(translation.code)")
+            self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
+            self.translationNames.append(translation.name)
+        }
+        showAudios()
+        self.isTranslationsLoading = false
     }
     
     /*
