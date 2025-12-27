@@ -52,6 +52,7 @@ class SettingsManager: ObservableObject {
     @Published var multilingualSteps: [MultilingualStep] = []
     @AppStorage("multilingualReadUnit") var multilingualReadUnitRaw: String = MultilingualReadUnit.verse.rawValue
     @AppStorage("isMultilingualReadingActive") var isMultilingualReadingActive: Bool = false
+    @AppStorage("isFirstMultilingualSetup") var isFirstMultilingualSetup: Bool = true
     
     var multilingualReadUnit: MultilingualReadUnit {
         get { MultilingualReadUnit(rawValue: multilingualReadUnitRaw) ?? .verse }

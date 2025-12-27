@@ -13,6 +13,11 @@ struct PageMultilingualSetupView: View {
     @State private var templateName: String = ""
     @State private var toast: FancyToast? = nil
     
+    // MARK: Hint Logic State
+    @State private var idleTimer: Timer? = nil
+    @State private var showReadHint: Bool = false
+    @State private var showPauseHint: Bool = false
+    
     var currentSubtitle: String {
         if let id = settingsManager.currentTemplateId,
            let template = settingsManager.multilingualTemplates.first(where: { $0.id == id }) {
@@ -127,6 +132,7 @@ struct PageMultilingualSetupView: View {
                                 .stroke(Color("Mustard").opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [5]))
                         )
                         .background(Color("DarkGreen").brightness(0.05).cornerRadius(10))
+                        .overlay(HintOverlay(isActive: $showReadHint, color: Color("Mustard")))
                     }
                     
                     // Add Pause Step
@@ -146,6 +152,7 @@ struct PageMultilingualSetupView: View {
                                 .stroke(Color("Mustard").opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [5]))
                         )
                         .background(Color("DarkGreen").brightness(0.05).cornerRadius(10))
+                        .overlay(HintOverlay(isActive: $showPauseHint, color: Color("Mustard")))
                     }
                 }
                 .padding(.horizontal, globalBasePadding)
@@ -235,6 +242,11 @@ struct PageMultilingualSetupView: View {
                     settingsManager.multilingualSteps[index] = newStep
                 } else {
                     settingsManager.multilingualSteps.append(newStep)
+                    
+                    // Hint Logic: If we just added the first step, prompt for Pause
+                    if settingsManager.multilingualSteps.count == 1 {
+                        withAnimation { self.showPauseHint = true }
+                    }
                 }
                 settingsManager.saveMultilingualSteps()
                 stepToEdit = nil
@@ -247,6 +259,10 @@ struct PageMultilingualSetupView: View {
         }
         .onAppear {
             settingsManager.isMultilingualReadingActive = false
+            startIdleTimer()
+        }
+        .onDisappear {
+            stopIdleTimer()
         }
     }
     
@@ -371,6 +387,10 @@ struct PageMultilingualSetupView: View {
         
         editingStepIndex = nil
         stepToEdit = newStep
+        
+        // Hint Logic: Read button clicked
+        stopIdleTimer()
+        showReadHint = false
     }
     
     func editReadStep(index: Int) {
@@ -384,6 +404,14 @@ struct PageMultilingualSetupView: View {
             settingsManager.multilingualSteps.append(step)
         }
         settingsManager.saveMultilingualSteps()
+        
+        // Hint Logic: Pause added -> Done
+        stopIdleTimer()
+        withAnimation {
+            showReadHint = false
+            showPauseHint = false
+        }
+        settingsManager.isFirstMultilingualSetup = false
     }
     
     func deleteSteps(at offsets: IndexSet) {
@@ -443,5 +471,46 @@ struct PageMultilingualSetupView: View {
         settingsManager.saveMultilingualSteps()
         settingsManager.selectedMenuItem = .multilingualRead
         settingsManager.showMenu = false
+    }
+    
+    // MARK: Hint Helpers
+    func startIdleTimer() {
+        // Allow hints if steps are empty, regardless of first time flag (good for retrying/demo)
+        guard settingsManager.multilingualSteps.isEmpty else { return }
+         stopIdleTimer()
+        idleTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: false) { _ in // Reduced to 3s for quicker feedback
+            withAnimation {
+                showReadHint = true
+            }
+        }
+    }
+    
+    func stopIdleTimer() {
+        idleTimer?.invalidate()
+        idleTimer = nil
+    }
+}
+
+struct HintOverlay: View {
+    @Binding var isActive: Bool
+    var color: Color = .yellow
+    
+    @State private var isHigh: Bool = false
+    
+    var body: some View {
+        if isActive {
+            ZStack {
+                // Pulsing Border
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(color, lineWidth: 2)
+                    .opacity(isHigh ? 1.0 : 0.0)
+            }
+            .allowsHitTesting(false)
+            .onAppear {
+                withAnimation(Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                    isHigh = true
+                }
+            }
+        }
     }
 }

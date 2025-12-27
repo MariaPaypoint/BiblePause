@@ -27,24 +27,27 @@ struct PageMainView: View {
                 // Title artwork
                 Image("TitleRus")
                 
-                Button {
-                    settingsManager.selectedMenuItem = .read
-                } label: {
-                    VStack(alignment: .center) {
-                        Text("page.main.continue_reading".localized)
-                            .foregroundColor(Color("ForestGreen"))
-                            .font(.system(.body, weight: .heavy))
-                            .multilineTextAlignment(.center)
-                        Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
-                            .foregroundColor(Color("Chocolate"))
-                            .font(.system(.subheadline))
-                            .multilineTextAlignment(.center)
+                // Dual Mode Selection
+                VStack(spacing: 15) {
+                    // Option 1: Silence (Classic Reading)
+                    MainMenuCard(
+                        title: "Обычное чтение",
+                        subtitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)",
+                        icon: "book.fill", // Classic book icon
+                        color: Color("ForestGreen")
+                    ) {
+                        settingsManager.selectedMenuItem = .read
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 20)
-                    .background(Color.white.opacity(0.7))
-                    .cornerRadius(12)
+                    
+                    // Option 2: Immersion (Multilingual Study)
+                    MainMenuCard(
+                        title: "Мульти-чтение",
+                        subtitle: "Сравнение переводов • Аудио • Изучение языков",
+                        icon: "translate", // Headphones for audio/study
+                        color: Color("ForestGreen")
+                    ) {
+                        settingsManager.selectedMenuItem = .multilingual
+                    }
                 }
                 
                 // Push remaining content upward
@@ -153,6 +156,61 @@ struct TestPageMainView: View {
     var body: some View {
         PageMainView()
             .environmentObject(SettingsManager())
+    }
+}
+
+struct MainMenuCard: View {
+    let title: String
+    let subtitle: String
+    let icon: String // SF Symbol name
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 15) {
+                // Icon Box
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 20))
+                        .foregroundColor(color)
+                }
+                
+                // Text Content
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(.body, weight: .bold))
+                        .foregroundColor(Color("ForestGreen")) // Deep green for titles
+                    
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(Color("Chocolate")) // Warm brown for details
+                }
+                
+                Spacer()
+                
+                // Chevron
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(Color.black.opacity(0.2))
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.white.opacity(0.85)) // Glass effect
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 3)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.white.opacity(0.4), lineWidth: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle()) // Keeps standard button press effect minimal or custom
     }
 }
 
