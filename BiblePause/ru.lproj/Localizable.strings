@@ -69,11 +69,12 @@
 "settings.font.example" = "Пример:";
 "settings.pause" = "Пауза";
 "settings.pause.make_pause" = "Делать паузу";
-"settings.player" = "Проигрыватель";
+"settings.player" = "Воспроизведение";
 "settings.auto_next_chapter" = "Автопереход к следующей главе";
 "settings.bible_language" = "Язык Библии";
 "settings.translation" = "Перевод";
 "settings.reader" = "Читает";
+"settings.translation_audio" = "Перевод и озвучка";
 "settings.save_choice" = "Сохранить";
 "settings.cancel_choice" = "Отмена";
 "settings.warning" = "Внимание!";

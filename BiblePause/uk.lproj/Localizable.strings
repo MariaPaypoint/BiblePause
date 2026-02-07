@@ -69,11 +69,12 @@
 "settings.font.example" = "Приклад:";
 "settings.pause" = "Пауза";
 "settings.pause.make_pause" = "Робити паузу";
-"settings.player" = "Програвач";
+"settings.player" = "Відтворення";
 "settings.auto_next_chapter" = "Автоперехід до наступного розділу";
 "settings.bible_language" = "Мова Біблії";
 "settings.translation" = "Переклад";
 "settings.reader" = "Читає";
+"settings.translation_audio" = "Переклад і озвучення";
 "settings.save_choice" = "Зберегти";
 "settings.cancel_choice" = "Скасувати";
 "settings.warning" = "Увага!";

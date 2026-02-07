@@ -69,11 +69,12 @@
 "settings.font.example" = "Example:";
 "settings.pause" = "Pause";
 "settings.pause.make_pause" = "Make pause";
-"settings.player" = "Player";
+"settings.player" = "Playback";
 "settings.auto_next_chapter" = "Auto-advance to next chapter";
 "settings.bible_language" = "Bible Language";
 "settings.translation" = "Translation";
 "settings.reader" = "Reader";
+"settings.translation_audio" = "Translation and audio";
 "settings.save_choice" = "Save";
 "settings.cancel_choice" = "Cancel";
 "settings.warning" = "Warning!";
