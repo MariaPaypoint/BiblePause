@@ -77,51 +77,57 @@ struct PageMainView: View {
                 VStack {
                     Spacer()
                     
-                    VStack(spacing: 10) {
-                        Text("page.main.reading_progress".localized)
-                            .font(.subheadline)
-                            .foregroundColor(.white)
-                        
-                        // Progress bar with overlayed percentage
-                        ZStack {
-                            // Progress bar background
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(Color.white.opacity(0.3))
-                                .frame(height: 24)
-                            
-                            GeometryReader { geometry in
-                                let progressWidth = geometry.size.width * CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
-                                let progressPercent = CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
-                                
-                                // Green progress fill
-                                HStack(spacing: 0) {
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                    .frame(width: progressWidth, height: 24)
-                                    
-                                    Spacer(minLength: 0)
-                                }
-                                .clipShape(
-                                    UnevenRoundedRectangle(
-                                        topLeadingRadius: 6,
-                                        bottomLeadingRadius: 6,
-                                        bottomTrailingRadius: progressPercent > 0.98 ? 6 : 0,
-                                        topTrailingRadius: progressPercent > 0.98 ? 6 : 0
-                                    )
-                                )
-                            }
-                            .frame(height: 24)
-                            
-                            // Percentage label above progress bar
-                            Text(String(format: "%.1f%%", Double(totalProgress.read) / Double(totalProgress.total) * 100))
-                                .font(.caption)
-                                .fontWeight(.bold)
+                    Button {
+                        settingsManager.selectedMenuItem = .progress
+                    } label: {
+                        VStack(spacing: 10) {
+                            Text("page.main.reading_progress".localized)
+                                .font(.subheadline)
                                 .foregroundColor(.white)
+                            
+                            // Progress bar with overlayed percentage
+                            ZStack {
+                                // Progress bar background
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.white.opacity(0.3))
+                                    .frame(height: 24)
+                                
+                                GeometryReader { geometry in
+                                    let progressWidth = geometry.size.width * CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
+                                    let progressPercent = CGFloat(totalProgress.read) / CGFloat(totalProgress.total)
+                                    
+                                    // Green progress fill
+                                    HStack(spacing: 0) {
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                        .frame(width: progressWidth, height: 24)
+                                        
+                                        Spacer(minLength: 0)
+                                    }
+                                    .clipShape(
+                                        UnevenRoundedRectangle(
+                                            topLeadingRadius: 6,
+                                            bottomLeadingRadius: 6,
+                                            bottomTrailingRadius: progressPercent > 0.98 ? 6 : 0,
+                                            topTrailingRadius: progressPercent > 0.98 ? 6 : 0
+                                        )
+                                    )
+                                }
+                                .frame(height: 24)
+                                
+                                // Percentage label above progress bar
+                                Text(String(format: "%.1f%%", Double(totalProgress.read) / Double(totalProgress.total) * 100))
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
