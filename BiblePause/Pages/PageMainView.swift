@@ -31,7 +31,7 @@ struct PageMainView: View {
                 VStack(spacing: 15) {
                     // Option 1: Silence (Classic Reading)
                     MainMenuCard(
-                        title: "Обычное чтение",
+                        title: "page.main.classic.title".localized,
                         subtitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)",
                         icon: "book.fill", // Classic book icon
                         color: Color("ForestGreen")
@@ -41,8 +41,8 @@ struct PageMainView: View {
                     
                     // Option 2: Immersion (Multilingual Study)
                     MainMenuCard(
-                        title: "Мульти-чтение",
-                        subtitle: "Сравнение переводов • Аудио • Изучение языков",
+                        title: "page.main.multilingual.title".localized,
+                        subtitle: "page.main.multilingual.subtitle".localized,
                         icon: "translate", // Headphones for audio/study
                         color: Color("ForestGreen")
                     ) {

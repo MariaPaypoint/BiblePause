@@ -17,6 +17,9 @@
 "page.progress.title" = "Прогресс чтения";
 "page.main.continue_reading" = "Продолжить чтение";
 "page.main.reading_progress" = "Прогресс чтения";
+"page.main.classic.title" = "Обычное чтение";
+"page.main.multilingual.title" = "Мульти-чтение";
+"page.main.multilingual.subtitle" = "Сравнение переводов • Аудио • Изучение языков";
 
 /* Errors */
 "error.prefix" = "Error: %@";

@@ -17,6 +17,9 @@
 "page.progress.title" = "Прогрес читання";
 "page.main.continue_reading" = "Продовжити читання";
 "page.main.reading_progress" = "Прогрес читання";
+"page.main.classic.title" = "Звичайне читання";
+"page.main.multilingual.title" = "Багатомовне читання";
+"page.main.multilingual.subtitle" = "Порівняння перекладів • Аудіо • Вивчення мов";
 
 /* Errors */
 "error.prefix" = "Помилка: %@";
@@ -150,4 +153,3 @@
 "page.read.of" = "з";
 
 "settings.speed" = "Швидкість";
-
