@@ -508,15 +508,19 @@ struct PageReadView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "globe")
                         .font(.caption)
-                        .foregroundColor(Color("DarkGreen"))
+                        .foregroundColor(Color("localAccentColor"))
                     Text(settingsManager.translationName)
-                        .foregroundColor(Color("DarkGreen"))
+                        .foregroundColor(Color("localAccentColor"))
                         .font(.footnote)
                 }
                 .padding(4)
                 .background {
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .fill(Color("localAccentColor"))
+                        .fill(Color("localAccentColor").opacity(0.16))
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .stroke(Color("localAccentColor").opacity(0.25), lineWidth: 1)
                 }
             }
             .buttonStyle(.plain)
@@ -537,21 +541,28 @@ struct PageReadView: View {
 
             Spacer()
             
-            if settingsManager.pauseType != .none {
-                Button {
-                    openSetupFromRead()
-                } label: {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("audio.pause".localized)
-                            .foregroundStyle(Color("localAccentColor").opacity(0.5))
-                            .font(.caption2)
-                        Text("\(settingsManager.pauseBlock.shortName) / \(settingsManager.pauseType == .time ? "audio.pause.seconds".localized(settingsManager.pauseLength) : "audio.pause.stop".localized)")
-                            .foregroundStyle(Color("localAccentColor"))
-                            .font(.footnote)
-                    }
+            Button {
+                openSetupFromRead()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "pause.circle")
+                        .font(.caption)
+                        .foregroundColor(Color("localAccentColor"))
+                    Text(pauseChipText())
+                        .foregroundColor(Color("localAccentColor"))
+                        .font(.footnote)
                 }
-                .buttonStyle(.plain)
+                .padding(4)
+                .background {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .fill(Color("localAccentColor").opacity(0.16))
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .stroke(Color("localAccentColor").opacity(0.25), lineWidth: 1)
+                }
             }
+            .buttonStyle(.plain)
             //Spacer()
             //Image(systemName: "gearshape.fill")
             //    .imageScale(.large)
@@ -565,6 +576,17 @@ struct PageReadView: View {
             oldVoice = settingsManager.voice
             oldFontIncreasePercent = settingsManager.fontIncreasePercent
             showSetup = true
+        }
+    }
+
+    private func pauseChipText() -> String {
+        switch settingsManager.pauseType {
+        case .none:
+            return "settings.pause.type.none".localized
+        case .time:
+            return "\(settingsManager.pauseBlock.shortName) • \("audio.pause.seconds".localized(settingsManager.pauseLength))"
+        case .full:
+            return "\(settingsManager.pauseBlock.shortName) • \("audio.pause.stop".localized)"
         }
     }
 
