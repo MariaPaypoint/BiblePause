@@ -47,10 +47,15 @@ struct MenuView: View {
                 Button {
                     selectItem(.main)
                 } label: {
-                    Text("menu.main".localized)
-                        .font(.system(.headline))
-                        .fontWeight(.bold)
-                        .foregroundColor(colorFor(.main))
+                    HStack(spacing: 10) {
+                        Image(systemName: "house.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(colorFor(.main))
+                        Text("menu.main".localized)
+                            .font(.system(.headline))
+                            .fontWeight(.bold)
+                            .foregroundColor(colorFor(.main))
+                    }
                 }
 
                 // 2. Мультичтение
@@ -61,29 +66,36 @@ struct MenuView: View {
                         selectItem(.multilingual)
                     }
                 } label: {
-                    Text("menu.multilingual".localized)
-                        .font(.system(.headline))
-                        .fontWeight(.bold)
-                        .foregroundColor(
-                            settingsManager.selectedMenuItem == .multilingual || settingsManager.selectedMenuItem == .multilingualRead
-                            ? Color("Mustard").opacity(0.9)
-                            : Color.white.opacity(0.9)
-                        )
+                    HStack(spacing: 10) {
+                        Image(systemName: "rectangle.stack.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(multilingualColor())
+                        Text("menu.multilingual".localized)
+                            .font(.system(.headline))
+                            .fontWeight(.bold)
+                            .foregroundColor(multilingualColor())
+                    }
                 }
 
                 // 3. Обычное чтение
                 Button {
                     selectItem(.read)
                 } label: {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("menu.classic_reading".localized)
-                            .font(.system(.headline))
-                            .fontWeight(.bold)
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(colorFor(.read))
-                        Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
-                            .font(.system(size: 14))
-                            .foregroundColor(colorFor(.read))
-                            .multilineTextAlignment(.leading)
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("menu.classic_reading".localized)
+                                .font(.system(.headline))
+                                .fontWeight(.bold)
+                                .foregroundColor(colorFor(.read))
+                            Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
+                                .font(.system(size: 14))
+                                .foregroundColor(colorFor(.read).opacity(0.5))
+                                .multilineTextAlignment(.leading)
+                        }
                     }
                 }
 
@@ -91,20 +103,36 @@ struct MenuView: View {
                 Button {
                     selectItem(.progress)
                 } label: {
-                    Text("menu.progress".localized)
-                        .font(.system(.headline))
-                        .fontWeight(.bold)
-                        .foregroundColor(colorFor(.progress))
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(colorFor(.progress))
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("menu.progress".localized)
+                                .font(.system(.headline))
+                                .fontWeight(.bold)
+                                .foregroundColor(colorFor(.progress))
+                            Text(progressPercentText())
+                                .font(.system(size: 13))
+                                .foregroundColor(colorFor(.progress).opacity(0.5))
+                        }
+                    }
                 }
 
                 // 5. Контакты
                 Button {
                     selectItem(.contacts)
                 } label: {
-                    Text("menu.contacts".localized)
-                        .font(.system(.headline))
-                        .fontWeight(.bold)
-                        .foregroundColor(colorFor(.contacts))
+                    HStack(spacing: 10) {
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(colorFor(.contacts))
+                        Text("menu.contacts".localized)
+                            .font(.system(.headline))
+                            .fontWeight(.bold)
+                            .foregroundColor(colorFor(.contacts))
+                    }
                 }
 
                 Spacer(minLength: 10)
@@ -140,6 +168,27 @@ struct MenuView: View {
     private func colorFor(_ item: MenuItem) -> Color {
         let selected = settingsManager.selectedMenuItem == item
         return selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9)
+    }
+
+    private func multilingualColor() -> Color {
+        let selected = settingsManager.selectedMenuItem == .multilingual || settingsManager.selectedMenuItem == .multilingualRead
+        return selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9)
+    }
+
+    private func progressPercentText() -> String {
+        let totalChapters: Int
+        if settingsManager.cachedBooks.isEmpty {
+            totalChapters = 1189
+        } else {
+            totalChapters = settingsManager.cachedBooks.reduce(0) { partial, book in
+                partial + book.chapters_count
+            }
+        }
+
+        guard totalChapters > 0 else { return "0%" }
+        let readChapters = settingsManager.readProgress.readChapters.count
+        let percentage = Int((Double(readChapters) / Double(totalChapters) * 100).rounded())
+        return "\(max(0, min(100, percentage)))%"
     }
 
     private func selectItem(_ item: MenuItem) {
