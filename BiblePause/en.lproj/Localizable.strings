@@ -58,7 +58,7 @@
 "contacts.email" = "Send email";
 "contacts.website" = "Open website";
 "contacts.about" = "About the App";
-"contacts.about.text" = "BiblePause is a Bible reading app with pauses and the ability to listen to several translations, verse by verse.\n\nWhy these languages in the app? I truly hope there will be more over time. For now, this is my minimum set: Russian is my native language, English is the language of international communication, and Ukrainian is a small step toward peace.\n\nThe app currently uses only texts and audio with a clear legal status that can be used lawfully. If someone is ready to help with obtaining permissions for proprietary texts and audio, we can add many more high-quality translations and narrations.\n\nIf you find a mistake or have suggestions for improvement, please message me on Telegram.";
+"contacts.about.text" = "BiblePause is a Bible reading app with pauses and the ability to listen to several translations, verse by verse.\n\nWHY THESE LANGUAGES?\n\nI truly hope there will be more over time. For now, this is my minimum set: Russian is my native language, English is the language of international communication, and Ukrainian is a small step toward peace.\n\nTEXTS AND AUDIO\n\nThe app currently uses only texts and audio with a clear legal status that can be used lawfully. If someone is ready to help with obtaining permissions for proprietary texts and audio, we can add many more high-quality translations and narrations. If you believe your copyright is being infringed, please contact me on Telegram and I will review and fix it promptly.\n\nFEEDBACK\n\nIf you find a mistake or have suggestions for improvement, please message me on Telegram.";
 
 /* Settings */
 "settings.language" = "Interface Language";

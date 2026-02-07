@@ -96,6 +96,7 @@ struct PageContactsView: View {
                         viewGroupHeader(text: "contacts.about".localized)
                         
                         Text("contacts.about.text".localized)
+                            .font(.subheadline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
