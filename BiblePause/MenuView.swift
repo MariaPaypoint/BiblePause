@@ -232,43 +232,17 @@ struct MenuView: View {
         if let id = settingsManager.currentTemplateId,
            let template = settingsManager.multilingualTemplates.first(where: { $0.id == id }) {
             let trimmedName = template.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            let baseTitle = trimmedName.isEmpty ? multilingualStructureText(for: template.steps) : trimmedName
+            let baseTitle = trimmedName.isEmpty ? template.steps.multilingualCompactDescription() : trimmedName
             let isDirty = settingsManager.multilingualSteps != template.steps ||
                           settingsManager.multilingualReadUnit != template.unit
             return isDirty ? "\(baseTitle)*" : baseTitle
         }
 
         if !settingsManager.multilingualSteps.isEmpty {
-            return multilingualStructureText(for: settingsManager.multilingualSteps)
+            return settingsManager.multilingualSteps.multilingualCompactDescription()
         }
 
         return "multilingual.subtitle".localized
-    }
-
-    private func multilingualStructureText(for steps: [MultilingualStep]) -> String {
-        let parts: [String] = steps.map { step in
-            if step.type == .read {
-                let name = step.translationName.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !name.isEmpty { return name }
-
-                let language = step.languageName.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !language.isEmpty { return language }
-
-                return "—"
-            }
-
-            let pauseValue: String
-            if step.pauseDuration.rounded() == step.pauseDuration {
-                pauseValue = String(Int(step.pauseDuration))
-            } else {
-                pauseValue = String(format: "%.1f", step.pauseDuration)
-            }
-            let pauseTitle = "multilingual.pause".localized.lowercased()
-            let seconds = "multilingual.seconds".localized
-            return "\(pauseTitle) \(pauseValue) \(seconds)"
-        }
-
-        return parts.joined(separator: " • ")
     }
 
     private func progressPercentText() -> String {

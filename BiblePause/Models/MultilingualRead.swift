@@ -62,3 +62,32 @@ struct MultilingualTemplate: Identifiable, Codable, Equatable {
     var steps: [MultilingualStep]
     var unit: MultilingualReadUnit
 }
+
+extension Array where Element == MultilingualStep {
+    func multilingualCompactDescription() -> String {
+        let parts: [String] = self.map { step in
+            if step.type == .read {
+                let name = step.translationName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !name.isEmpty { return name }
+
+                let language = step.languageName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !language.isEmpty { return language }
+
+                return "—"
+            }
+
+            let pauseValue: String
+            if step.pauseDuration.rounded() == step.pauseDuration {
+                pauseValue = String(Int(step.pauseDuration))
+            } else {
+                pauseValue = String(format: "%.1f", step.pauseDuration)
+            }
+
+            let pauseTitle = "multilingual.pause".localized.lowercased()
+            let seconds = "multilingual.seconds".localized
+            return "\(pauseTitle) \(pauseValue) \(seconds)"
+        }
+
+        return parts.joined(separator: " • ")
+    }
+}
