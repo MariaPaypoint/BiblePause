@@ -47,6 +47,13 @@ struct PageMultilingualConfigView: View {
     @State private var previewVoiceIndex: Int? = nil
     @State private var previewTimer: AnyCancellable? = nil
     @State private var previewTimeObserver: Any? = nil
+    @State private var expandedSelectionSection: SelectionAccordionSection? = nil
+
+    private enum SelectionAccordionSection {
+        case language
+        case translation
+        case voice
+    }
 
     var body: some View {
         ZStack {
@@ -81,62 +88,105 @@ struct PageMultilingualConfigView: View {
                 
                 ScrollView {
                     VStack(spacing: 0) {
-                        
-                        // Language
-                        viewGroupHeader(text: "settings.bible_language".localized)
-                        if isLanguagesLoading {
-                            ProgressView().tint(.white)
-                        } else {
-                            viewSelectList(texts: languageTexts,
-                                           keys: languageKeys,
-                                           selectedKey: $selectedLanguage,
-                                           onSelect: { index in
-                                stopVoicePreview()
-                                selectedLanguage = languageKeys[index]
-                                selectedTranslation = ""
-                                selectedVoice = ""
-                                fetchTranslations()
-                            })
-                        }
-                        
-                        // Translation
-                        if !selectedLanguage.isEmpty {
-                            viewGroupHeader(text: "settings.translation".localized)
-                            if isTranslationsLoading {
-                                ProgressView().tint(.white)
-                            } else {
-                                viewSelectList(texts: translationTexts,
-                                               keys: translationKeys,
-                                               selectedKey: $selectedTranslation,
-                                               onSelect: { index in
-                                    stopVoicePreview()
-                                    selectedTranslation = translationKeys[index]
-                                    selectedTranslationName = translationNames[index]
-                                    selectedVoice = ""
-                                    showAudios()
-                                })
+                        viewGroupHeader(text: "settings.translation_audio".localized)
+                        VStack(spacing: 10) {
+                            selectionAccordionSectionCard(
+                                section: .language,
+                                title: "settings.bible_language".localized,
+                                value: selectedLanguageLabel(),
+                                isLoading: isLanguagesLoading
+                            ) {
+                                if isLanguagesLoading {
+                                    ProgressView().tint(.white).frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    compactSelectionList(
+                                        texts: languageTexts,
+                                        keys: languageKeys,
+                                        selectedKey: $selectedLanguage,
+                                        onSelect: { index in
+                                            stopVoicePreview()
+                                            let selected = languageKeys[index]
+                                            transitionToSection(.translation) {
+                                                selectedLanguage = selected
+                                                clearTranslationSelection()
+                                                clearVoiceSelection()
+                                                fetchTranslations()
+                                            }
+                                        }
+                                    )
+                                }
                             }
-                        }
-                        
-                        // Voice
-                        if !selectedTranslation.isEmpty {
-                            viewGroupHeader(text: "settings.reader".localized)
-                            viewSelectListWithPreview(texts: voiceTexts,
-                                           keys: voiceKeys,
-                                           selectedKey: $selectedVoice,
-                                           descriptions: voiceDescriptions,
-                                           onSelect: { index in
-                                                selectedVoice = voiceKeys[index]
-                                                selectedVoiceName = voiceTexts[index]
-                                                selectedVoiceMusic = voiceMusics[index]
-                                           },
-                                           onPreview: { index in
-                                                toggleVoicePreview(index: index)
-                                           },
-                                           isPlaying: { index in
-                                                return previewVoiceIndex == index
-                                           }
-                            )
+                            
+                            selectionAccordionSectionCard(
+                                section: .translation,
+                                title: "settings.translation".localized,
+                                value: selectedTranslationLabel(),
+                                isLoading: isTranslationsLoading
+                            ) {
+                                if selectedLanguage.isEmpty {
+                                    Text("settings.bible_language".localized)
+                                        .foregroundColor(.white.opacity(0.6))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                } else if isTranslationsLoading {
+                                    ProgressView().tint(.white).frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    compactSelectionList(
+                                        texts: translationTexts,
+                                        keys: translationKeys,
+                                        selectedKey: $selectedTranslation,
+                                        onSelect: { index in
+                                            stopVoicePreview()
+                                            let selected = translationKeys[index]
+                                            let selectedName = translationNames[index]
+                                            transitionToSection(.voice) {
+                                                selectedTranslation = selected
+                                                selectedTranslationName = selectedName
+                                                clearVoiceSelection()
+                                                showAudios()
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                            
+                            selectionAccordionSectionCard(
+                                section: .voice,
+                                title: "settings.reader".localized,
+                                value: selectedVoiceLabel(),
+                                isLoading: false
+                            ) {
+                                if selectedTranslation.isEmpty {
+                                    Text("settings.select_translation".localized)
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                } else if voiceTexts.isEmpty {
+                                    Text("settings.select_reader".localized)
+                                        .foregroundColor(.white.opacity(0.7))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    compactSelectionListWithPreview(
+                                        texts: voiceTexts,
+                                        keys: voiceKeys,
+                                        selectedKey: $selectedVoice,
+                                        descriptions: voiceDescriptions,
+                                        onSelect: { index in
+                                            selectedVoice = voiceKeys[index]
+                                            selectedVoiceName = voiceTexts[index]
+                                            selectedVoiceMusic = voiceMusics[index]
+                                            stopVoicePreview()
+                                            withAnimation(.easeInOut(duration: 0.2)) {
+                                                expandedSelectionSection = nil
+                                            }
+                                        },
+                                        onPreview: { index in
+                                            toggleVoicePreview(index: index)
+                                        },
+                                        isPlaying: { index in
+                                            return previewVoiceIndex == index
+                                        }
+                                    )
+                                }
+                            }
                         }
                         
                         // Speed Settings
@@ -352,17 +402,22 @@ struct PageMultilingualConfigView: View {
             self.languageKeys.append(language.alias)
             self.languageTexts.append("\(language.name_national) (\(language.name_en))")
         }
-        
-        // If selected language not in list, fallback ONLY if it was set but invalid
-        if !selectedLanguage.isEmpty && !languageKeys.contains(selectedLanguage), let first = languageKeys.first {
-            selectedLanguage = first
+
+        if !selectedLanguage.isEmpty && !languageKeys.contains(selectedLanguage) {
+            selectedLanguage = ""
+            clearTranslationSelection()
+            clearVoiceSelection()
         }
         
-        // If no language selected at all, verify if we need to show nothing or empty?
-        // fetchTranslations relies on selectedLanguage. If empty, it might fail or return nothing.
-        // If empty, we wait for user.
         if !selectedLanguage.isEmpty {
              fetchTranslations()
+        } else {
+            isTranslationsLoading = false
+            translationKeys = []
+            translationTexts = []
+            translationNames = []
+            translationsResponse = []
+            showAudios()
         }
         self.isLanguagesLoading = false
     }
@@ -392,13 +447,17 @@ struct PageMultilingualConfigView: View {
             self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
             self.translationNames.append(translation.name)
         }
-        
-        // If selected translation not in list, select first ONLY if it was set
-        if !selectedTranslation.isEmpty && !translationKeys.contains(selectedTranslation), let firstReference = translationKeys.first, let firstName = translationNames.first {
-            selectedTranslation = firstReference
-            selectedTranslationName = firstName
-            // Also reset voice
-            selectedVoice = ""
+
+        if selectedTranslation.isEmpty {
+            selectedTranslationName = ""
+        } else if !translationKeys.contains(selectedTranslation) {
+            clearTranslationSelection()
+            clearVoiceSelection()
+            showAudios()
+            self.isTranslationsLoading = false
+            return
+        } else if let selectedIndex = translationKeys.firstIndex(of: selectedTranslation) {
+            selectedTranslationName = translationNames[selectedIndex]
         }
         
         showAudios()
@@ -420,14 +479,241 @@ struct PageMultilingualConfigView: View {
             }
         }
         
-        // If selected voice not in list, select first ONLY if it was set
-        if (!voiceKeys.contains(selectedVoice) && !selectedVoice.isEmpty), let firstVoiceKey = voiceKeys.first {
-            selectedVoice = firstVoiceKey
-            if !voiceTexts.isEmpty {
-                selectedVoiceName = voiceTexts[0]
-                selectedVoiceMusic = voiceMusics[0]
+        if !selectedVoice.isEmpty {
+            guard let selectedIndex = voiceKeys.firstIndex(of: selectedVoice) else {
+                clearVoiceSelection()
+                return
+            }
+            selectedVoiceName = voiceTexts[selectedIndex]
+            selectedVoiceMusic = voiceMusics[selectedIndex]
+        }
+    }
+
+    @ViewBuilder private func selectionAccordionSectionCard<Content: View>(
+        section: SelectionAccordionSection,
+        title: String,
+        value: String,
+        isLoading: Bool,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        let isExpanded = expandedSelectionSection == section
+        VStack(spacing: 0) {
+            Button {
+                toggleSelectionSection(section)
+            } label: {
+                HStack(spacing: 10) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(isExpanded ? Color("Mustard") : Color.white.opacity(0.35))
+                        .frame(width: 3, height: 30)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(title)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                        Text(value)
+                            .font(.callout)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    cardTrailing(isExpanded: isExpanded, isLoading: isLoading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                Rectangle()
+                    .fill(Color.white.opacity(0.12))
+                    .frame(height: 1)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+
+                content()
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color("DarkGreen-light").opacity(isExpanded ? 0.9 : 0.65))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(
+                    isExpanded ? Color("Mustard").opacity(0.5) : Color.white.opacity(0.2),
+                    lineWidth: isExpanded ? 1.1 : 1
+                )
+        )
+    }
+
+    @ViewBuilder private func compactSelectionList(
+        texts: [String],
+        keys: [String],
+        selectedKey: Binding<String>,
+        onSelect: @escaping (Int) -> Void = { _ in }
+    ) -> some View {
+        VStack(spacing: 0) {
+            ForEach(texts.indices, id: \.self) { index in
+                let text = texts[index]
+                let key = keys[index]
+                Button {
+                    selectedKey.wrappedValue = key
+                    onSelect(index)
+                } label: {
+                    HStack {
+                        Text(text)
+                            .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .lineLimit(1)
+                        if selectedKey.wrappedValue == key {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(Color("Mustard"))
+                        }
+                    }
+                    .padding(.vertical, 12)
+                }
+                .buttonStyle(.plain)
+                if index < texts.count - 1 {
+                    Divider().background(Color.white.opacity(0.1))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func compactSelectionListWithPreview(
+        texts: [String],
+        keys: [String],
+        selectedKey: Binding<String>,
+        descriptions: [String] = [],
+        onSelect: @escaping (Int) -> Void = { _ in },
+        onPreview: @escaping (Int) -> Void,
+        isPlaying: @escaping (Int) -> Bool
+    ) -> some View {
+        VStack(spacing: 0) {
+            ForEach(texts.indices, id: \.self) { index in
+                let text = texts[index]
+                let key = keys[index]
+                let description = index < descriptions.count ? descriptions[index] : ""
+
+                HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(text)
+                            .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .lineLimit(1)
+                        if !description.isEmpty {
+                            Text(description)
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.6))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    Image(systemName: "checkmark")
+                        .foregroundColor(Color("Mustard"))
+                        .frame(width: 16)
+                        .opacity(selectedKey.wrappedValue == key ? 1 : 0)
+                    Button {
+                        onPreview(index)
+                    } label: {
+                        Image(systemName: isPlaying(index) ? "stop.circle.fill" : "play.circle.fill")
+                            .foregroundColor(Color("localAccentColor"))
+                            .font(.system(size: 24))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    selectedKey.wrappedValue = key
+                    onSelect(index)
+                }
+                .padding(.vertical, 10)
+
+                if index < texts.count - 1 {
+                    Divider().background(Color.white.opacity(0.1))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func cardTrailing(isExpanded: Bool, isLoading: Bool) -> some View {
+        if isLoading {
+            ProgressView().tint(.white).scaleEffect(0.8)
+        } else {
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: 28, height: 28)
+                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    .foregroundColor(.white.opacity(0.9))
+                    .font(.system(size: 12, weight: .bold))
+            }
+        }
+    }
+
+    private func selectedLanguageLabel() -> String {
+        guard let index = languageKeys.firstIndex(of: selectedLanguage), index < languageTexts.count else {
+            return "settings.select_language".localized
+        }
+        return languageTexts[index]
+    }
+
+    private func selectedTranslationLabel() -> String {
+        guard let index = translationKeys.firstIndex(of: selectedTranslation), index < translationTexts.count else {
+            if !selectedTranslation.isEmpty && !selectedTranslationName.isEmpty {
+                return selectedTranslationName
+            }
+            return "settings.select_translation".localized
+        }
+        return translationTexts[index]
+    }
+
+    private func selectedVoiceLabel() -> String {
+        guard let index = voiceKeys.firstIndex(of: selectedVoice), index < voiceTexts.count else {
+            if !selectedVoice.isEmpty && !selectedVoiceName.isEmpty {
+                return selectedVoiceName
+            }
+            return "settings.select_reader".localized
+        }
+        return voiceTexts[index]
+    }
+
+    private func toggleSelectionSection(_ section: SelectionAccordionSection) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            if expandedSelectionSection == .voice {
+                stopVoicePreview()
+            }
+            if expandedSelectionSection == section {
+                expandedSelectionSection = nil
+            } else {
+                expandedSelectionSection = section
+            }
+        }
+    }
+
+    private func transitionToSection(_ next: SelectionAccordionSection, applySelection: @escaping () -> Void) {
+        if expandedSelectionSection == .voice && next != .voice {
+            stopVoicePreview()
+        }
+        applySelection()
+        withAnimation(.easeInOut(duration: 0.22)) {
+            expandedSelectionSection = next
+        }
+    }
+
+    private func clearTranslationSelection() {
+        selectedTranslation = ""
+        selectedTranslationName = ""
+    }
+
+    private func clearVoiceSelection() {
+        selectedVoice = ""
+        selectedVoiceName = ""
+        selectedVoiceMusic = false
     }
     
     // MARK: Voice preview

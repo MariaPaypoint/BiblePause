@@ -593,7 +593,7 @@ struct PageSetupView: View {
 
     private func selectedLanguageLabel() -> String {
         guard let index = languageKeys.firstIndex(of: language), index < languageTexts.count else {
-            return "-"
+            return "settings.select_language".localized
         }
         return languageTexts[index]
     }

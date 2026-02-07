@@ -78,6 +78,7 @@
 "settings.save_choice" = "Save";
 "settings.cancel_choice" = "Cancel";
 "settings.warning" = "Warning!";
+"settings.select_language" = "Select Bible language";
 "settings.select_translation" = "Select translation";
 "settings.select_reader" = "Select who reads";
 
