@@ -1,6 +1,7 @@
 /* Menu Items */
-"menu.main" = "Головне вікно";
+"menu.main" = "Головна";
 "menu.continue_reading" = "Продовжити читання";
+"menu.classic_reading" = "Звичайне читання";
 "menu.select" = "Вибрати";
 "menu.select.subtitle" = "Виберіть книгу та розділ Біблії";
 "menu.progress" = "Прогрес";
@@ -116,7 +117,7 @@
 "settings.pause.block.short.fragment" = "урив.";
 
 /* Multilingual */
-"menu.multilingual" = "Багатомовне читання";
+"menu.multilingual" = "Мультичитання";
 "unit.verse" = "віршу";
 "unit.chapter" = "розділу";
 "unit.paragraph" = "абзацу";

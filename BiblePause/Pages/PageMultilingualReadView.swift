@@ -179,10 +179,6 @@ struct PageMultilingualReadView: View {
                 .edgesIgnoringSafeArea(.bottom)
             }
             
-            // Menu layer
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -UIScreen.main.bounds.width)
         }
         .toastView(toast: $toast)
         .fullScreenCover(isPresented: $showSelection, onDismiss: {

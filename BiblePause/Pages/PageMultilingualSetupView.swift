@@ -177,10 +177,6 @@ struct PageMultilingualSetupView: View {
             }
             .blur(radius: showSaveAlert ? 3 : 0)
             
-            // Menu layer (required for MenuButtonView to work correctly with logic)
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -UIScreen.main.bounds.width)
             
             // Custom Save Alert Overlay
             if showSaveAlert {

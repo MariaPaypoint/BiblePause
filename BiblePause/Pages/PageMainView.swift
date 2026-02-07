@@ -63,10 +63,6 @@ struct PageMainView: View {
             // Reading progress card near bottom
             progressCardView()
             
-            // Sliding menu layer
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
         }
         .onAppear {
             loadBooksIfNeeded()

@@ -1,6 +1,7 @@
 /* Menu Items */
-"menu.main" = "Main Screen";
+"menu.main" = "Main";
 "menu.continue_reading" = "Continue Reading";
+"menu.classic_reading" = "Classic Reading";
 "menu.select" = "Select";
 "menu.select.subtitle" = "Choose a book and chapter of the Bible";
 "menu.progress" = "Progress";
@@ -116,7 +117,7 @@
 "settings.pause.block.short.fragment" = "fragment";
 
 /* Multilingual */
-"menu.multilingual" = "Multilingual Reading";
+"menu.multilingual" = "Multi Reading";
 "unit.verse" = "verse";
 "unit.chapter" = "chapter";
 "settings.setup" = "Setup";

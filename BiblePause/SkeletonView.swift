@@ -401,7 +401,8 @@ struct SkeletonView: View {
             MenuView()
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
-                .id(settingsManager.currentExcerptTitle + settingsManager.currentExcerptSubtitle)
+                .animation(.spring(), value: settingsManager.showMenu)
+                .id("menu_\(settingsManager.selectedMenuItem)")
         }
         
     }

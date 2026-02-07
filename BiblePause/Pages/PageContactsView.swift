@@ -102,10 +102,6 @@ struct PageContactsView: View {
                 Color("DarkGreen")
             )
             
-            // Menu layer
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
         }
     }
 }

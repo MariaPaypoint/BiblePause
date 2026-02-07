@@ -1,6 +1,7 @@
 /* Menu Items */
-"menu.main" = "Главное окно";
+"menu.main" = "Главная";
 "menu.continue_reading" = "Продолжить чтение";
+"menu.classic_reading" = "Обычное чтение";
 "menu.select" = "Выбрать";
 "menu.select.subtitle" = "Выберите книгу и главу Библии";
 "menu.progress" = "Прогресс";
@@ -116,7 +117,7 @@
 "settings.pause.block.short.fragment" = "отр.";
 
 /* Multilingual */
-"menu.multilingual" = "Мультиязычное чтение";
+"menu.multilingual" = "Мультичтение";
 "unit.verse" = "стиху";
 "unit.chapter" = "главе";
 "settings.setup" = "Настройка";

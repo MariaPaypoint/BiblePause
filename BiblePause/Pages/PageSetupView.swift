@@ -102,10 +102,6 @@ struct PageSetupView: View {
                     .foregroundColor(.white)
                 }
             }
-            // Menu layer
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
             
         }
         

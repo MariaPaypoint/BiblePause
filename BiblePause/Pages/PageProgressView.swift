@@ -153,10 +153,6 @@ struct PageProgressView: View {
             }
             .background(Color("DarkGreen"))
             
-            // Menu layer
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
         }
         .alert("progress.reset_confirmation.title".localized, isPresented: $showResetConfirmation) {
             Button("progress.reset_confirmation.cancel".localized, role: .cancel) { }

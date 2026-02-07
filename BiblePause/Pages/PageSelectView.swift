@@ -76,10 +76,6 @@ struct PageSelectView: View {
             )
             
             
-            // Menu layer
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
             
         }
         .onAppear {

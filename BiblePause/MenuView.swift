@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum MenuItem {
+enum MenuItem: Hashable {
     case main
     case read
     case select
@@ -11,152 +11,166 @@ enum MenuItem {
     case multilingualRead
 }
 
-struct MenuView: View{
-    
+// MARK: - Menu Overlay
+struct MenuView: View {
+
     @EnvironmentObject var settingsManager: SettingsManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
-    
-    var body: some View{
-        
-        ZStack{
-            
-            // Blur View...
+
+    var body: some View {
+        ZStack {
+            // Blur View
             BlurView(style: .systemUltraThinMaterialDark)
-            
-            // Blending With Color..
+
             Color("DarkGreen")
                 .opacity(0.2)
                 .blur(radius: 15)
-            
-            // Content...
+
+            // Content
             VStack(alignment: .leading, spacing: UIScreen.main.bounds.height < 750 ? 20 : 35) {
-                
+
                 // MARK: Close Button
                 Button {
-                    toggleWithAnimation()
+                    withAnimation(.spring()) {
+                        settingsManager.showMenu = false
+                    }
                 } label: {
                     Image(systemName: "xmark")
                         .font(.title)
                         .fontWeight(.light)
                 }
                 .foregroundColor(Color.white.opacity(0.5))
-                //.padding(.bottom, 15)
 
-                // MARK: Menu Buttons
-                Button { changeSelected(selected: .main)         } label: { MenuItem(title: "menu.main".localized, selected: (settingsManager.selectedMenuItem == .main)) }
-                Button { changeSelected(selected: .read)         } label: { MenuItem(title: "menu.continue_reading".localized, subTitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)", selected: (settingsManager.selectedMenuItem == .read)) }
-                Button { 
+                // MARK: Menu Items
+
+                // 1. Главная
+                Button {
+                    selectItem(.main)
+                } label: {
+                    Text("menu.main".localized)
+                        .font(.system(.headline))
+                        .fontWeight(.bold)
+                        .foregroundColor(colorFor(.main))
+                }
+
+                // 2. Мультичтение
+                Button {
                     if settingsManager.isMultilingualReadingActive {
-                        changeSelected(selected: .multilingualRead)
+                        selectItem(.multilingualRead)
                     } else {
-                        changeSelected(selected: .multilingual)
+                        selectItem(.multilingual)
                     }
-                } label: { MenuItem(title: "menu.multilingual".localized, selected: (settingsManager.selectedMenuItem == .multilingual || settingsManager.selectedMenuItem == .multilingualRead)) }
-                Button { changeSelected(selected: .progress)     } label: { MenuItem(title: "menu.progress".localized, subTitle: "menu.progress.subtitle".localized, selected: (settingsManager.selectedMenuItem == .progress)) }
-                Button { changeSelected(selected: .setup)        } label: { MenuItem(title: "menu.settings".localized, selected: (settingsManager.selectedMenuItem == .setup)) }
-                Button { changeSelected(selected: .contacts)     } label: { MenuItem(title: "menu.contacts".localized, selected: (settingsManager.selectedMenuItem == .contacts)) }
-                
+                } label: {
+                    Text("menu.multilingual".localized)
+                        .font(.system(.headline))
+                        .fontWeight(.bold)
+                        .foregroundColor(
+                            settingsManager.selectedMenuItem == .multilingual || settingsManager.selectedMenuItem == .multilingualRead
+                            ? Color("Mustard").opacity(0.9)
+                            : Color.white.opacity(0.9)
+                        )
+                }
+
+                // 3. Обычное чтение
+                Button {
+                    selectItem(.read)
+                } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("menu.classic_reading".localized)
+                            .font(.system(.headline))
+                            .fontWeight(.bold)
+                            .foregroundColor(colorFor(.read))
+                        Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
+                            .font(.system(size: 14))
+                            .foregroundColor(colorFor(.read))
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+
+                // 4. Прогресс
+                Button {
+                    selectItem(.progress)
+                } label: {
+                    Text("menu.progress".localized)
+                        .font(.system(.headline))
+                        .fontWeight(.bold)
+                        .foregroundColor(colorFor(.progress))
+                }
+
+                // 5. Контакты
+                Button {
+                    selectItem(.contacts)
+                } label: {
+                    Text("menu.contacts".localized)
+                        .font(.system(.headline))
+                        .fontWeight(.bold)
+                        .foregroundColor(colorFor(.contacts))
+                }
+
                 Spacer(minLength: 10)
-                
+
                 // MARK: Version
                 Text("menu.version".localized)
                     .foregroundColor(Color.white.opacity(0.5))
             }
-            .padding(.trailing,120)
+            .padding(.trailing, 120)
             .padding()
-            .padding(.top,getSafeArea().top)
-            .padding(.bottom,getSafeArea().bottom)
-            .frame(maxWidth: .infinity,maxHeight: .infinity,alignment: .topLeading)
+            .padding(.top, getSafeArea().top)
+            .padding(.bottom, getSafeArea().bottom)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .clipShape(
-            MenuShape(value: 0)
-        )
+        .clipShape(MenuShape(value: 0))
         .background(
             MenuShape(value: 0)
-            
                 .stroke(
                     .linearGradient(.init(colors: [
-                    
                         Color("ForestGreen"),
-                        Color("Mustard")
-                            .opacity(0.7),
-                        Color("Mustard")
-                            .opacity(0.7),
-                        //Color.clear,
-                        
+                        Color("Mustard").opacity(0.7),
+                        Color("Mustard").opacity(0.7),
                     ]), startPoint: .top, endPoint: .bottom),
-                    lineWidth: 1 // 2 for line
+                    lineWidth: 1
                 )
-             
-                .padding(.leading,-50)
-             
+                .padding(.leading, -50)
         )
-        // Custom Shape....
         .ignoresSafeArea()
     }
-    
-    func toggleWithAnimation() {
-        withAnimation(.spring().delay(0.1)){
-            settingsManager.showMenu.toggle()
-        }
+
+    // MARK: - Helpers
+
+    private func colorFor(_ item: MenuItem) -> Color {
+        let selected = settingsManager.selectedMenuItem == item
+        return selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9)
     }
-    
-    // MARK: Close menu when selecting an item
-    func changeSelected(selected: MenuItem) {
-        toggleWithAnimation()
-        settingsManager.selectedMenuItem = selected
-        
-    }
-    
-    @ViewBuilder
-    func MenuItem(title: String, subTitle: String="", selected: Bool = false) -> some View {
-        
-        //let isSmall = UIScreen.main.bounds.height < 750
-        
-        VStack(alignment: .leading, spacing: 4) {
-            
-            Text(title)
-                .font(.system(.headline))
-                .fontWeight(.bold)
-                .foregroundColor(selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9))
-            
-            if !subTitle.isEmpty {
-                Text(subTitle)
-                    .font(.system(size: 14))
-                    .foregroundColor(selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9))
-                    .multilineTextAlignment(.leading)
-            }
+
+    private func selectItem(_ item: MenuItem) {
+        settingsManager.selectedMenuItem = item
+        withAnimation(.spring()) {
+            settingsManager.showMenu = false
         }
     }
 }
 
-// MARK: Curve shape
-struct MenuShape: Shape{
-    
+// MARK: - Curve Shape
+struct MenuShape: Shape {
+
     var value: CGFloat
-    
-    // Animating Path...
-    var animatableData: CGFloat{
-        get{return value}
-        set{value = newValue}
+
+    var animatableData: CGFloat {
+        get { return value }
+        set { value = newValue }
     }
-    
+
     func path(in rect: CGRect) -> Path {
-        
-        return Path{path in
-            
-            // For Curve Shape 100...
+        return Path { path in
             let width = rect.width - 100
             let height = rect.height
-            
+
             path.move(to: CGPoint(x: width, y: height))
             path.addLine(to: CGPoint(x: 0, y: height))
             path.addLine(to: CGPoint(x: 0, y: 0))
             path.addLine(to: CGPoint(x: width, y: 0))
-            
-            // Curve...
+
             path.move(to: CGPoint(x: width, y: 0))
-            
             path.addCurve(to: CGPoint(x: width, y: height),
                           control1: CGPoint(x: width + value, y: height / 3),
                           control2: CGPoint(x: width - value, y: height / 2))
@@ -164,14 +178,14 @@ struct MenuShape: Shape{
     }
 }
 
-// MARK: Menu button for other screens
+// MARK: - Menu Button (hamburger)
 struct MenuButtonView: View {
-    
+
     @EnvironmentObject var settingsManager: SettingsManager
-    
+
     var body: some View {
         Button {
-            withAnimation(.spring()){
+            withAnimation(.spring()) {
                 settingsManager.showMenu.toggle()
             }
         } label: {
@@ -183,58 +197,51 @@ struct MenuButtonView: View {
     }
 }
 
-// MARK: Extensions
+// MARK: - Extensions
 
-// Extedning View to get SafeArea...
-extension View{
-    
-    func getSafeArea()->UIEdgeInsets{
-        
-        guard let screen = UIApplication.shared.connectedScenes.first as? UIWindowScene else{
+extension View {
+
+    func getSafeArea() -> UIEdgeInsets {
+        guard let screen = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
             return .zero
         }
-        
-        guard let safeArea = screen.windows.first?.safeAreaInsets else{
+        guard let safeArea = screen.windows.first?.safeAreaInsets else {
             return .zero
         }
-        
         return safeArea
     }
-    
-    func getRect()->CGRect{
+
+    func getRect() -> CGRect {
         return UIScreen.main.bounds
     }
 }
 
-// Since App Supports iOS 14...
+// MARK: - BlurView
 struct BlurView: UIViewRepresentable {
-    
+
     var style: UIBlurEffect.Style
-    
+
     func makeUIView(context: Context) -> UIVisualEffectView {
-        
         let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
-        
         return view
     }
-    
+
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        
     }
 }
 
-
-// MARK: Preview
+// MARK: - Preview
 struct TestView: View {
-    
+
     @StateObject var settingsManager = SettingsManager()
-    
+
     var body: some View {
-        
-        ZStack{
-            MenuView()
-                .environmentObject(settingsManager)
-                .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
+        ZStack {
+            if settingsManager.showMenu {
+                MenuView()
+                    .environmentObject(settingsManager)
+                    .transition(.move(edge: .leading))
+            }
         }
         .background(
             Image("Forest")
@@ -249,4 +256,3 @@ struct TestView: View {
 #Preview {
     TestView()
 }
-
