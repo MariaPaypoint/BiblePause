@@ -202,26 +202,35 @@ struct PageMultilingualSetupView: View {
                         .cornerRadius(8)
                         .foregroundColor(.black)
                     
-                    HStack {
-                        Button("multilingual.save_alert.dont_save".localized) {
+                    HStack(spacing: 12) {
+                        Button {
                             showSaveAlert = false
                             proceedToRead()
+                        } label: {
+                            Text("multilingual.save_alert.dont_save".localized)
+                                .font(.footnote)
+                                .foregroundColor(.white.opacity(0.7))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
                         }
-                        .font(.footnote)
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.vertical, 10)
                         
-                        Spacer()
-                        
-                        Button("multilingual.save_alert.save".localized) {
+                        Button {
                             saveNewTemplate()
                             showSaveAlert = false
                             proceedToRead()
+                        } label: {
+                            Text("multilingual.save_alert.save".localized)
+                                .font(.footnote)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color("Mustard"))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
                         }
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("Mustard"))
                         .disabled(templateName.isEmpty)
-                        .padding(.vertical, 10)
                     }
                 }
                 .padding(25)
@@ -233,7 +242,7 @@ struct PageMultilingualSetupView: View {
         }
         .toastView(toast: $toast)
         .sheet(item: $stepToEdit) { step in
-            PageMultilingualConfigView(step: step) { newStep in
+            PageMultilingualConfigView(step: step, isAddingStep: editingStepIndex == nil) { newStep in
                 if let index = editingStepIndex {
                     settingsManager.multilingualSteps[index] = newStep
                 } else {
@@ -440,7 +449,7 @@ struct PageMultilingualSetupView: View {
             proceedToRead()
         } else {
             // New template
-            templateName = ""
+            templateName = settingsManager.multilingualSteps.multilingualCompactDescription()
             showSaveAlert = true
         }
     }

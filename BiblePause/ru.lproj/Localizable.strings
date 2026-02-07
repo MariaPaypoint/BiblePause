@@ -77,6 +77,7 @@
 "settings.reader" = "Читает";
 "settings.translation_audio" = "Перевод и озвучка";
 "settings.save_choice" = "Сохранить";
+"settings.add_choice" = "Добавить";
 "settings.cancel_choice" = "Отмена";
 "settings.warning" = "Внимание!";
 "settings.select_language" = "Выберите язык Библии";

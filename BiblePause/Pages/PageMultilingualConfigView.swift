@@ -8,10 +8,12 @@ struct PageMultilingualConfigView: View {
     
     @State var step: MultilingualStep
     private let initialStep: MultilingualStep
+    private let isAddingStep: Bool
     var onSave: (MultilingualStep) -> Void
     
-    init(step: MultilingualStep, onSave: @escaping (MultilingualStep) -> Void) {
+    init(step: MultilingualStep, isAddingStep: Bool = false, onSave: @escaping (MultilingualStep) -> Void) {
         self.initialStep = step
+        self.isAddingStep = isAddingStep
         self._step = State(initialValue: step)
         self.onSave = onSave
     }
@@ -76,7 +78,7 @@ struct PageMultilingualConfigView: View {
                     
                     Spacer()
                     
-                    Button("settings.save_choice".localized) {
+                    Button(saveButtonTitle) {
                         saveStep()
                     }
                     .fontWeight(.bold)
@@ -304,6 +306,10 @@ struct PageMultilingualConfigView: View {
     
     var canSave: Bool {
         return !selectedLanguage.isEmpty && !selectedTranslation.isEmpty && !selectedVoice.isEmpty
+    }
+
+    private var saveButtonTitle: String {
+        isAddingStep ? "settings.add_choice".localized : "settings.save_choice".localized
     }
     
     func initializeState() {
