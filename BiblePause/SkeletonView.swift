@@ -348,6 +348,7 @@ class SettingsManager: ObservableObject {
 struct SkeletonView: View {
     
     @StateObject private var settingsManager = SettingsManager()
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     // Not relevant here
     @State private var showAsPartOfRead: Bool = false
@@ -402,7 +403,7 @@ struct SkeletonView: View {
                 .environmentObject(settingsManager)
                 .offset(x: settingsManager.showMenu ? 0 : -getRect().width)
                 .animation(.spring(), value: settingsManager.showMenu)
-                .id("menu_\(settingsManager.selectedMenuItem)")
+                .id("menu_\(settingsManager.selectedMenuItem)_\(localizationManager.currentLanguage.rawValue)")
         }
         
     }

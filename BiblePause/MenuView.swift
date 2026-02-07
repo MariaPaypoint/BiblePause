@@ -17,6 +17,7 @@ struct MenuView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var readSubtitleSnapshot: String = ""
+    @State private var showInterfaceLanguageSheet: Bool = false
 
     var body: some View {
         ZStack {
@@ -129,7 +130,28 @@ struct MenuView: View {
                     }
                 }
 
-                // 5. Контакты
+                // 5. Язык интерфейса
+                Button {
+                    showInterfaceLanguageSheet = true
+                } label: {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(interfaceLanguageColor())
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("settings.language".localized)
+                                .font(.system(.headline))
+                                .fontWeight(.bold)
+                                .foregroundColor(interfaceLanguageColor())
+                            Text(localizationManager.currentLanguage.displayName)
+                                .font(.system(size: 13))
+                                .foregroundColor(interfaceLanguageColor().opacity(0.5))
+                        }
+                    }
+                }
+
+                // 6. Контакты
                 Button {
                     selectItem(.contacts)
                 } label: {
@@ -172,6 +194,9 @@ struct MenuView: View {
                 refreshReadSubtitleSnapshot()
             }
         }
+        .sheet(isPresented: $showInterfaceLanguageSheet) {
+            InterfaceLanguageSheetView()
+        }
         .background(
             MenuShape(value: 0)
                 .stroke(
@@ -197,6 +222,10 @@ struct MenuView: View {
     private func multilingualColor() -> Color {
         let selected = settingsManager.selectedMenuItem == .multilingual || settingsManager.selectedMenuItem == .multilingualRead
         return selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9)
+    }
+
+    private func interfaceLanguageColor() -> Color {
+        showInterfaceLanguageSheet ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9)
     }
 
     private func multilingualTemplateSubtitle() -> String {
@@ -266,6 +295,61 @@ struct MenuView: View {
         settingsManager.selectedMenuItem = item
         withAnimation(.spring()) {
             settingsManager.showMenu = false
+        }
+    }
+}
+
+private struct InterfaceLanguageSheetView: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            Color("DarkGreen")
+                .ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text("settings.language".localized)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                }
+
+                ForEach(AppLanguage.allCases) { language in
+                    Button {
+                        localizationManager.currentLanguage = language
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Text(language.displayName)
+                                .foregroundColor(.white)
+                            Spacer()
+                            if localizationManager.currentLanguage == language {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(Color("Mustard"))
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color("DarkGreen-light").opacity(0.6))
+                        .cornerRadius(8)
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, globalBasePadding)
+            .padding(.top, 20)
+            .padding(.bottom, 10)
         }
     }
 }

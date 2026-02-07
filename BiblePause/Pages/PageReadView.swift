@@ -75,12 +75,7 @@ struct PageReadView: View {
 
                         // Settings button
                         Button {
-                            withAnimation(Animation.easeInOut(duration: 1)) {
-                                oldTranslation = settingsManager.translation
-                                oldVoice = settingsManager.voice
-                                oldFontIncreasePercent = settingsManager.fontIncreasePercent
-                                showSetup = true
-                            }
+                            openSetupFromRead()
                         } label: {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 26))
@@ -506,44 +501,70 @@ struct PageReadView: View {
 
     // MARK: Panel – info
     @ViewBuilder private func viewAudioInfo() -> some View {
-        HStack {
-            Text(settingsManager.translationName)
-                .foregroundColor(Color("DarkGreen"))
-                .font(.footnote)
+        HStack(spacing: 10) {
+            Button {
+                openSetupFromRead()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "globe")
+                        .font(.caption)
+                        .foregroundColor(Color("DarkGreen"))
+                    Text(settingsManager.translationName)
+                        .foregroundColor(Color("DarkGreen"))
+                        .font(.footnote)
+                }
                 .padding(4)
                 .background {
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
                         .fill(Color("localAccentColor"))
-                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-            if settingsManager.pauseType == .none {
-                Text("").padding(.horizontal, 2)
-            } else {
-                Spacer()
             }
-            VStack(alignment: .leading, spacing: 0) {
-                Text("audio.reader".localized)
-                    .foregroundStyle(Color("localAccentColor").opacity(0.5))
-                    .font(.caption2)
-                Text(settingsManager.voiceName)
-                    .foregroundStyle(Color("localAccentColor"))
-                    .font(.footnote)
-            }
-            Spacer()
-            if settingsManager.pauseType != .none {
+            .buttonStyle(.plain)
+
+            Button {
+                openSetupFromRead()
+            } label: {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("audio.pause".localized)
+                    Text("audio.reader".localized)
                         .foregroundStyle(Color("localAccentColor").opacity(0.5))
                         .font(.caption2)
-                    Text("\(settingsManager.pauseBlock.shortName) / \(settingsManager.pauseType == .time ? "audio.pause.seconds".localized(settingsManager.pauseLength) : "audio.pause.stop".localized)")
+                    Text(settingsManager.voiceName)
                         .foregroundStyle(Color("localAccentColor"))
                         .font(.footnote)
                 }
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+            
+            if settingsManager.pauseType != .none {
+                Button {
+                    openSetupFromRead()
+                } label: {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("audio.pause".localized)
+                            .foregroundStyle(Color("localAccentColor").opacity(0.5))
+                            .font(.caption2)
+                        Text("\(settingsManager.pauseBlock.shortName) / \(settingsManager.pauseType == .time ? "audio.pause.seconds".localized(settingsManager.pauseLength) : "audio.pause.stop".localized)")
+                            .foregroundStyle(Color("localAccentColor"))
+                            .font(.footnote)
+                    }
+                }
+                .buttonStyle(.plain)
             }
             //Spacer()
             //Image(systemName: "gearshape.fill")
             //    .imageScale(.large)
             //    .foregroundStyle(Color("localAccentColor"))
+        }
+    }
+
+    private func openSetupFromRead() {
+        withAnimation(Animation.easeInOut(duration: 1)) {
+            oldTranslation = settingsManager.translation
+            oldVoice = settingsManager.voice
+            oldFontIncreasePercent = settingsManager.fontIncreasePercent
+            showSetup = true
         }
     }
 
@@ -745,4 +766,3 @@ struct TestPageReadView: View {
 #Preview {
     TestPageReadView()
 }
-
