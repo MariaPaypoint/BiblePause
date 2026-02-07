@@ -348,13 +348,11 @@ class SettingsManager: ObservableObject {
 struct SkeletonView: View {
     
     @StateObject private var settingsManager = SettingsManager()
-    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     // Not relevant here
     @State private var showAsPartOfRead: Bool = false
     
     var body: some View {
-        
         ZStack {
             Color("DarkGreen")
                 .edgesIgnoringSafeArea(.all)
@@ -412,4 +410,3 @@ struct SkeletonView: View {
 #Preview {
     SkeletonView()
 }
-

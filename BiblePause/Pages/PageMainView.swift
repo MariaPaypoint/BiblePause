@@ -24,21 +24,16 @@ struct PageMainView: View {
                     Spacer()
                 }
                 .padding(.top, 40)
-                // Title artwork
-                Image("TitleRus")
+                // Localized title
+                Text("page.main.header".localized)
+                    .font(.system(size: 50, weight: .black, design: .rounded))
+                    .foregroundColor(.white)
+                    .minimumScaleFactor(0.75)
+                    .lineLimit(1)
+                    .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 4)
                 
                 // Dual Mode Selection
                 VStack(spacing: 15) {
-                    // Option 1: Silence (Classic Reading)
-                    MainMenuCard(
-                        title: "page.main.classic.title".localized,
-                        subtitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)",
-                        icon: "book.fill", // Classic book icon
-                        color: Color("ForestGreen")
-                    ) {
-                        settingsManager.selectedMenuItem = .read
-                    }
-                    
                     // Option 2: Immersion (Multilingual Study)
                     MainMenuCard(
                         title: "page.main.multilingual.title".localized,
@@ -47,6 +42,16 @@ struct PageMainView: View {
                         color: Color("ForestGreen")
                     ) {
                         settingsManager.selectedMenuItem = .multilingual
+                    }
+
+                    // Option 1: Silence (Classic Reading)
+                    MainMenuCard(
+                        title: "page.main.classic.title".localized,
+                        subtitle: "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)",
+                        icon: "book.fill", // Classic book icon
+                        color: Color("ForestGreen")
+                    ) {
+                        settingsManager.selectedMenuItem = .read
                     }
                 }
                 
@@ -172,23 +177,23 @@ struct MainMenuCard: View {
                 // Icon Box
                 ZStack {
                     Circle()
-                        .fill(color.opacity(0.15))
+                        .fill(Color.white.opacity(0.1))
                         .frame(width: 44, height: 44)
                     
                     Image(systemName: icon)
                         .font(.system(size: 20))
-                        .foregroundColor(color)
+                        .foregroundColor(Color("Mustard"))
                 }
                 
                 // Text Content
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.system(.body, weight: .bold))
-                        .foregroundColor(Color("ForestGreen")) // Deep green for titles
+                        .foregroundColor(.white)
                     
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundColor(Color("Chocolate")) // Warm brown for details
+                        .foregroundColor(.white.opacity(0.82))
                 }
                 
                 Spacer()
@@ -196,18 +201,18 @@ struct MainMenuCard: View {
                 // Chevron
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundColor(Color.black.opacity(0.2))
+                    .foregroundColor(.white.opacity(0.72))
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 14)
             .padding(.horizontal, 16)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.85)) // Glass effect
-                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 3)
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color("DarkGreen").opacity(0.72))
+                    .shadow(color: Color.black.opacity(0.18), radius: 6, x: 0, y: 3)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.4), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white.opacity(0.16), lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle()) // Keeps standard button press effect minimal or custom
