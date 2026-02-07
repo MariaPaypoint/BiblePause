@@ -44,15 +44,20 @@ struct PageContactsView: View {
                         viewGroupHeader(text: "contacts.contact_us".localized)
                         
                         Button {
-                            if let url = URL(string: "https://t.me/your_telegram") {
+                            if let url = URL(string: "https://t.me/Mandarinka4") {
                                 UIApplication.shared.open(url)
                             }
                         } label: {
                             HStack {
                                 Image(systemName: "paperplane.fill")
                                     .foregroundColor(.white)
-                                Text("contacts.telegram".localized)
-                                    .foregroundColor(.white)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("contacts.telegram".localized)
+                                        .foregroundColor(.white)
+                                    Text("@Mandarinka4")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.white.opacity(0.65))
+                                }
                                 Spacer()
                                 Image(systemName: "arrow.right")
                                     .foregroundColor(.white.opacity(0.5))
@@ -64,15 +69,20 @@ struct PageContactsView: View {
                         }
                         
                         Button {
-                            if let url = URL(string: "mailto:your_email@example.com") {
+                            if let url = URL(string: "https://bibleapi.space") {
                                 UIApplication.shared.open(url)
                             }
                         } label: {
                             HStack {
-                                Image(systemName: "envelope.fill")
+                                Image(systemName: "globe")
                                     .foregroundColor(.white)
-                                Text("contacts.email".localized)
-                                    .foregroundColor(.white)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("contacts.website".localized)
+                                        .foregroundColor(.white)
+                                    Text("bibleapi.space")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.white.opacity(0.65))
+                                }
                                 Spacer()
                                 Image(systemName: "arrow.right")
                                     .foregroundColor(.white.opacity(0.5))
@@ -87,10 +97,7 @@ struct PageContactsView: View {
                         
                         Text("contacts.about.text".localized)
                             .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color("DarkGreen-light").opacity(0.6))
-                            .cornerRadius(8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal, globalBasePadding)
                     .padding(.vertical, 10)

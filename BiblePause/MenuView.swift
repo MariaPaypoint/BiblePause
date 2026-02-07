@@ -16,6 +16,7 @@ struct MenuView: View {
 
     @EnvironmentObject var settingsManager: SettingsManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
+    @State private var readSubtitleSnapshot: String = ""
 
     var body: some View {
         ZStack {
@@ -66,14 +67,21 @@ struct MenuView: View {
                         selectItem(.multilingual)
                     }
                 } label: {
-                    HStack(spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "rectangle.stack.fill")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(multilingualColor())
-                        Text("menu.multilingual".localized)
-                            .font(.system(.headline))
-                            .fontWeight(.bold)
-                            .foregroundColor(multilingualColor())
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("menu.multilingual".localized)
+                                .font(.system(.headline))
+                                .fontWeight(.bold)
+                                .foregroundColor(multilingualColor())
+                            Text(multilingualTemplateSubtitle())
+                                .font(.system(size: 13))
+                                .foregroundColor(multilingualColor().opacity(0.5))
+                                .lineLimit(1)
+                        }
                     }
                 }
 
@@ -91,10 +99,11 @@ struct MenuView: View {
                                 .font(.system(.headline))
                                 .fontWeight(.bold)
                                 .foregroundColor(colorFor(.read))
-                            Text("\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)")
+                            Text(readSubtitleSnapshot)
                                 .font(.system(size: 14))
                                 .foregroundColor(colorFor(.read).opacity(0.5))
-                                .multilineTextAlignment(.leading)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                         }
                     }
                 }
@@ -124,22 +133,24 @@ struct MenuView: View {
                 Button {
                     selectItem(.contacts)
                 } label: {
-                    HStack(spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "person.2.fill")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(colorFor(.contacts))
-                        Text("menu.contacts".localized)
-                            .font(.system(.headline))
-                            .fontWeight(.bold)
-                            .foregroundColor(colorFor(.contacts))
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("menu.contacts".localized)
+                                .font(.system(.headline))
+                                .fontWeight(.bold)
+                                .foregroundColor(colorFor(.contacts))
+                            Text("menu.version".localized)
+                                .font(.system(size: 13))
+                                .foregroundColor(colorFor(.contacts).opacity(0.5))
+                        }
                     }
                 }
 
                 Spacer(minLength: 10)
-
-                // MARK: Version
-                Text("menu.version".localized)
-                    .foregroundColor(Color.white.opacity(0.5))
             }
             .padding(.trailing, 120)
             .padding()
@@ -148,6 +159,19 @@ struct MenuView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .clipShape(MenuShape(value: 0))
+        .onAppear {
+            refreshReadSubtitleSnapshot()
+        }
+        .onChange(of: settingsManager.currentExcerptTitle) { _ in
+            if !settingsManager.showMenu {
+                refreshReadSubtitleSnapshot()
+            }
+        }
+        .onChange(of: settingsManager.currentExcerptSubtitle) { _ in
+            if !settingsManager.showMenu {
+                refreshReadSubtitleSnapshot()
+            }
+        }
         .background(
             MenuShape(value: 0)
                 .stroke(
@@ -175,6 +199,49 @@ struct MenuView: View {
         return selected ? Color("Mustard").opacity(0.9) : Color.white.opacity(0.9)
     }
 
+    private func multilingualTemplateSubtitle() -> String {
+        if let id = settingsManager.currentTemplateId,
+           let template = settingsManager.multilingualTemplates.first(where: { $0.id == id }) {
+            let trimmedName = template.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let baseTitle = trimmedName.isEmpty ? multilingualStructureText(for: template.steps) : trimmedName
+            let isDirty = settingsManager.multilingualSteps != template.steps ||
+                          settingsManager.multilingualReadUnit != template.unit
+            return isDirty ? "\(baseTitle)*" : baseTitle
+        }
+
+        if !settingsManager.multilingualSteps.isEmpty {
+            return multilingualStructureText(for: settingsManager.multilingualSteps)
+        }
+
+        return "multilingual.subtitle".localized
+    }
+
+    private func multilingualStructureText(for steps: [MultilingualStep]) -> String {
+        let parts: [String] = steps.map { step in
+            if step.type == .read {
+                let name = step.translationName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !name.isEmpty { return name }
+
+                let language = step.languageName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !language.isEmpty { return language }
+
+                return "—"
+            }
+
+            let pauseValue: String
+            if step.pauseDuration.rounded() == step.pauseDuration {
+                pauseValue = String(Int(step.pauseDuration))
+            } else {
+                pauseValue = String(format: "%.1f", step.pauseDuration)
+            }
+            let pauseTitle = "multilingual.pause".localized.lowercased()
+            let seconds = "multilingual.seconds".localized
+            return "\(pauseTitle) \(pauseValue) \(seconds)"
+        }
+
+        return parts.joined(separator: " • ")
+    }
+
     private func progressPercentText() -> String {
         let totalChapters: Int
         if settingsManager.cachedBooks.isEmpty {
@@ -189,6 +256,10 @@ struct MenuView: View {
         let readChapters = settingsManager.readProgress.readChapters.count
         let percentage = Int((Double(readChapters) / Double(totalChapters) * 100).rounded())
         return "\(max(0, min(100, percentage)))%"
+    }
+
+    private func refreshReadSubtitleSnapshot() {
+        readSubtitleSnapshot = "\(settingsManager.currentExcerptTitle), \(settingsManager.currentExcerptSubtitle)"
     }
 
     private func selectItem(_ item: MenuItem) {
