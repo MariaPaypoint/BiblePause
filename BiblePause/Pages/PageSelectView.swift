@@ -24,31 +24,39 @@ struct PageSelectView: View {
                 
                 VStack(spacing: 0) {
                     // MARK: Header
-                    HStack {
-                        if showFromRead {
-                            
-                            Button {
-                                showFromRead = false
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.title)
-                                    .fontWeight(.light)
-                            }
-                            .foregroundColor(Color.white.opacity(0.5))
-                        }
-                        else {
-                            MenuButtonView()
-                                .environmentObject(settingsManager)
-                        }
-                        Spacer()
-                        
+                    ZStack {
                         Text("page.select.title".localized)
-                            .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
-                            .padding(.trailing, 32) // compensate menu so title stays centered
+                            .font(.headline)
+                            .fontWeight(.bold)
                             .foregroundColor(.white)
-                        
-                        Spacer()
+
+                        HStack {
+                            if showFromRead {
+                                Button {
+                                    showFromRead = false
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.title3)
+                                        .fontWeight(.light)
+                                        .frame(width: 32, height: 32)
+                                }
+                                .foregroundColor(Color.white.opacity(0.7))
+                            }
+                            else {
+                                MenuButtonView()
+                                    .environmentObject(settingsManager)
+                                    .frame(width: 32, height: 32)
+                            }
+
+                            Spacer()
+
+                            Color.clear
+                                .frame(width: 32, height: 32)
+                        }
                     }
+                    .padding(.horizontal, globalBasePadding)
+                    .padding(.vertical, 12)
+                    .background(Color("DarkGreen").brightness(0.05))
                     .padding(.bottom, 10)
                     
                     if isLoading {
@@ -58,17 +66,20 @@ struct PageSelectView: View {
                         Spacer()
                     }
                     else if loadingError == "" {
-                        viewSelectTestament()
-                        viewBooksList()
+                        VStack(spacing: 0) {
+                            viewSelectTestament()
+                            viewBooksList()
+                        }
+                        .padding(.horizontal, globalBasePadding)
                     }
                     else {
                         Spacer()
                         Text("error.prefix".localized(loadingError))
                             .foregroundColor(.white)
+                            .padding(.horizontal, globalBasePadding)
                         Spacer()
                     }
                 }
-                .padding(.horizontal, globalBasePadding)
             }
             // Background layer
             .background(

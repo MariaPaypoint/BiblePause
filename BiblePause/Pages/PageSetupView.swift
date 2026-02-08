@@ -65,34 +65,47 @@ struct PageSetupView: View {
         ZStack {
             VStack(spacing: 0) {
                 // MARK: Header
-                HStack {
-                    if showFromRead {
-                        
-                        Button {
-                            showFromRead = false
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.title)
-                                .fontWeight(.light)
-                        }
-                        .foregroundColor(Color.white.opacity(0.5))
-                    }
-                    else {
-                        MenuButtonView()
-                            .environmentObject(settingsManager)
-                    }
-                    Spacer()
-                    
+                ZStack {
                     Text("page.settings.title".localized)
+                        .font(.headline)
                         .fontWeight(.bold)
-                        .padding(.trailing, 32) // compensate menu button to keep title centered
                         .foregroundColor(.white)
-                    
-                    Spacer()
+
+                    HStack {
+                        if showFromRead {
+                            Button {
+                                showFromRead = false
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.title3)
+                                    .fontWeight(.light)
+                                    .frame(width: 32, height: 32)
+                            }
+                            .foregroundColor(Color.white.opacity(0.7))
+                        }
+                        else {
+                            MenuButtonView()
+                                .environmentObject(settingsManager)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        Spacer()
+
+                        Color.clear
+                            .frame(width: 32, height: 32)
+                    }
                 }
                 .padding(.horizontal, globalBasePadding)
                 .padding(.vertical, 12)
                 .background(Color("DarkGreen").brightness(0.05))
+                .clipShape(
+                    .rect(
+                        topLeadingRadius: showFromRead ? 22 : 0,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: showFromRead ? 22 : 0
+                    )
+                )
                 
                 ScrollViewReader { proxy in
                     ScrollView() {

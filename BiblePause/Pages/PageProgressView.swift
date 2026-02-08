@@ -11,7 +11,7 @@ struct PageProgressView: View {
     @State private var showSettingsSheet = false
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             VStack(spacing: 0) {
                 VStack(spacing: 20) {
                     // MARK: Header
@@ -153,6 +153,7 @@ struct PageProgressView: View {
                 .padding(.horizontal, globalBasePadding)
             }
             .background(Color("DarkGreen"))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             
         }
         .alert("progress.reset_confirmation.title".localized, isPresented: $showResetConfirmation) {
@@ -316,23 +317,35 @@ private struct ProgressSettingsSheet: View {
             Color("DarkGreen")
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                ZStack {
+                    Text("progress.settings.title".localized)
+                        .font(.headline)
+                        .foregroundColor(.white)
+
                     HStack {
-                        Text("progress.settings.title".localized)
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        Spacer()
                         Button {
                             dismiss()
                         } label: {
                             Image(systemName: "xmark")
-                                .font(.headline)
-                                .foregroundColor(.white.opacity(0.7))
+                                .font(.title3)
+                                .fontWeight(.light)
+                                .frame(width: 32, height: 32)
                         }
-                    }
-                    .padding(.bottom, 4)
+                        .foregroundColor(.white.opacity(0.7))
 
+                        Spacer()
+
+                        Color.clear
+                            .frame(width: 32, height: 32)
+                    }
+                }
+                .padding(.horizontal, globalBasePadding)
+                .padding(.vertical, 12)
+                .background(Color("DarkGreen").brightness(0.05))
+
+                ScrollView {
+                    VStack(spacing: 0) {
                     viewGroupHeader(text: "progress.settings.auto_counting".localized)
                     settingsToggle(
                         titleKey: "progress.settings.auto_audio_end",
@@ -373,11 +386,12 @@ private struct ProgressSettingsSheet: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, globalBasePadding)
-                .padding(.top, 16)
+                .padding(.top, 8)
                 .padding(.bottom, 24)
             }
         }
     }
+}
 }
 
 struct TestPageProgressView: View {

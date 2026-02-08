@@ -64,28 +64,34 @@ struct PageMultilingualConfigView: View {
             
             VStack(spacing: 0) {
                 // Header
-                HStack {
-                    Button("settings.cancel_choice".localized) {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                    .foregroundColor(.white)
-                    
-                    Spacer()
-                    
+                ZStack {
                     Text("multilingual.config.title".localized) // Localized
                         .font(.headline)
                         .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    Button(saveButtonTitle) {
-                        saveStep()
+
+                    HStack {
+                        Button {
+                            presentationMode.wrappedValue.dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.title3)
+                                .fontWeight(.light)
+                                .frame(width: 32, height: 32)
+                        }
+                        .foregroundColor(Color.white.opacity(0.7))
+
+                        Spacer()
+
+                        Button(saveButtonTitle) {
+                            saveStep()
+                        }
+                        .fontWeight(.bold)
+                        .foregroundColor(canSave ? Color("Mustard") : Color.gray)
+                        .disabled(!canSave)
                     }
-                    .fontWeight(.bold)
-                    .foregroundColor(canSave ? Color("Mustard") : Color.gray)
-                    .disabled(!canSave)
                 }
-                .padding()
+                .padding(.horizontal, globalBasePadding)
+                .padding(.vertical, 12)
                 .background(Color("DarkGreen").brightness(0.05))
                 
                 ScrollView {

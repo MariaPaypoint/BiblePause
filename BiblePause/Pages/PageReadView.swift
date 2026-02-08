@@ -201,7 +201,7 @@ struct PageReadView: View {
             }
             .toastView(toast: $toast)
 
-            .fullScreenCover(isPresented: $showSelection, onDismiss: {
+            .sheet(isPresented: $showSelection, onDismiss: {
                 Task {
                     if oldExcerpt != settingsManager.currentExcerpt {
                         await updateExcerpt(proxy: proxy)
@@ -211,9 +211,11 @@ struct PageReadView: View {
             {
                 PageSelectView(showFromRead: $showSelection)
                     .environmentObject(settingsManager)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
 
-            .fullScreenCover(isPresented: $showSetup, onDismiss: {
+            .sheet(isPresented: $showSetup, onDismiss: {
                 Task {
                     if oldTranslation != settingsManager.translation || oldVoice != settingsManager.voice || oldFontIncreasePercent != settingsManager.fontIncreasePercent {
                         await updateExcerpt(proxy: proxy)
@@ -223,6 +225,8 @@ struct PageReadView: View {
             {
                 PageSetupView(showFromRead: $showSetup)
                     .environmentObject(settingsManager)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
 
             .edgesIgnoringSafeArea(.bottom)

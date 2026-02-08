@@ -196,6 +196,8 @@ struct MenuView: View {
         }
         .sheet(isPresented: $showInterfaceLanguageSheet) {
             InterfaceLanguageSheetView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .background(
             MenuShape(value: 0)
@@ -257,8 +259,8 @@ struct MenuView: View {
 
         guard totalChapters > 0 else { return "0%" }
         let readChapters = settingsManager.readProgress.readChapters.count
-        let percentage = Int((Double(readChapters) / Double(totalChapters) * 100).rounded())
-        return "\(max(0, min(100, percentage)))%"
+        let percentage = max(0, min(100, Double(readChapters) / Double(totalChapters) * 100))
+        return String(format: "%.1f%%", percentage)
     }
 
     private func refreshReadSubtitleSnapshot() {
@@ -282,48 +284,62 @@ private struct InterfaceLanguageSheetView: View {
             Color("DarkGreen")
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 14) {
-                HStack {
+            VStack(spacing: 0) {
+                ZStack {
                     Text("settings.language".localized)
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
-                    Spacer()
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                }
 
-                ForEach(AppLanguage.allCases) { language in
-                    Button {
-                        localizationManager.currentLanguage = language
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Text(language.displayName)
-                                .foregroundColor(.white)
-                            Spacer()
-                            if localizationManager.currentLanguage == language {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(Color("Mustard"))
-                            }
+                    HStack {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.title3)
+                                .fontWeight(.light)
+                                .frame(width: 32, height: 32)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color("DarkGreen-light").opacity(0.6))
-                        .cornerRadius(8)
+                        .foregroundColor(.white.opacity(0.7))
+
+                        Spacer()
+
+                        Color.clear
+                            .frame(width: 32, height: 32)
                     }
                 }
+                .padding(.horizontal, globalBasePadding)
+                .padding(.vertical, 12)
+                .background(Color("DarkGreen").brightness(0.05))
 
-                Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Button {
+                            localizationManager.currentLanguage = language
+                            dismiss()
+                        } label: {
+                            HStack {
+                                Text(language.displayName)
+                                    .foregroundColor(.white)
+                                Spacer()
+                                if localizationManager.currentLanguage == language {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(Color("Mustard"))
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color("DarkGreen-light").opacity(0.6))
+                            .cornerRadius(8)
+                        }
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, globalBasePadding)
+                .padding(.top, 16)
+                .padding(.bottom, 10)
             }
-            .padding(.horizontal, globalBasePadding)
-            .padding(.top, 20)
-            .padding(.bottom, 10)
         }
     }
 }
