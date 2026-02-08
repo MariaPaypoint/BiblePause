@@ -36,6 +36,7 @@
 /* Chapter Actions */
 "chapter.mark_as_read" = "Mark as read";
 "chapter.mark_as_unread" = "Mark as unread";
+"chapter.read_status" = "Chapter is read";
 "chapter.title" = "Chapter %d";
 
 /* Progress */
@@ -54,7 +55,7 @@
 "progress.settings.title" = "Progress Settings";
 "progress.settings.auto_counting" = "Automatic Progress Counting";
 "progress.settings.auto_audio_end" = "Audio completed";
-"progress.settings.auto_audio_end.description" = "Mark chapter as read when audio is played to the end";
+"progress.settings.auto_audio_end.description" = "Mark chapter as read when player reaches chapter end";
 "progress.settings.auto_audio_90" = "From 90% listened";
 "progress.settings.auto_audio_90.description" = "Mark chapter as read when 90% of verses are played";
 "progress.settings.consider_seeking" = "Ignore skipped content";
@@ -62,8 +63,6 @@
 "progress.settings.auto_by_reading" = "Text read to end";
 "progress.settings.auto_by_reading.description" = "If text is scrolled to the end and at least one minute is spent in the chapter, mark it as read";
 "progress.settings.interface" = "Reading Interface";
-"progress.settings.show_reader_mark_option" = "Manual mark";
-"progress.settings.show_reader_mark_option.description" = "Show the Read / Unread switch on the playback control panel";
 "progress.settings.actions" = "Actions";
 "progress.settings.reset_all_progress" = "Reset all progress";
 

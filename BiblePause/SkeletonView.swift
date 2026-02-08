@@ -24,7 +24,6 @@ class SettingsManager: ObservableObject {
     @AppStorage("autoProgressFrom90Percent") var autoProgressFrom90Percent: Bool = true
     @AppStorage("autoProgressConsiderSeeking") var autoProgressConsiderSeeking: Bool = true
     @AppStorage("autoProgressByReading") var autoProgressByReading: Bool = true
-    @AppStorage("showChapterMarkToggleInReader") var showChapterMarkToggleInReader: Bool = false
     
     @AppStorage("language") var language: String = "ru"
     @AppStorage("translation") var translation: Int = 1 // syn

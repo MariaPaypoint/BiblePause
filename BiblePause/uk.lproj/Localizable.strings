@@ -36,6 +36,7 @@
 /* Chapter Actions */
 "chapter.mark_as_read" = "Позначити як прочитаний";
 "chapter.mark_as_unread" = "Позначити як непрочитаний";
+"chapter.read_status" = "Розділ прочитано";
 "chapter.title" = "Розділ %d";
 
 /* Progress */
@@ -54,7 +55,7 @@
 "progress.settings.title" = "Налаштування прогресу";
 "progress.settings.auto_counting" = "Автозарахування прогресу";
 "progress.settings.auto_audio_end" = "По завершенню аудіо";
-"progress.settings.auto_audio_end.description" = "Зараховувати розділ, коли аудіо відтворено до кінця";
+"progress.settings.auto_audio_end.description" = "Зараховувати розділ, коли плеєр доходить до кінця розділу";
 "progress.settings.auto_audio_90" = "Від 90% прослуховування";
 "progress.settings.auto_audio_90.description" = "Зараховувати розділ, коли відтворено 90% віршів";
 "progress.settings.consider_seeking" = "Ігнорувати перемотане";
@@ -62,8 +63,6 @@
 "progress.settings.auto_by_reading" = "За дочитуванням тексту";
 "progress.settings.auto_by_reading.description" = "Якщо текст проскролено до кінця і на розділі проведено не менше хвилини, зараховувати його як прочитаний";
 "progress.settings.interface" = "Інтерфейс читання";
-"progress.settings.show_reader_mark_option" = "Ручна позначка";
-"progress.settings.show_reader_mark_option.description" = "Показувати перемикач «Прочитано / Не прочитано» на панелі керування відтворенням";
 "progress.settings.actions" = "Дії";
 "progress.settings.reset_all_progress" = "Скинути весь прогрес";
 

@@ -36,6 +36,7 @@
 /* Chapter Actions */
 "chapter.mark_as_read" = "Отметить как прочитанную";
 "chapter.mark_as_unread" = "Отметить как непрочитанную";
+"chapter.read_status" = "Глава прочитана";
 "chapter.title" = "Глава %d";
 
 /* Progress */
@@ -54,7 +55,7 @@
 "progress.settings.title" = "Настройки прогресса";
 "progress.settings.auto_counting" = "Автозачет прогресса";
 "progress.settings.auto_audio_end" = "По концу аудио";
-"progress.settings.auto_audio_end.description" = "Засчитывать главу, когда аудио проиграно до конца";
+"progress.settings.auto_audio_end.description" = "Засчитывать главу, когда плеер доходит до конца главы";
 "progress.settings.auto_audio_90" = "От 90% прослушивания";
 "progress.settings.auto_audio_90.description" = "Засчитывать главу, когда проиграно 90% стихов";
 "progress.settings.consider_seeking" = "Игнорировать перемотанное";
@@ -62,8 +63,6 @@
 "progress.settings.auto_by_reading" = "По дочитыванию текста";
 "progress.settings.auto_by_reading.description" = "Если текст проскролен до конца, и на главе проведено не менее минуты, зачитывать ее как прочитанную";
 "progress.settings.interface" = "Интерфейс чтения";
-"progress.settings.show_reader_mark_option" = "Ручная отметка";
-"progress.settings.show_reader_mark_option.description" = "Показывать переключатель «Прочитано / Не прочитано» на панели управления воспроизведением";
 "progress.settings.actions" = "Действия";
 "progress.settings.reset_all_progress" = "Сбросить весь прогресс";
 

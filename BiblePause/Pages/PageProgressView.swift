@@ -345,20 +345,9 @@ private struct ProgressSettingsSheet: View {
                         isOn: $settingsManager.autoProgressFrom90Percent
                     )
                     settingsToggle(
-                        titleKey: "progress.settings.consider_seeking",
-                        subtitleKey: "progress.settings.consider_seeking.description",
-                        isOn: $settingsManager.autoProgressConsiderSeeking
-                    )
-                    settingsToggle(
                         titleKey: "progress.settings.auto_by_reading",
                         subtitleKey: "progress.settings.auto_by_reading.description",
                         isOn: $settingsManager.autoProgressByReading
-                    )
-
-                    settingsToggle(
-                        titleKey: "progress.settings.show_reader_mark_option",
-                        subtitleKey: "progress.settings.show_reader_mark_option.description",
-                        isOn: $settingsManager.showChapterMarkToggleInReader
                     )
 
                     viewGroupHeader(text: "progress.settings.actions".localized)

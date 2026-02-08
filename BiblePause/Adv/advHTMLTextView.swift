@@ -31,6 +31,7 @@ struct HTMLTextView: UIViewRepresentable {
     """
     @Binding var scrollToVerse: Int?
     var isScrollEnabled: Bool = true
+    var onScrollMetricsChanged: ((Double, Bool) -> Void)? = nil
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -52,6 +53,7 @@ struct HTMLTextView: UIViewRepresentable {
         webView.loadHTMLString(htmlContent, baseURL: nil)
         
         webView.scrollView.delaysContentTouches = false
+        webView.scrollView.delegate = context.coordinator
         
         context.coordinator.webView = webView
         return webView
@@ -59,6 +61,7 @@ struct HTMLTextView: UIViewRepresentable {
 
 
     func updateUIView(_ webView: WKWebView, context: Context) {
+        context.coordinator.parent = self
         // If scrollToVerse changes and webView is loaded, execute JavaScript
         if let verse = scrollToVerse, context.coordinator.webViewLoaded {
             //print("updateUIView \(verse)")
@@ -75,10 +78,12 @@ struct HTMLTextView: UIViewRepresentable {
         }
     }
 
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
         var parent: HTMLTextView
         var webViewLoaded = false
         weak var webView: WKWebView?
+        private var lastSentProgress: Double = -1
+        private var lastSentAtBottom: Bool = false
 
         init(_ parent: HTMLTextView) {
             self.parent = parent
@@ -95,6 +100,45 @@ struct HTMLTextView: UIViewRepresentable {
                     self.parent.scrollToVerse = nil
                 }
             }
+
+            // Send initial scroll metrics even if user does not scroll.
+            // This is important for short chapters that fully fit on screen.
+            sendScrollMetrics(from: webView.scrollView, force: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                self.sendScrollMetrics(from: webView.scrollView, force: true)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                self.sendScrollMetrics(from: webView.scrollView, force: true)
+            }
+        }
+
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+            sendScrollMetrics(from: scrollView, force: false)
+        }
+
+        private func sendScrollMetrics(from scrollView: UIScrollView, force: Bool) {
+            guard parent.isScrollEnabled else { return }
+
+            let contentHeight = scrollView.contentSize.height
+            let visibleHeight = scrollView.bounds.height
+            let maxOffset = max(contentHeight - visibleHeight, 0)
+
+            let progress: Double
+            if maxOffset <= 0 {
+                progress = 1
+            } else {
+                progress = min(max(Double(scrollView.contentOffset.y / maxOffset), 0), 1)
+            }
+
+            let bottomThreshold: CGFloat = 24
+            let isAtBottom = scrollView.contentOffset.y + visibleHeight >= contentHeight - bottomThreshold
+
+            let shouldSend = force || abs(progress - lastSentProgress) >= 0.02 || isAtBottom != lastSentAtBottom
+            guard shouldSend else { return }
+
+            lastSentProgress = progress
+            lastSentAtBottom = isAtBottom
+            parent.onScrollMetricsChanged?(progress, isAtBottom)
         }
     }
 }

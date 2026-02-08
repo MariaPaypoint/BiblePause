@@ -20,6 +20,11 @@ struct PageReadView: View {
     @State private var listenedVerseIndexes: Set<Int> = []
     @State private var audioVerseCount: Int = 0
     @State private var ninetyPercentHandledForSession: Bool = true
+    @State private var readingSessionID: UUID = UUID()
+    @State private var chapterReadingStartTime: Date = .distantPast
+    @State private var chapterReachedTextBottom: Bool = false
+    @State private var readingAutoProgressHandledForSession: Bool = true
+    @State private var pendingReadingAutoMarkWorkItem: DispatchWorkItem?
 
     @State private var showSelection = false
     @State private var showSetup = false
@@ -127,7 +132,13 @@ struct PageReadView: View {
                                     .background(Color("DarkGreen-light"))
                             }
                             
-                        HTMLTextView(htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent), scrollToVerse: $currentVerseNumber)
+                        HTMLTextView(
+                            htmlContent: generateHTMLContent(verses: textVerses, fontIncreasePercent: settingsManager.fontIncreasePercent),
+                            scrollToVerse: $currentVerseNumber,
+                            onScrollMetricsChanged: { _, isAtBottom in
+                                handleTextScroll(isAtBottom: isAtBottom)
+                            }
+                        )
                             .mask(LinearGradient(
                                 gradient: Gradient(colors: [Color.black, Color.black, Color.black.opacity(0)]),
                                 startPoint: .init(x: 0.5, y: 0.9), // Gradient starts at 90% height
@@ -237,6 +248,10 @@ struct PageReadView: View {
                 // Cleanup observer to avoid memory leaks
                 audioStateObserver?.cancel()
                 audioStateObserver = nil
+                invalidateTextReadingTracking()
+            }
+            .onChange(of: settingsManager.autoProgressByReading) { _, _ in
+                evaluateTextReadingAutoProgress()
             }
         }
     }
@@ -245,6 +260,7 @@ struct PageReadView: View {
     func updateExcerpt(proxy: ScrollViewProxy) async {
         isUpdatingExcerpt = true
         invalidateAudioCompletionTracking()
+        invalidateTextReadingTracking()
         defer { isUpdatingExcerpt = false }
 
         do {
@@ -256,6 +272,7 @@ struct PageReadView: View {
 
             textVerses = thisTextVerses
             self.hasText = true
+            beginTextReadingTracking()
             
             // Update book and chapter information
             settingsManager.currentBookId = textVerses[0].bookDigitCode
@@ -450,6 +467,66 @@ struct PageReadView: View {
             markCurrentChapterAsRead()
         }
     }
+
+    private func beginTextReadingTracking() {
+        let sessionID = UUID()
+        readingSessionID = sessionID
+        chapterReadingStartTime = Date()
+        chapterReachedTextBottom = false
+        readingAutoProgressHandledForSession = false
+        pendingReadingAutoMarkWorkItem?.cancel()
+        pendingReadingAutoMarkWorkItem = nil
+    }
+
+    private func invalidateTextReadingTracking() {
+        readingSessionID = UUID()
+        pendingReadingAutoMarkWorkItem?.cancel()
+        pendingReadingAutoMarkWorkItem = nil
+        chapterReadingStartTime = .distantPast
+        chapterReachedTextBottom = false
+        readingAutoProgressHandledForSession = true
+    }
+
+    private func handleTextScroll(isAtBottom: Bool) {
+        guard hasText else { return }
+        guard !isUpdatingExcerpt else { return }
+        guard isAtBottom else { return }
+
+        if !chapterReachedTextBottom {
+            chapterReachedTextBottom = true
+        }
+        evaluateTextReadingAutoProgress()
+    }
+
+    private func evaluateTextReadingAutoProgress() {
+        guard settingsManager.autoProgressByReading else {
+            pendingReadingAutoMarkWorkItem?.cancel()
+            pendingReadingAutoMarkWorkItem = nil
+            return
+        }
+        guard !readingAutoProgressHandledForSession else { return }
+        guard chapterReachedTextBottom else { return }
+        guard chapterReadingStartTime != .distantPast else { return }
+
+        let elapsed = Date().timeIntervalSince(chapterReadingStartTime)
+        if elapsed >= 60 {
+            readingAutoProgressHandledForSession = true
+            pendingReadingAutoMarkWorkItem?.cancel()
+            pendingReadingAutoMarkWorkItem = nil
+            markCurrentChapterAsRead()
+            return
+        }
+
+        let remaining = max(0.1, 60 - elapsed)
+        let sessionID = readingSessionID
+        pendingReadingAutoMarkWorkItem?.cancel()
+        let workItem = DispatchWorkItem {
+            guard self.readingSessionID == sessionID else { return }
+            self.evaluateTextReadingAutoProgress()
+        }
+        pendingReadingAutoMarkWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + remaining, execute: workItem)
+    }
     
     // MARK: Pause calculation between chapters
     private func calculateChapterTransitionPause() -> (delay: Double, shouldAutoPlay: Bool) {
@@ -495,7 +572,7 @@ struct PageReadView: View {
             VStack {
                 viewAudioInfo()
 
-                if settingsManager.showChapterMarkToggleInReader && hasText {
+                if hasText {
                     viewChapterMarkToggle()
                 }
                 
@@ -665,7 +742,7 @@ struct PageReadView: View {
 
     private var audioPanelHeight: CGFloat {
         let baseHeight: CGFloat = (!hasAudio && hasText ? 260 : 220)
-        let withManualToggle = settingsManager.showChapterMarkToggleInReader && hasText
+        let withManualToggle = hasText
         return baseHeight + (withManualToggle ? 24 : 0)
     }
 
@@ -710,7 +787,7 @@ struct PageReadView: View {
                         .foregroundColor(Color("localAccentColor").opacity(0.6))
                         .font(.caption)
                 }
-                Text((isRead ? "chapter.mark_as_unread" : "chapter.mark_as_read").localized)
+                Text("chapter.read_status".localized)
                     .font(.caption2)
                     .foregroundColor(Color("localAccentColor").opacity(0.85))
                 Spacer()
