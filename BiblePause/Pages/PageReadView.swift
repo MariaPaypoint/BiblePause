@@ -346,12 +346,8 @@ struct PageReadView: View {
             .sink { newState in
                 // Auto-move to next chapter once audio finishes
                 if newState == .finished {
-                    // Mark current chapter as read
-                    if let firstVerse = self.textVerses.first {
-                        let bookAlias = self.settingsManager.getBookAlias(bookNumber: firstVerse.bookDigitCode)
-                        if !bookAlias.isEmpty {
-                            self.settingsManager.markChapterAsRead(book: bookAlias, chapter: firstVerse.chapterDigitCode)
-                        }
+                    if self.settingsManager.autoProgressAudioEnd {
+                        self.markCurrentChapterAsRead()
                     }
                     
                     if self.settingsManager.autoNextChapter && !self.nextExcerpt.isEmpty {
@@ -425,6 +421,10 @@ struct PageReadView: View {
 
             VStack {
                 viewAudioInfo()
+
+                if settingsManager.showChapterMarkToggleInReader && hasText {
+                    viewChapterMarkToggle()
+                }
                 
                 // Warning when audio is missing
                 if !hasAudio && hasText && self.errorDescription != "" {
@@ -453,7 +453,7 @@ struct PageReadView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: showAudioPanel ? (!hasAudio && hasText ? 260 : 220) : 45)
+        .frame(height: showAudioPanel ? audioPanelHeight : 45)
         .padding(.horizontal, globalBasePadding)
         .background(Color("DarkGreen-light"))
         .clipShape(
@@ -587,6 +587,69 @@ struct PageReadView: View {
             return "\(settingsManager.pauseBlock.shortName) • \("audio.pause.seconds".localized(settingsManager.pauseLength))"
         case .full:
             return "\(settingsManager.pauseBlock.shortName) • \("audio.pause.stop".localized)"
+        }
+    }
+
+    private var audioPanelHeight: CGFloat {
+        let baseHeight: CGFloat = (!hasAudio && hasText ? 260 : 220)
+        let withManualToggle = settingsManager.showChapterMarkToggleInReader && hasText
+        return baseHeight + (withManualToggle ? 24 : 0)
+    }
+
+    @ViewBuilder private func viewChapterMarkToggle() -> some View {
+        let isRead = isCurrentChapterRead
+        Button {
+            toggleCurrentChapterReadState()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isRead ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isRead ? Color("Mustard") : Color("localAccentColor").opacity(0.6))
+                    .font(.caption)
+                Text((isRead ? "chapter.mark_as_unread" : "chapter.mark_as_read").localized)
+                    .font(.caption2)
+                    .foregroundColor(Color("localAccentColor").opacity(0.85))
+                Spacer()
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 2)
+    }
+
+    private var currentChapterProgressTarget: (bookAlias: String, chapter: Int)? {
+        let chapter = textVerses.first?.chapterDigitCode ?? settingsManager.currentChapterId
+        guard chapter > 0 else { return nil }
+
+        let aliasFromVerse = textVerses.first.map { settingsManager.getBookAlias(bookNumber: $0.bookDigitCode) } ?? ""
+        let aliasFromCurrentBookId = settingsManager.currentBookId > 0 ? settingsManager.getBookAlias(bookNumber: settingsManager.currentBookId) : ""
+        let aliasFromExcerpt = settingsManager.currentExcerpt
+            .split(separator: " ")
+            .first
+            .map(String.init)?
+            .lowercased() ?? ""
+
+        let bookAlias = [aliasFromVerse, aliasFromCurrentBookId, aliasFromExcerpt]
+            .first(where: { !$0.isEmpty }) ?? ""
+        guard !bookAlias.isEmpty else { return nil }
+
+        return (bookAlias, chapter)
+    }
+
+    private var isCurrentChapterRead: Bool {
+        guard let target = currentChapterProgressTarget else { return false }
+        return settingsManager.isChapterRead(book: target.bookAlias, chapter: target.chapter)
+    }
+
+    private func markCurrentChapterAsRead() {
+        guard let target = currentChapterProgressTarget else { return }
+        settingsManager.markChapterAsRead(book: target.bookAlias, chapter: target.chapter)
+    }
+
+    private func toggleCurrentChapterReadState() {
+        guard let target = currentChapterProgressTarget else { return }
+        if settingsManager.isChapterRead(book: target.bookAlias, chapter: target.chapter) {
+            settingsManager.markChapterAsUnread(book: target.bookAlias, chapter: target.chapter)
+        } else {
+            settingsManager.markChapterAsRead(book: target.bookAlias, chapter: target.chapter)
         }
     }
 

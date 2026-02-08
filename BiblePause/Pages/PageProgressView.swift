@@ -8,6 +8,7 @@ struct PageProgressView: View {
     @State private var booksInfo: [Components.Schemas.TranslationBookModel] = []
     @State private var isLoading = false
     @State private var showMenuForBook: Int? = nil
+    @State private var showSettingsSheet = false
     
     var body: some View {
         ZStack {
@@ -23,9 +24,9 @@ struct PageProgressView: View {
                             .foregroundColor(.white)
                         Spacer()
                         Button {
-                            showResetConfirmation = true
+                            showSettingsSheet = true
                         } label: {
-                            Image(systemName: "arrow.counterclockwise")
+                            Image(systemName: "gearshape.fill")
                                 .foregroundColor(.white.opacity(0.7))
                                 .font(.system(size: 20))
                         }
@@ -162,6 +163,12 @@ struct PageProgressView: View {
         } message: {
             Text("progress.reset_confirmation.message".localized)
         }
+        .sheet(isPresented: $showSettingsSheet) {
+            ProgressSettingsSheet(showResetConfirmation: $showResetConfirmation)
+                .environmentObject(settingsManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
         .onAppear {
             loadBooks()
         }
@@ -277,6 +284,110 @@ struct PageProgressView: View {
         
         // Switch to the reading page
         settingsManager.selectedMenuItem = .read
+    }
+}
+
+private struct ProgressSettingsSheet: View {
+    @EnvironmentObject var settingsManager: SettingsManager
+    @Environment(\.dismiss) private var dismiss
+    @Binding var showResetConfirmation: Bool
+
+    @ViewBuilder
+    private func settingsToggle(titleKey: String, subtitleKey: String, isOn: Binding<Bool>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .center, spacing: 10) {
+                Text(titleKey.localized)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Toggle("", isOn: isOn)
+                    .labelsHidden()
+                    .toggleStyle(SwitchToggleStyle(tint: Color("DarkGreen-accent")))
+            }
+            Text(subtitleKey.localized)
+                .font(.footnote)
+                .foregroundColor(.white.opacity(0.65))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, 12)
+    }
+
+    var body: some View {
+        ZStack {
+            Color("DarkGreen")
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("progress.settings.title".localized)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Spacer()
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.headline)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                    }
+                    .padding(.bottom, 4)
+
+                    viewGroupHeader(text: "progress.settings.auto_counting".localized)
+                    settingsToggle(
+                        titleKey: "progress.settings.auto_audio_end",
+                        subtitleKey: "progress.settings.auto_audio_end.description",
+                        isOn: $settingsManager.autoProgressAudioEnd
+                    )
+                    settingsToggle(
+                        titleKey: "progress.settings.auto_audio_90",
+                        subtitleKey: "progress.settings.auto_audio_90.description",
+                        isOn: $settingsManager.autoProgressFrom90Percent
+                    )
+                    settingsToggle(
+                        titleKey: "progress.settings.consider_seeking",
+                        subtitleKey: "progress.settings.consider_seeking.description",
+                        isOn: $settingsManager.autoProgressConsiderSeeking
+                    )
+                    settingsToggle(
+                        titleKey: "progress.settings.auto_by_reading",
+                        subtitleKey: "progress.settings.auto_by_reading.description",
+                        isOn: $settingsManager.autoProgressByReading
+                    )
+
+                    settingsToggle(
+                        titleKey: "progress.settings.show_reader_mark_option",
+                        subtitleKey: "progress.settings.show_reader_mark_option.description",
+                        isOn: $settingsManager.showChapterMarkToggleInReader
+                    )
+
+                    viewGroupHeader(text: "progress.settings.actions".localized)
+                    Button {
+                        dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            showResetConfirmation = true
+                        }
+                    } label: {
+                        Text("progress.settings.reset_all_progress".localized)
+                            .font(.body)
+                            .fontWeight(.regular)
+                            .foregroundColor(Color.red.opacity(0.9))
+                            .frame(maxWidth: .infinity, minHeight: 52, alignment: .center)
+                            .padding(.horizontal, 12)
+                        .background(Color("DarkGreen-light").opacity(0.7))
+                        .cornerRadius(5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, globalBasePadding)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
+            }
+        }
     }
 }
 

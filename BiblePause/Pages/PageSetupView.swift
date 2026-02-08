@@ -63,7 +63,7 @@ struct PageSetupView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 // MARK: Header
                 HStack {
                     if showFromRead {
@@ -91,6 +91,8 @@ struct PageSetupView: View {
                     Spacer()
                 }
                 .padding(.horizontal, globalBasePadding)
+                .padding(.vertical, 12)
+                .background(Color("DarkGreen").brightness(0.05))
                 
                 ScrollViewReader { proxy in
                     ScrollView() {
@@ -105,6 +107,7 @@ struct PageSetupView: View {
                             ViewInterfaceLanguage()
                         }
                         .padding(.horizontal, globalBasePadding)
+                        .padding(.top, 10)
                     }
                     .foregroundColor(.white)
                 }

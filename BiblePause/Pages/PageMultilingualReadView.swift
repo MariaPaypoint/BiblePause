@@ -688,6 +688,12 @@ struct PageMultilingualReadView: View {
     }
     
     private func moveToNextStep() {
+        let isLastStepInUnit = !allSteps.isEmpty && currentStepIndex == allSteps.count - 1
+        let isLastUnit = !unitRanges.isEmpty && currentUnitIndex == unitRanges.count - 1
+        if isLastStepInUnit && isLastUnit && settingsManager.autoProgressAudioEnd {
+            markCurrentChapterAsRead()
+        }
+
         currentStepIndex += 1
         
         if currentStepIndex >= allSteps.count {
@@ -828,6 +834,30 @@ struct PageMultilingualReadView: View {
     // Legacy setup function redirect
     private func setupAudioObserver() {
        // No-op or start initial monitoring if needed, but playCurrentStep handles it.
+    }
+
+    private var currentChapterProgressTarget: (bookAlias: String, chapter: Int)? {
+        let chapter = stepTextVerses[0]?.first?.chapterDigitCode ?? settingsManager.currentChapterId
+        guard chapter > 0 else { return nil }
+
+        let aliasFromVerse = stepTextVerses[0]?.first.map { settingsManager.getBookAlias(bookNumber: $0.bookDigitCode) } ?? ""
+        let aliasFromCurrentBookId = settingsManager.currentBookId > 0 ? settingsManager.getBookAlias(bookNumber: settingsManager.currentBookId) : ""
+        let aliasFromExcerpt = settingsManager.currentExcerpt
+            .split(separator: " ")
+            .first
+            .map(String.init)?
+            .lowercased() ?? ""
+
+        let bookAlias = [aliasFromVerse, aliasFromCurrentBookId, aliasFromExcerpt]
+            .first(where: { !$0.isEmpty }) ?? ""
+        guard !bookAlias.isEmpty else { return nil }
+
+        return (bookAlias, chapter)
+    }
+
+    private func markCurrentChapterAsRead() {
+        guard let target = currentChapterProgressTarget else { return }
+        settingsManager.markChapterAsRead(book: target.bookAlias, chapter: target.chapter)
     }
     
     // MARK: HTML Generation
@@ -1043,4 +1073,3 @@ struct PageMultilingualReadView: View {
         return htmlString
     }
 }
-
