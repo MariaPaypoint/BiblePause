@@ -16,6 +16,10 @@ struct PageReadView: View {
     @State private var hasStartedPlaybackInSession: Bool = false
     @State private var completionHandledForSession: Bool = true
     @State private var completionGuardStartTime: Date = .distantPast
+    @State private var currentAudioVerseIndex: Int = -1
+    @State private var listenedVerseIndexes: Set<Int> = []
+    @State private var audioVerseCount: Int = 0
+    @State private var ninetyPercentHandledForSession: Bool = true
 
     @State private var showSelection = false
     @State private var showSetup = false
@@ -286,7 +290,7 @@ struct PageReadView: View {
                 
                 self.hasAudio = true
                 self.errorDescription = ""
-                beginAudioCompletionTracking()
+                beginAudioCompletionTracking(audioVerseCount: audioVerses.count)
             } else {
                 self.hasAudio = false
                 self.errorDescription = "Invalid audio file URL"
@@ -301,11 +305,12 @@ struct PageReadView: View {
 
     // MARK: Verse change handlers
     func onStartVerse(_ cur: Int) {
-
+        currentAudioVerseIndex = cur
         if skipOnePause {
             skipOnePause = false
         }
         else if cur < 0 {
+            currentAudioVerseIndex = -1
             self.currentVerseNumber = 0
             return
         }
@@ -334,6 +339,11 @@ struct PageReadView: View {
         if skipOnePause {
             skipOnePause = false
             return
+        }
+
+        if currentAudioVerseIndex >= 0 {
+            listenedVerseIndexes.insert(currentAudioVerseIndex)
+            evaluateNinetyPercentAutoProgress(includeCurrentVerse: false)
         }
 
         // Apply pause if needed
@@ -368,6 +378,7 @@ struct PageReadView: View {
                     guard Date().timeIntervalSince(self.completionGuardStartTime) >= 0.8 else { return }
 
                     self.completionHandledForSession = true
+                    self.evaluateNinetyPercentAutoProgress(includeCurrentVerse: true)
 
                     if self.settingsManager.autoProgressAudioEnd {
                         self.markCurrentChapterAsRead()
@@ -401,16 +412,43 @@ struct PageReadView: View {
             }
     }
 
-    private func beginAudioCompletionTracking() {
+    private func beginAudioCompletionTracking(audioVerseCount: Int) {
         hasStartedPlaybackInSession = false
         completionHandledForSession = false
         completionGuardStartTime = Date()
+        currentAudioVerseIndex = -1
+        listenedVerseIndexes.removeAll(keepingCapacity: true)
+        self.audioVerseCount = audioVerseCount
+        ninetyPercentHandledForSession = false
     }
 
     private func invalidateAudioCompletionTracking() {
         hasStartedPlaybackInSession = false
         completionHandledForSession = true
         completionGuardStartTime = Date()
+        currentAudioVerseIndex = -1
+        listenedVerseIndexes.removeAll(keepingCapacity: true)
+        audioVerseCount = 0
+        ninetyPercentHandledForSession = true
+    }
+
+    private func evaluateNinetyPercentAutoProgress(includeCurrentVerse: Bool) {
+        guard settingsManager.autoProgressFrom90Percent else { return }
+        guard !ninetyPercentHandledForSession else { return }
+        guard audioVerseCount > 0 else { return }
+
+        var listened = listenedVerseIndexes
+        if includeCurrentVerse, currentAudioVerseIndex >= 0, currentAudioVerseIndex < audioVerseCount {
+            listened.insert(currentAudioVerseIndex)
+        }
+
+        let requiredVerseCount = Int(ceil(Double(audioVerseCount) * 0.9))
+        guard requiredVerseCount > 0 else { return }
+
+        if listened.count >= requiredVerseCount {
+            ninetyPercentHandledForSession = true
+            markCurrentChapterAsRead()
+        }
     }
     
     // MARK: Pause calculation between chapters
