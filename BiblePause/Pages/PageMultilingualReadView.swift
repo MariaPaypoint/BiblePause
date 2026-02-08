@@ -39,9 +39,12 @@ struct PageMultilingualReadView: View {
     @State private var audioStateObserver: AnyCancellable?
     @State private var playbackSessionID: UUID = UUID()
     @State private var isUpdatingExcerpt: Bool = false
+    @State private var chapterVerseNumbers: Set<Int> = []
     @State private var listenedVerseNumbers: Set<Int> = []
     @State private var audioVerseCount: Int = 0
     @State private var ninetyPercentHandledForSession: Bool = true
+    @State private var verseTrackingSessionID: UUID = UUID()
+    @State private var currentAudioVerseNumber: Int = -1
     @State private var readingSessionID: UUID = UUID()
     @State private var chapterReadingStartTime: Date = .distantPast
     @State private var chapterReachedTextBottom: Bool = false
@@ -278,6 +281,8 @@ struct PageMultilingualReadView: View {
                 }
                 .padding(.horizontal, globalBasePadding)
                 .padding(.vertical, 10)
+
+                viewChapterMarkToggle()
                 
                 // Control buttons row - matching PageReadView style
                 HStack {
@@ -374,7 +379,7 @@ struct PageMultilingualReadView: View {
 
         }
         .frame(maxWidth: .infinity)
-        .frame(height: showAudioPanel ? 180 : 45) // Adjust height as needed
+        .frame(height: showAudioPanel ? audioPanelHeight : 45)
         .background(Color("DarkGreen-light"))
         .clipShape(
             .rect(
@@ -417,6 +422,11 @@ struct PageMultilingualReadView: View {
             .frame(maxWidth: .infinity)
         }
     }
+
+    private var audioPanelHeight: CGFloat {
+        // Base panel height + a small row for the chapter mark toggle.
+        180 + 24
+    }
     
     // Get current read step
     private func getCurrentReadStep() -> MultilingualStep? {
@@ -433,6 +443,58 @@ struct PageMultilingualReadView: View {
             }
         }
         return readSteps.first
+    }
+
+    private var ninetyPercentThresholdVerseCount: Int {
+        guard audioVerseCount > 0 else { return 0 }
+        return Int(ceil(Double(audioVerseCount) * 0.9))
+    }
+
+    private var ninetyPercentVisualProgress: Double {
+        guard settingsManager.autoProgressFrom90Percent else { return 0 }
+        let required = ninetyPercentThresholdVerseCount
+        guard required > 0 else { return 0 }
+        return min(Double(listenedVerseNumbers.count) / Double(required), 1)
+    }
+
+    @ViewBuilder private func viewChapterMarkToggle() -> some View {
+        let isRead = isCurrentChapterRead
+        Button {
+            toggleCurrentChapterReadState()
+        } label: {
+            HStack(spacing: 6) {
+                if isRead {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color("Mustard"))
+                        .font(.caption)
+                } else if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
+                    ZStack {
+                        Circle()
+                            .stroke(Color("localAccentColor").opacity(0.35), lineWidth: 1.4)
+                        Circle()
+                            .trim(from: 0, to: ninetyPercentVisualProgress)
+                            .stroke(
+                                Color("Mustard"),
+                                style: StrokeStyle(lineWidth: 1.8, lineCap: .round)
+                            )
+                            .rotationEffect(.degrees(-90))
+                    }
+                    .frame(width: 13, height: 13)
+                    .animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
+                } else {
+                    Image(systemName: "circle")
+                        .foregroundColor(Color("localAccentColor").opacity(0.6))
+                        .font(.caption)
+                }
+                Text("chapter.read_status".localized)
+                    .font(.caption2)
+                    .foregroundColor(Color("localAccentColor").opacity(0.85))
+                Spacer()
+            }
+            .padding(.horizontal, globalBasePadding)
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 2)
     }
     
     // Cycle playback speed
@@ -511,7 +573,9 @@ struct PageMultilingualReadView: View {
         
         // Build unit ranges based on first translation's structure
         buildUnitRanges()
-        beginAudioProgressTracking(audioVerseCount: stepTextVerses[0]?.count ?? 0)
+        let verseNumbers = Set(stepTextVerses.values.flatMap { $0.map(\.number) })
+        chapterVerseNumbers = verseNumbers
+        beginAudioProgressTracking(chapterVerseCount: max(verseNumbers.count, stepTextVerses[0]?.count ?? 0))
         beginTextReadingTracking()
         
         // Reset playback state
@@ -733,6 +797,9 @@ struct PageMultilingualReadView: View {
             let playerItem = AVPlayerItem(url: url)
             let from = unitAudioVerses.first!.begin
             let to = unitAudioVerses.last!.end
+            let trackingSessionID = UUID()
+            verseTrackingSessionID = trackingSessionID
+            currentAudioVerseNumber = -1
             
             print("[MultiRead] Setting up audio from \(from) to \(to) with \(unitAudioVerses.count) verses")
             
@@ -749,12 +816,17 @@ struct PageMultilingualReadView: View {
             audiopleer.setSpeed(speed: Float(step.playbackSpeed))
             
             audiopleer.onStartVerse = { verseIdx in
+                guard self.verseTrackingSessionID == trackingSessionID else { return }
                 if verseIdx >= 0 && verseIdx < unitAudioVerses.count {
                     // Encode step index into highlight ID: stepIdx * 10000 + verseNumber
                     let verseNumber = unitAudioVerses[verseIdx].number
                     self.highlightVerseNumber = self.currentStepIndex * 10000 + verseNumber
-                    self.recordListenedVerse(verseNumber)
+                    self.currentAudioVerseNumber = verseNumber
                 }
+            }
+            audiopleer.onEndVerse = {
+                guard self.verseTrackingSessionID == trackingSessionID else { return }
+                self.recordListenedVerse(self.currentAudioVerseNumber)
             }
             
 
@@ -900,6 +972,8 @@ struct PageMultilingualReadView: View {
                     
                     // Only advance if we are supposed to be playing
                     if self.isPlaying {
+                        // PlayerModel does not emit `onEndVerse` for the last verse; count it here.
+                        self.recordListenedVerse(self.currentAudioVerseNumber)
                         self.evaluateNinetyPercentAutoProgress()
                         print("[MultiRead] Audio ended (state: \(newState)), moving to next step")
                         self.isPlaying = false // Logical stop
@@ -914,14 +988,15 @@ struct PageMultilingualReadView: View {
        // No-op or start initial monitoring if needed, but playCurrentStep handles it.
     }
 
-    private func beginAudioProgressTracking(audioVerseCount: Int) {
+    private func beginAudioProgressTracking(chapterVerseCount: Int) {
         listenedVerseNumbers.removeAll(keepingCapacity: true)
-        self.audioVerseCount = max(audioVerseCount, 0)
+        self.audioVerseCount = max(chapterVerseCount, 0)
         ninetyPercentHandledForSession = false
     }
 
     private func invalidateAudioProgressTracking() {
         listenedVerseNumbers.removeAll(keepingCapacity: true)
+        chapterVerseNumbers.removeAll(keepingCapacity: true)
         audioVerseCount = 0
         ninetyPercentHandledForSession = true
     }
@@ -929,6 +1004,10 @@ struct PageMultilingualReadView: View {
     private func recordListenedVerse(_ verseNumber: Int) {
         guard !isUpdatingExcerpt else { return }
         guard verseNumber > 0 else { return }
+        // Audio can be incomplete/misaligned; count only verses that exist in the displayed chapter text.
+        if !chapterVerseNumbers.isEmpty, !chapterVerseNumbers.contains(verseNumber) {
+            return
+        }
         listenedVerseNumbers.insert(verseNumber)
         evaluateNinetyPercentAutoProgress()
     }
@@ -1026,9 +1105,23 @@ struct PageMultilingualReadView: View {
         return (bookAlias, chapter)
     }
 
+    private var isCurrentChapterRead: Bool {
+        guard let target = currentChapterProgressTarget else { return false }
+        return settingsManager.isChapterRead(book: target.bookAlias, chapter: target.chapter)
+    }
+
     private func markCurrentChapterAsRead() {
         guard let target = currentChapterProgressTarget else { return }
         settingsManager.markChapterAsRead(book: target.bookAlias, chapter: target.chapter)
+    }
+
+    private func toggleCurrentChapterReadState() {
+        guard let target = currentChapterProgressTarget else { return }
+        if settingsManager.isChapterRead(book: target.bookAlias, chapter: target.chapter) {
+            settingsManager.markChapterAsUnread(book: target.bookAlias, chapter: target.chapter)
+        } else {
+            settingsManager.markChapterAsRead(book: target.bookAlias, chapter: target.chapter)
+        }
     }
     
     // MARK: HTML Generation
