@@ -669,15 +669,47 @@ struct PageReadView: View {
         return baseHeight + (withManualToggle ? 24 : 0)
     }
 
+    private var ninetyPercentThresholdVerseCount: Int {
+        guard audioVerseCount > 0 else { return 0 }
+        return Int(ceil(Double(audioVerseCount) * 0.9))
+    }
+
+    private var ninetyPercentVisualProgress: Double {
+        guard settingsManager.autoProgressFrom90Percent else { return 0 }
+        let required = ninetyPercentThresholdVerseCount
+        guard required > 0 else { return 0 }
+        return min(Double(listenedVerseIndexes.count) / Double(required), 1)
+    }
+
     @ViewBuilder private func viewChapterMarkToggle() -> some View {
         let isRead = isCurrentChapterRead
         Button {
             toggleCurrentChapterReadState()
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: isRead ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isRead ? Color("Mustard") : Color("localAccentColor").opacity(0.6))
-                    .font(.caption)
+                if isRead {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(Color("Mustard"))
+                        .font(.caption)
+                } else if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
+                    ZStack {
+                        Circle()
+                            .stroke(Color("localAccentColor").opacity(0.35), lineWidth: 1.4)
+                        Circle()
+                            .trim(from: 0, to: ninetyPercentVisualProgress)
+                            .stroke(
+                                Color("Mustard"),
+                                style: StrokeStyle(lineWidth: 1.8, lineCap: .round)
+                            )
+                            .rotationEffect(.degrees(-90))
+                    }
+                    .frame(width: 13, height: 13)
+                    .animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
+                } else {
+                    Image(systemName: "circle")
+                        .foregroundColor(Color("localAccentColor").opacity(0.6))
+                        .font(.caption)
+                }
                 Text((isRead ? "chapter.mark_as_unread" : "chapter.mark_as_read").localized)
                     .font(.caption2)
                     .foregroundColor(Color("localAccentColor").opacity(0.85))
