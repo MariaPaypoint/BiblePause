@@ -12,6 +12,10 @@ struct PageReadView: View {
     
     // Observer for tracking audio completion
     @State private var audioStateObserver: AnyCancellable?
+    @State private var isUpdatingExcerpt: Bool = false
+    @State private var hasStartedPlaybackInSession: Bool = false
+    @State private var completionHandledForSession: Bool = true
+    @State private var completionGuardStartTime: Date = .distantPast
 
     @State private var showSelection = false
     @State private var showSetup = false
@@ -235,6 +239,10 @@ struct PageReadView: View {
 
     // MARK: After selection
     func updateExcerpt(proxy: ScrollViewProxy) async {
+        isUpdatingExcerpt = true
+        invalidateAudioCompletionTracking()
+        defer { isUpdatingExcerpt = false }
+
         do {
                 self.isTextLoading = true
                 self.errorDescription = ""
@@ -278,6 +286,7 @@ struct PageReadView: View {
                 
                 self.hasAudio = true
                 self.errorDescription = ""
+                beginAudioCompletionTracking()
             } else {
                 self.hasAudio = false
                 self.errorDescription = "Invalid audio file URL"
@@ -344,8 +353,22 @@ struct PageReadView: View {
         audioStateObserver = audiopleer.$state
             .receive(on: DispatchQueue.main)
             .sink { newState in
-                // Auto-move to next chapter once audio finishes
-                if newState == .finished {
+                if newState == .playing {
+                    self.hasStartedPlaybackInSession = true
+                }
+
+                if self.isUpdatingExcerpt {
+                    return
+                }
+
+                // React only to natural playback completion (segment or full file)
+                if newState == .finished || newState == .segmentFinished {
+                    guard self.hasStartedPlaybackInSession else { return }
+                    guard !self.completionHandledForSession else { return }
+                    guard Date().timeIntervalSince(self.completionGuardStartTime) >= 0.8 else { return }
+
+                    self.completionHandledForSession = true
+
                     if self.settingsManager.autoProgressAudioEnd {
                         self.markCurrentChapterAsRead()
                     }
@@ -376,6 +399,18 @@ struct PageReadView: View {
                     }
                 }
             }
+    }
+
+    private func beginAudioCompletionTracking() {
+        hasStartedPlaybackInSession = false
+        completionHandledForSession = false
+        completionGuardStartTime = Date()
+    }
+
+    private func invalidateAudioCompletionTracking() {
+        hasStartedPlaybackInSession = false
+        completionHandledForSession = true
+        completionGuardStartTime = Date()
     }
     
     // MARK: Pause calculation between chapters
