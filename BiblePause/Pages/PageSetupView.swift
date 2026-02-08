@@ -1,11 +1,12 @@
 import SwiftUI
 import AVFoundation
 import Combine
+import Foundation
 
 struct PageSetupView: View {
     private let examplePreviewHeight: CGFloat = 158
     
-    @State private var toast: FancyToast? = nil
+    @State private var inlineErrorMessage: String = ""
     
     @ObservedObject private var localizationManager = LocalizationManager.shared
     
@@ -110,6 +111,22 @@ struct PageSetupView: View {
                 ScrollViewReader { proxy in
                     ScrollView() {
                         VStack {
+                            if !inlineErrorMessage.isEmpty {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.red)
+                                        .font(.footnote)
+                                    Text(inlineErrorMessage)
+                                        .font(.footnote)
+                                        .foregroundColor(.red)
+                                        .multilineTextAlignment(.leading)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 12)
+                                .background(Color.red.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            }
                             
                             ViewFont()
                             
@@ -132,7 +149,6 @@ struct PageSetupView: View {
         .background(
             Color("DarkGreen")
         )
-        .toastView(toast: $toast)
         .onAppear {
             self.language = settingsManager.language
             self.translation = String(settingsManager.translation)
@@ -701,6 +717,7 @@ struct PageSetupView: View {
     // MARK: API requests
     
     func fetchLanguages() {
+        inlineErrorMessage = ""
         // Optimistically use cached data if available
         if !settingsManager.cachedLanguages.isEmpty {
              if settingsManager.cachedAllTranslations.isEmpty {
@@ -729,7 +746,7 @@ struct PageSetupView: View {
                     self.isLanguagesLoading = false
                 } catch {
                     self.isLanguagesLoading = false
-                    toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
+                    showInlineError(for: error)
                 }
             }
         }
@@ -805,17 +822,11 @@ struct PageSetupView: View {
     func fetchTranslationInfo() {
         Task {
             do {
-                //self.isTranslationsLoading = true
-                
                 let response = try await settingsManager.client.get_translation_info(query: .init(translation: Int(self.translation)!))
                 let translationInfoResponse = try response.ok.body.json
-                
                 settingsManager.translationInfo = translationInfoResponse
-                
-                //self.isTranslationsLoading = false
             } catch {
-                //self.isTranslationsLoading = false
-                toast = FancyToast(type: .error, title: "Ошибка", message: error.localizedDescription)
+                // Keep this silent until translation info UI is implemented.
             }
         }
     }
@@ -892,6 +903,7 @@ struct PageSetupView: View {
         
         // Stop previous playback
         stopVoicePreview()
+        inlineErrorMessage = ""
         
         // Start playback for the new voice
         let voiceCode = Int(voiceKeys[index]) ?? 0
@@ -907,7 +919,7 @@ struct PageSetupView: View {
                 )
                 
                 guard !firstUrl.isEmpty, let url = URL(string: firstUrl) else {
-                    toast = FancyToast(type: .error, title: "error.title".localized, message: "error.audio.unavailable".localized)
+                    inlineErrorMessage = "error.audio.unavailable".localized
                     return
                 }
                 
@@ -937,7 +949,7 @@ struct PageSetupView: View {
                 previewPlayer?.play()
                 
             } catch {
-                toast = FancyToast(type: .error, title: "error.title".localized, message: "error.loading.audio".localized)
+                inlineErrorMessage = "error.loading.audio".localized
             }
         }
     }
@@ -954,6 +966,38 @@ struct PageSetupView: View {
         previewVoiceIndex = nil
         previewTimer?.cancel()
         previewTimer = nil
+    }
+
+    private func showInlineError(for error: Error) {
+        print("[PageSetupView] Operation failed: \(error)")
+        let rawErrorText = "\(error)"
+        if let statusCode = extractHTTPStatusCode(from: rawErrorText) {
+            inlineErrorMessage = "error.loading.setup.with_code".localized(statusCode)
+            return
+        }
+
+        inlineErrorMessage = "error.loading.setup".localized
+    }
+
+    private func extractHTTPStatusCode(from text: String) -> Int? {
+        let patterns = [
+            #"statusCode:\s*(\d{3})"#,
+            #"status\s*code\s*[:=]\s*(\d{3})"#,
+            #"status:\s*(\d{3})"#
+        ]
+
+        let searchRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: text, options: [], range: searchRange),
+                  match.numberOfRanges > 1,
+                  let codeRange = Range(match.range(at: 1), in: text),
+                  let statusCode = Int(text[codeRange]) else {
+                continue
+            }
+            return statusCode
+        }
+        return nil
     }
     
     // MARK: Interface Language

@@ -12,7 +12,7 @@ struct PageMultilingualView: View {
     @State private var showTemplatesSheet: Bool = false
     @State private var showSaveAlert: Bool = false
     @State private var templateName: String = ""
-    @State private var toast: FancyToast? = nil
+    @State private var inlineErrorMessage: String = ""
     
     var currentSubtitle: String {
         if let id = settingsManager.currentTemplateId,
@@ -92,6 +92,25 @@ struct PageMultilingualView: View {
                 }
                 .padding(.horizontal, globalBasePadding)
                 .padding(.bottom, 20) // Extra spacing
+
+                if !inlineErrorMessage.isEmpty {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                            .font(.footnote)
+                        Text(inlineErrorMessage)
+                            .font(.footnote)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(Color.red.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .padding(.horizontal, globalBasePadding)
+                    .padding(.bottom, 8)
+                }
                 
                 // MARK: Steps List
                 // MARK: Steps List
@@ -234,7 +253,6 @@ struct PageMultilingualView: View {
                 .padding(.horizontal, 40)
             }
         }
-        .toastView(toast: $toast)
         .sheet(isPresented: $showConfigSheet) {
             PageMultilingualConfigView(step: tempStep, isAddingStep: editingStepIndex == nil) { newStep in
                 if let index = editingStepIndex {
@@ -363,6 +381,7 @@ struct PageMultilingualView: View {
     
     // MARK: Logic
     func addNewReadStep() {
+        inlineErrorMessage = ""
         tempStep = MultilingualStep(type: .read)
         // Set defaults from current settings if needed
         editingStepIndex = nil
@@ -370,12 +389,14 @@ struct PageMultilingualView: View {
     }
     
     func editReadStep(index: Int) {
+        inlineErrorMessage = ""
         tempStep = settingsManager.multilingualSteps[index]
         editingStepIndex = index
         showConfigSheet = true
     }
     
     func addNewPauseStep() {
+        inlineErrorMessage = ""
         let step = MultilingualStep(type: .pause, pauseDuration: 2.0)
         withAnimation {
             settingsManager.multilingualSteps.append(step)
@@ -401,11 +422,10 @@ struct PageMultilingualView: View {
     // MARK: Template Logic
     func handleSaveAndRead() {
         if settingsManager.multilingualSteps.isEmpty {
-            // Cannot start without steps? Or maybe just read normally?
-            // Assuming at least one step needed.
-            toast = FancyToast(type: .warning, title: "settings.warning".localized, message: "settings.warning".localized) // TODO: Better message "Add at least one step"
+            inlineErrorMessage = "multilingual.error.no_steps".localized
             return
         }
+        inlineErrorMessage = ""
         
         if settingsManager.currentTemplateId != nil {
             // Update existing
@@ -430,9 +450,6 @@ struct PageMultilingualView: View {
             settingsManager.multilingualTemplates[index].steps = settingsManager.multilingualSteps
             settingsManager.multilingualTemplates[index].unit = settingsManager.multilingualReadUnit
             settingsManager.saveMultilingualTemplates()
-            
-            // Optional: Toast "Template updated"
-            // toast = FancyToast(type: .success, title: "Updated", message: "Template saved")
         }
     }
     

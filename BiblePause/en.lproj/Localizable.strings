@@ -26,6 +26,10 @@
 /* Errors */
 "error.prefix" = "Error: %@";
 "error.audio_warning" = "⚠️ %@";
+"error.loading.chapter" = "Failed to load chapter. Please try again.";
+"error.loading.chapter.with_code" = "Failed to load chapter (code %d). Please try again.";
+"error.loading.setup" = "Failed to load setup data. Please try again.";
+"error.loading.setup.with_code" = "Failed to load setup data (code %d). Please try again.";
 
 /* Audio Player */
 "audio.reader" = "READER:";
@@ -149,6 +153,7 @@
 "multilingual.add_read_step" = "+ Read";
 "multilingual.add_pause_step" = "+ Pause";
 "multilingual.save_and_read" = "Save & Read";
+"multilingual.error.no_steps" = "Add at least one step before reading.";
 "multilingual.select_translation" = "Select Translation";
 "multilingual.pause" = "Pause";
 "multilingual.seconds" = "sec.";

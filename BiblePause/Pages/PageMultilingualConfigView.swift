@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import Combine
+import Foundation
 
 struct PageMultilingualConfigView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -34,7 +35,7 @@ struct PageMultilingualConfigView: View {
     @State private var voiceMusics: [Bool]  = []
     @State private var voiceDescriptions: [String] = []
     
-    @State private var toast: FancyToast? = nil
+    @State private var inlineErrorMessage: String = ""
     
     // Temporary selections
     @State private var selectedLanguage: String = ""
@@ -96,6 +97,25 @@ struct PageMultilingualConfigView: View {
                 
                 ScrollView {
                     VStack(spacing: 0) {
+                        if !inlineErrorMessage.isEmpty {
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                                    .font(.footnote)
+                                Text(inlineErrorMessage)
+                                    .font(.footnote)
+                                    .foregroundColor(.red)
+                                    .multilineTextAlignment(.leading)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 12)
+                            .background(Color.red.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .padding(.horizontal, globalBasePadding)
+                            .padding(.top, 10)
+                            .padding(.bottom, 14)
+                        }
                         viewGroupHeader(text: "settings.translation_audio".localized)
                         VStack(spacing: 10) {
                             selectionAccordionSectionCard(
@@ -301,7 +321,6 @@ struct PageMultilingualConfigView: View {
                 }
             }
         }
-        .toastView(toast: $toast)
         .onAppear {
             initializeState()
         }
@@ -368,6 +387,7 @@ struct PageMultilingualConfigView: View {
     
     // MARK: API Reused Logic
     func fetchLanguages() {
+        inlineErrorMessage = ""
         // Optimistically use cached data if available
         if !settingsManager.cachedLanguages.isEmpty {
              // If translations are also cached or we want to trigger their fetch in background?
@@ -398,7 +418,7 @@ struct PageMultilingualConfigView: View {
                     self.isLanguagesLoading = false
                 } catch {
                     self.isLanguagesLoading = false
-                    toast = FancyToast(type: .error, title: "error.title".localized, message: error.localizedDescription)
+                    showInlineError(for: error)
                 }
             }
         }
@@ -735,6 +755,7 @@ struct PageMultilingualConfigView: View {
             return
         }
         stopVoicePreview()
+        inlineErrorMessage = ""
         
         let voiceCode = Int(voiceKeys[index]) ?? 0
         let translationCode = Int(selectedTranslation) ?? 0
@@ -749,7 +770,7 @@ struct PageMultilingualConfigView: View {
                 )
                 
                 guard !firstUrl.isEmpty, let url = URL(string: firstUrl) else {
-                    toast = FancyToast(type: .error, title: "error.title".localized, message: "error.audio.unavailable".localized)
+                    inlineErrorMessage = "error.audio.unavailable".localized
                     return
                 }
                 
@@ -775,7 +796,7 @@ struct PageMultilingualConfigView: View {
                 previewPlayer?.play()
                 
             } catch {
-                toast = FancyToast(type: .error, title: "error.title".localized, message: "error.loading.audio".localized)
+                inlineErrorMessage = "error.loading.audio".localized
             }
         }
     }
@@ -790,5 +811,54 @@ struct PageMultilingualConfigView: View {
         previewVoiceIndex = nil
         previewTimer?.cancel()
         previewTimer = nil
+    }
+
+    private func showInlineError(for error: Error) {
+        print("[PageMultilingualConfigView] Operation failed: \(error)")
+        let rawErrorText = "\(error)"
+        if let statusCode = extractHTTPStatusCode(from: rawErrorText) {
+            inlineErrorMessage = "error.loading.setup.with_code".localized(statusCode)
+            return
+        }
+
+        let nsError = error as NSError
+        if nsError.domain == "getExcerptTextualVersesOnline", nsError.code == 422 {
+            let detail = compactErrorText(nsError.localizedDescription)
+            if !detail.isEmpty {
+                inlineErrorMessage = detail
+                return
+            }
+        }
+
+        inlineErrorMessage = "error.loading.setup".localized
+    }
+
+    private func extractHTTPStatusCode(from text: String) -> Int? {
+        let patterns = [
+            #"statusCode:\s*(\d{3})"#,
+            #"status\s*code\s*[:=]\s*(\d{3})"#,
+            #"status:\s*(\d{3})"#
+        ]
+
+        let searchRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: text, options: [], range: searchRange),
+                  match.numberOfRanges > 1,
+                  let codeRange = Range(match.range(at: 1), in: text),
+                  let statusCode = Int(text[codeRange]) else {
+                continue
+            }
+            return statusCode
+        }
+        return nil
+    }
+
+    private func compactErrorText(_ text: String, maxLength: Int = 120) -> String {
+        let normalized = text
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalized.count > maxLength else { return normalized }
+        return String(normalized.prefix(maxLength - 3)) + "..."
     }
 }

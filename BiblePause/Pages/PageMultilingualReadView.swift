@@ -21,7 +21,6 @@ struct PageMultilingualReadView: View {
     // State
     @State private var isLoading: Bool = true
     @State private var errorDescription: String = ""
-    @State private var toast: FancyToast? = nil
     
     @State private var showSelection = false
     @State private var oldExcerpt: String = ""
@@ -39,6 +38,15 @@ struct PageMultilingualReadView: View {
     @StateObject private var audiopleer = PlayerModel()
     @State private var audioStateObserver: AnyCancellable?
     @State private var playbackSessionID: UUID = UUID()
+    @State private var isUpdatingExcerpt: Bool = false
+    @State private var listenedVerseNumbers: Set<Int> = []
+    @State private var audioVerseCount: Int = 0
+    @State private var ninetyPercentHandledForSession: Bool = true
+    @State private var readingSessionID: UUID = UUID()
+    @State private var chapterReadingStartTime: Date = .distantPast
+    @State private var chapterReachedTextBottom: Bool = false
+    @State private var readingAutoProgressHandledForSession: Bool = true
+    @State private var pendingReadingAutoMarkWorkItem: DispatchWorkItem?
     
     // Units (indices into verses based on unit mode)
     @State private var unitRanges: [(start: Int, end: Int)] = [] // verse index ranges for each unit
@@ -118,7 +126,10 @@ struct PageMultilingualReadView: View {
                     // highlightVerseNumber encodes stepIdx * 10000 + verseNumber for unique IDs
                     HTMLTextView(
                         htmlContent: generateMultilingualHTML(),
-                        scrollToVerse: $highlightVerseNumber
+                        scrollToVerse: $highlightVerseNumber,
+                        onScrollMetricsChanged: { _, isAtBottom in
+                            handleTextScroll(isAtBottom: isAtBottom)
+                        }
                     )
                     .mask(
                         LinearGradient(
@@ -180,7 +191,6 @@ struct PageMultilingualReadView: View {
             }
             
         }
-        .toastView(toast: $toast)
         .fullScreenCover(isPresented: $showSelection, onDismiss: {
             Task {
                 if oldExcerpt != settingsManager.currentExcerpt {
@@ -205,6 +215,15 @@ struct PageMultilingualReadView: View {
                 audiopleer.doPlayOrPause()
             }
             audioStateObserver?.cancel()
+            audioStateObserver = nil
+            invalidateAudioProgressTracking()
+            invalidateTextReadingTracking()
+        }
+        .onChange(of: settingsManager.autoProgressByReading) { _, _ in
+            evaluateTextReadingAutoProgress()
+        }
+        .onChange(of: settingsManager.autoProgressFrom90Percent) { _, _ in
+            evaluateNinetyPercentAutoProgress()
         }
     }
     
@@ -244,6 +263,8 @@ struct PageMultilingualReadView: View {
                                 .font(.caption)
                                 .fontWeight(.medium)
                                 .foregroundColor(.white)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                         }
                     }
                     
@@ -440,6 +461,12 @@ struct PageMultilingualReadView: View {
     private func loadAllData(force: Bool = false) async {
         // Avoid reloading if data exists (preserves state on return from Settings)
         if !force && !stepTextVerses.isEmpty { return }
+        isUpdatingExcerpt = true
+        stopAudioMonitoring()
+        isPlaying = false
+        invalidateAudioProgressTracking()
+        invalidateTextReadingTracking()
+        defer { isUpdatingExcerpt = false }
         
         isLoading = true
         errorDescription = ""
@@ -477,12 +504,15 @@ struct PageMultilingualReadView: View {
                     }
                 }
             } catch {
-                errorDescription = "Error loading \(step.translationName): \(error.localizedDescription)"
+                print("[PageMultilingualReadView] Failed to load step '\(step.translationName)': \(error)")
+                errorDescription = userFacingLoadingErrorMessage(for: error)
             }
         }
         
         // Build unit ranges based on first translation's structure
         buildUnitRanges()
+        beginAudioProgressTracking(audioVerseCount: stepTextVerses[0]?.count ?? 0)
+        beginTextReadingTracking()
         
         // Reset playback state
         currentUnitIndex = 0
@@ -537,6 +567,52 @@ struct PageMultilingualReadView: View {
             // Entire chapter is one unit
             unitRanges = [(start: 0, end: verses.count - 1)]
         }
+    }
+
+    private func userFacingLoadingErrorMessage(for error: Error) -> String {
+        let nsError = error as NSError
+        if nsError.domain == "getExcerptTextualVersesOnline", nsError.code == 422 {
+            let detail = compactErrorText(nsError.localizedDescription)
+            if !detail.isEmpty {
+                return detail
+            }
+        }
+
+        let rawErrorText = "\(error)"
+        if let statusCode = extractHTTPStatusCode(from: rawErrorText) {
+            return "error.loading.chapter.with_code".localized(statusCode)
+        }
+
+        return "error.loading.chapter".localized
+    }
+
+    private func extractHTTPStatusCode(from text: String) -> Int? {
+        let patterns = [
+            #"statusCode:\s*(\d{3})"#,
+            #"status\s*code\s*[:=]\s*(\d{3})"#,
+            #"status:\s*(\d{3})"#
+        ]
+
+        let searchRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: text, options: [], range: searchRange),
+                  match.numberOfRanges > 1,
+                  let codeRange = Range(match.range(at: 1), in: text),
+                  let statusCode = Int(text[codeRange]) else {
+                continue
+            }
+            return statusCode
+        }
+        return nil
+    }
+
+    private func compactErrorText(_ text: String, maxLength: Int = 120) -> String {
+        let normalized = text
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalized.count > maxLength else { return normalized }
+        return String(normalized.prefix(maxLength - 3)) + "..."
     }
     
     // Get verses for a specific unit from a translation's verses
@@ -677,6 +753,7 @@ struct PageMultilingualReadView: View {
                     // Encode step index into highlight ID: stepIdx * 10000 + verseNumber
                     let verseNumber = unitAudioVerses[verseIdx].number
                     self.highlightVerseNumber = self.currentStepIndex * 10000 + verseNumber
+                    self.recordListenedVerse(verseNumber)
                 }
             }
             
@@ -823,6 +900,7 @@ struct PageMultilingualReadView: View {
                     
                     // Only advance if we are supposed to be playing
                     if self.isPlaying {
+                        self.evaluateNinetyPercentAutoProgress()
                         print("[MultiRead] Audio ended (state: \(newState)), moving to next step")
                         self.isPlaying = false // Logical stop
                         self.moveToNextStep()
@@ -834,6 +912,99 @@ struct PageMultilingualReadView: View {
     // Legacy setup function redirect
     private func setupAudioObserver() {
        // No-op or start initial monitoring if needed, but playCurrentStep handles it.
+    }
+
+    private func beginAudioProgressTracking(audioVerseCount: Int) {
+        listenedVerseNumbers.removeAll(keepingCapacity: true)
+        self.audioVerseCount = max(audioVerseCount, 0)
+        ninetyPercentHandledForSession = false
+    }
+
+    private func invalidateAudioProgressTracking() {
+        listenedVerseNumbers.removeAll(keepingCapacity: true)
+        audioVerseCount = 0
+        ninetyPercentHandledForSession = true
+    }
+
+    private func recordListenedVerse(_ verseNumber: Int) {
+        guard !isUpdatingExcerpt else { return }
+        guard verseNumber > 0 else { return }
+        listenedVerseNumbers.insert(verseNumber)
+        evaluateNinetyPercentAutoProgress()
+    }
+
+    private func evaluateNinetyPercentAutoProgress() {
+        guard settingsManager.autoProgressFrom90Percent else { return }
+        guard !ninetyPercentHandledForSession else { return }
+        guard audioVerseCount > 0 else { return }
+
+        let requiredVerseCount = Int(ceil(Double(audioVerseCount) * 0.9))
+        guard requiredVerseCount > 0 else { return }
+
+        if listenedVerseNumbers.count >= requiredVerseCount {
+            ninetyPercentHandledForSession = true
+            markCurrentChapterAsRead()
+        }
+    }
+
+    private func beginTextReadingTracking() {
+        readingSessionID = UUID()
+        chapterReadingStartTime = Date()
+        chapterReachedTextBottom = false
+        readingAutoProgressHandledForSession = false
+        pendingReadingAutoMarkWorkItem?.cancel()
+        pendingReadingAutoMarkWorkItem = nil
+    }
+
+    private func invalidateTextReadingTracking() {
+        readingSessionID = UUID()
+        pendingReadingAutoMarkWorkItem?.cancel()
+        pendingReadingAutoMarkWorkItem = nil
+        chapterReadingStartTime = .distantPast
+        chapterReachedTextBottom = false
+        readingAutoProgressHandledForSession = true
+    }
+
+    private func handleTextScroll(isAtBottom: Bool) {
+        guard !stepTextVerses.isEmpty else { return }
+        guard !isUpdatingExcerpt else { return }
+        guard !isLoading else { return }
+        guard isAtBottom else { return }
+
+        if !chapterReachedTextBottom {
+            chapterReachedTextBottom = true
+        }
+        evaluateTextReadingAutoProgress()
+    }
+
+    private func evaluateTextReadingAutoProgress() {
+        guard settingsManager.autoProgressByReading else {
+            pendingReadingAutoMarkWorkItem?.cancel()
+            pendingReadingAutoMarkWorkItem = nil
+            return
+        }
+        guard !readingAutoProgressHandledForSession else { return }
+        guard chapterReachedTextBottom else { return }
+        guard chapterReadingStartTime != .distantPast else { return }
+
+        let elapsed = Date().timeIntervalSince(chapterReadingStartTime)
+        if elapsed >= 60 {
+            readingAutoProgressHandledForSession = true
+            pendingReadingAutoMarkWorkItem?.cancel()
+            pendingReadingAutoMarkWorkItem = nil
+            markCurrentChapterAsRead()
+            return
+        }
+
+        let remaining = max(0.1, 60 - elapsed)
+        let sessionID = readingSessionID
+        pendingReadingAutoMarkWorkItem?.cancel()
+        let workItem = DispatchWorkItem {
+            guard self.readingSessionID == sessionID else { return }
+            self.evaluateTextReadingAutoProgress()
+        }
+        pendingReadingAutoMarkWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + remaining, execute: workItem)
     }
 
     private var currentChapterProgressTarget: (bookAlias: String, chapter: Int)? {

@@ -26,6 +26,10 @@
 /* Errors */
 "error.prefix" = "Помилка: %@";
 "error.audio_warning" = "⚠️ %@";
+"error.loading.chapter" = "Не вдалося завантажити розділ. Спробуйте ще раз.";
+"error.loading.chapter.with_code" = "Не вдалося завантажити розділ (код %d). Спробуйте ще раз.";
+"error.loading.setup" = "Не вдалося завантажити дані налаштувань. Спробуйте ще раз.";
+"error.loading.setup.with_code" = "Не вдалося завантажити дані налаштувань (код %d). Спробуйте ще раз.";
 
 /* Audio Player */
 "audio.reader" = "ЧИТАЄ:";
@@ -147,6 +151,7 @@
 "multilingual.add_read_step" = "+ Читання";
 "multilingual.add_pause_step" = "+ Пауза";
 "multilingual.save_and_read" = "Зберегти і читати";
+"multilingual.error.no_steps" = "Додайте хоча б один крок перед читанням.";
 "multilingual.select_translation" = "Оберіть переклад";
 "multilingual.pause" = "Пауза";
 "multilingual.seconds" = "сек.";

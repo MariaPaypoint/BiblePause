@@ -41,7 +41,6 @@ struct PageReadView: View {
     @State private var scrollViewProxy: ScrollViewProxy? = nil
 
     @State private var isTextLoading: Bool = true
-    @State private var toast: FancyToast? = nil
     @State private var hasAudio: Bool = true
     @State private var hasText: Bool = true
 
@@ -199,8 +198,6 @@ struct PageReadView: View {
                     }
                 }
             }
-            .toastView(toast: $toast)
-
             .sheet(isPresented: $showSelection, onDismiss: {
                 Task {
                     if oldExcerpt != settingsManager.currentExcerpt {
@@ -317,11 +314,58 @@ struct PageReadView: View {
                 self.errorDescription = "Invalid audio file URL"
             }
         } catch {
-            self.errorDescription = "Error: \(error)"
+            print("[PageReadView] Failed to load excerpt: \(error)")
+            self.errorDescription = userFacingLoadingErrorMessage(for: error)
         }
         withAnimation(.easeOut(duration: 0.8)) {
             self.isTextLoading = false
         }
+    }
+
+    private func userFacingLoadingErrorMessage(for error: Error) -> String {
+        let nsError = error as NSError
+        if nsError.domain == "getExcerptTextualVersesOnline", nsError.code == 422 {
+            let detail = compactErrorText(nsError.localizedDescription)
+            if !detail.isEmpty {
+                return detail
+            }
+        }
+
+        let rawErrorText = "\(error)"
+        if let statusCode = extractHTTPStatusCode(from: rawErrorText) {
+            return "error.loading.chapter.with_code".localized(statusCode)
+        }
+
+        return "error.loading.chapter".localized
+    }
+
+    private func extractHTTPStatusCode(from text: String) -> Int? {
+        let patterns = [
+            #"statusCode:\s*(\d{3})"#,
+            #"status\s*code\s*[:=]\s*(\d{3})"#,
+            #"status:\s*(\d{3})"#
+        ]
+
+        let searchRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: text, options: [], range: searchRange),
+                  match.numberOfRanges > 1,
+                  let codeRange = Range(match.range(at: 1), in: text),
+                  let statusCode = Int(text[codeRange]) else {
+                continue
+            }
+            return statusCode
+        }
+        return nil
+    }
+
+    private func compactErrorText(_ text: String, maxLength: Int = 120) -> String {
+        let normalized = text
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalized.count > maxLength else { return normalized }
+        return String(normalized.prefix(maxLength - 3)) + "..."
     }
 
     // MARK: Verse change handlers
@@ -689,6 +733,8 @@ struct PageReadView: View {
                     Text(settingsManager.voiceName)
                         .foregroundStyle(Color("localAccentColor"))
                         .font(.footnote)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
             }
             .buttonStyle(.plain)
@@ -705,6 +751,8 @@ struct PageReadView: View {
                     Text(pauseChipText())
                         .foregroundColor(Color("localAccentColor"))
                         .font(.footnote)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
                 .padding(4)
                 .background {
