@@ -8,8 +8,6 @@ struct PageSetupView: View {
     
     @State private var inlineErrorMessage: String = ""
     
-    @ObservedObject private var localizationManager = LocalizationManager.shared
-    
     @EnvironmentObject var settingsManager: SettingsManager
     
     @Binding var showFromRead: Bool
@@ -133,8 +131,6 @@ struct PageSetupView: View {
                             ViewPause()
                             
                             ViewLangTranslateAudio(proxy: proxy)
-                            
-                            ViewInterfaceLanguage()
                         }
                         .padding(.horizontal, globalBasePadding)
                         .padding(.top, 10)
@@ -1000,16 +996,6 @@ struct PageSetupView: View {
         return nil
     }
     
-    // MARK: Interface Language
-    @ViewBuilder private func ViewInterfaceLanguage() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            viewGroupHeader(text: "settings.language".localized)
-            
-            viewEnumPicker(title: localizationManager.currentLanguage.displayName, 
-                          selection: $localizationManager.currentLanguage)
-        }
-        .padding(.bottom, 10)
-    }
 }
 
 struct TestPageSetupView: View {
