@@ -28,7 +28,7 @@ struct PageProgressView: View {
                         } label: {
                             Image(systemName: "gearshape.fill")
                                 .foregroundColor(.white.opacity(0.7))
-                                .font(.system(size: 20))
+                                .font(.system(size: 26))
                         }
                     }
                     .padding(.bottom, 10)
