@@ -46,7 +46,8 @@ struct PageMultilingualReadView: View {
     @State private var verseTrackingSessionID: UUID = UUID()
     @State private var currentAudioVerseNumber: Int = -1
     @State private var readingSessionID: UUID = UUID()
-    @State private var chapterReadingStartTime: Date = .distantPast
+    @State private var chapterReadingAccumulatedSeconds: Double = 0
+    @State private var chapterReadingActiveStartTime: Date? = nil
     @State private var chapterReachedTextBottom: Bool = false
     @State private var readingAutoProgressHandledForSession: Bool = true
     @State private var pendingReadingAutoMarkWorkItem: DispatchWorkItem?
@@ -982,6 +983,8 @@ struct PageMultilingualReadView: View {
                 }
                 
                 print("[MultiRead] Audio state changed to: \(newState)")
+
+                self.updateTextReadingTimerForAudioState(newState)
                 
                 // When audio is ready to play, start it
                 if newState == .waitingForPlay {
@@ -1062,7 +1065,8 @@ struct PageMultilingualReadView: View {
 
     private func beginTextReadingTracking() {
         readingSessionID = UUID()
-        chapterReadingStartTime = Date()
+        chapterReadingAccumulatedSeconds = 0
+        chapterReadingActiveStartTime = isAudioActiveForTextReadingTimer(audiopleer.state) ? nil : Date()
         chapterReachedTextBottom = false
         readingAutoProgressHandledForSession = false
         pendingReadingAutoMarkWorkItem?.cancel()
@@ -1073,9 +1077,47 @@ struct PageMultilingualReadView: View {
         readingSessionID = UUID()
         pendingReadingAutoMarkWorkItem?.cancel()
         pendingReadingAutoMarkWorkItem = nil
-        chapterReadingStartTime = .distantPast
+        chapterReadingAccumulatedSeconds = 0
+        chapterReadingActiveStartTime = nil
         chapterReachedTextBottom = false
         readingAutoProgressHandledForSession = true
+    }
+
+    private func isAudioActiveForTextReadingTimer(_ state: PlayerModel.PlaybackState) -> Bool {
+        switch state {
+        case .playing, .buffering, .autopausing, .waitingForPause, .pausing:
+            return true
+        case .waitingForSelection, .waitingForPlay, .finished, .segmentFinished:
+            return false
+        }
+    }
+
+    private func updateTextReadingTimerForAudioState(_ state: PlayerModel.PlaybackState) {
+        guard settingsManager.autoProgressByReading else { return }
+        guard !readingAutoProgressHandledForSession else { return }
+        guard !stepTextVerses.isEmpty else { return }
+        guard !isUpdatingExcerpt else { return }
+        guard !isLoading else { return }
+
+        if isAudioActiveForTextReadingTimer(state) {
+            pauseTextReadingTimer()
+        } else {
+            resumeTextReadingTimerIfNeeded()
+        }
+    }
+
+    private func pauseTextReadingTimer() {
+        guard let start = chapterReadingActiveStartTime else { return }
+        chapterReadingAccumulatedSeconds += Date().timeIntervalSince(start)
+        chapterReadingActiveStartTime = nil
+        pendingReadingAutoMarkWorkItem?.cancel()
+        pendingReadingAutoMarkWorkItem = nil
+    }
+
+    private func resumeTextReadingTimerIfNeeded() {
+        guard chapterReadingActiveStartTime == nil else { return }
+        chapterReadingActiveStartTime = Date()
+        evaluateTextReadingAutoProgress()
     }
 
     private func handleTextScroll(isAtBottom: Bool) {
@@ -1096,6 +1138,10 @@ struct PageMultilingualReadView: View {
         return min(60, max(10, Double(verseCount) * 2))
     }
 
+    private var textReadingElapsedSeconds: Double {
+        chapterReadingAccumulatedSeconds + (chapterReadingActiveStartTime.map { Date().timeIntervalSince($0) } ?? 0)
+    }
+
     private func evaluateTextReadingAutoProgress() {
         guard settingsManager.autoProgressByReading else {
             pendingReadingAutoMarkWorkItem?.cancel()
@@ -1104,10 +1150,10 @@ struct PageMultilingualReadView: View {
         }
         guard !readingAutoProgressHandledForSession else { return }
         guard chapterReachedTextBottom else { return }
-        guard chapterReadingStartTime != .distantPast else { return }
+        guard chapterReadingActiveStartTime != nil else { return } // Do not count while audio is active.
 
         let requiredSeconds = textReadingAutoProgressRequiredSeconds
-        let elapsed = Date().timeIntervalSince(chapterReadingStartTime)
+        let elapsed = textReadingElapsedSeconds
         if elapsed >= requiredSeconds {
             readingAutoProgressHandledForSession = true
             pendingReadingAutoMarkWorkItem?.cancel()
