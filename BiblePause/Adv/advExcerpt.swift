@@ -324,7 +324,7 @@ func generateHTMLContent(verses: [BibleTextualVerseFull], fontIncreasePercent: D
         </html>
     """
     
-    print(htmlString)
+    //print(htmlString)
     
     return htmlString
 }

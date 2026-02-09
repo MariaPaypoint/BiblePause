@@ -718,7 +718,7 @@ struct PageSetupView: View {
         if !settingsManager.cachedLanguages.isEmpty {
              if settingsManager.cachedAllTranslations.isEmpty {
                  Task {
-                     async let _ = settingsManager.fetchAllTranslations()
+                     try? await settingsManager.fetchAllTranslations()
                      self.updateLanguagesList()
                  }
              } else {
@@ -731,11 +731,12 @@ struct PageSetupView: View {
                     self.languageTexts = []
                     
                     // Fetch both concurrently
-                    async let _ = settingsManager.fetchLanguages()
-                    async let _ = settingsManager.fetchAllTranslations()
-                    
+                    async let langsFetch: Void = settingsManager.fetchLanguages()
+                    async let transFetch: Void = settingsManager.fetchAllTranslations()
+
                     // Wait for both
-                    let _ = try await [try await settingsManager.fetchLanguages(), try await settingsManager.fetchAllTranslations()]
+                    try await langsFetch
+                    try await transFetch
                     
                     self.updateLanguagesList()
                    

@@ -1228,8 +1228,6 @@ struct PageMultilingualReadView: View {
         let jesusColor = getCSSColor(named: "Jesus")
         let jesusSelectedColor = getCSSColor(named: "JesusSelected")
         let translationLabelColor = getCSSColor(named: "Mustard")
-        let darkGreenColor = getCSSColor(named: "DarkGreen") // Background color for pause masking
-        
         var htmlString = """
         <html>
         <head>

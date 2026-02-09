@@ -184,12 +184,12 @@ struct MenuView: View {
         .onAppear {
             refreshReadSubtitleSnapshot()
         }
-        .onChange(of: settingsManager.currentExcerptTitle) { _ in
+        .onChange(of: settingsManager.currentExcerptTitle) {
             if !settingsManager.showMenu {
                 refreshReadSubtitleSnapshot()
             }
         }
-        .onChange(of: settingsManager.currentExcerptSubtitle) { _ in
+        .onChange(of: settingsManager.currentExcerptSubtitle) {
             if !settingsManager.showMenu {
                 refreshReadSubtitleSnapshot()
             }
