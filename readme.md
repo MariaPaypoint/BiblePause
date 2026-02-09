@@ -18,10 +18,10 @@ After cloning this repository, you need to create your local configuration file:
 
 1. Copy the example configuration file:
    ```bash
-   cp BiblePause/Configuration.plist.example BiblePause/Configuration.plist
+   cp Bible/Configuration.plist.example Bible/Configuration.plist
    ```
 
-2. Edit `BiblePause/Configuration.plist` and replace `your-api-key-here` with your actual API key.
+2. Edit `Bible/Configuration.plist` and replace `your-api-key-here` with your actual API key.
 
 3. The `Configuration.plist` file is gitignored and will not be committed to the repository.
 

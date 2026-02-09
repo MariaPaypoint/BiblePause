@@ -79,7 +79,7 @@
 		4C749E082C1D804A00CF4234 /* PageSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSetupView.swift; sourceTree = "<group>"; };
 		4C749E0A2C1E1FC000CF4234 /* PageContactsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageContactsView.swift; sourceTree = "<group>"; };
 		4C749E0C2C1F690100CF4234 /* advSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advSettings.swift; sourceTree = "<group>"; };
-		4C7691202BECEA1300C66FDC /* BiblePause.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiblePause.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C7691202BECEA1300C66FDC /* BibleGarden.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BibleGarden.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C7691232BECEA1300C66FDC /* BiblePauseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiblePauseApp.swift; sourceTree = "<group>"; };
 		4C7691252BECEA1300C66FDC /* PageMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageMainView.swift; sourceTree = "<group>"; };
 		4C7691272BECEA1800C66FDC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -196,7 +196,7 @@
 		4C7691212BECEA1300C66FDC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4C7691202BECEA1300C66FDC /* BiblePause.app */,
+				4C7691202BECEA1300C66FDC /* BibleGarden.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -238,9 +238,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4C76911F2BECEA1300C66FDC /* BiblePause */ = {
+		4C76911F2BECEA1300C66FDC /* BibleGarden */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4C76912E2BECEA1800C66FDC /* Build configuration list for PBXNativeTarget "BiblePause" */;
+			buildConfigurationList = 4C76912E2BECEA1800C66FDC /* Build configuration list for PBXNativeTarget "BibleGarden" */;
 			buildPhases = (
 				4C76911C2BECEA1300C66FDC /* Sources */,
 				4C76911D2BECEA1300C66FDC /* Frameworks */,
@@ -251,9 +251,9 @@
 			dependencies = (
 				4CFC92182C59B4D7005AFAA5 /* PBXTargetDependency */,
 			);
-			name = BiblePause;
+			name = BibleGarden;
 			productName = BiblePause;
-			productReference = 4C7691202BECEA1300C66FDC /* BiblePause.app */;
+			productReference = 4C7691202BECEA1300C66FDC /* BibleGarden.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -271,7 +271,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4C76911B2BECEA1300C66FDC /* Build configuration list for PBXProject "BiblePause" */;
+			buildConfigurationList = 4C76911B2BECEA1300C66FDC /* Build configuration list for PBXProject "BibleGarden" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -291,7 +291,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4C76911F2BECEA1300C66FDC /* BiblePause */,
+				4C76911F2BECEA1300C66FDC /* BibleGarden */,
 			);
 		};
 /* End PBXProject section */
@@ -522,11 +522,11 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"BiblePause/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Bible/Preview Content\"";
 				DEVELOPMENT_TEAM = 4SC2JCE37N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BiblePause/Info.plist;
+				INFOPLIST_FILE = Bible/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Bible Garden";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -558,11 +558,11 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"BiblePause/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Bible/Preview Content\"";
 				DEVELOPMENT_TEAM = 4SC2JCE37N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BiblePause/Info.plist;
+				INFOPLIST_FILE = Bible/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Bible Garden";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -589,7 +589,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4C76911B2BECEA1300C66FDC /* Build configuration list for PBXProject "BiblePause" */ = {
+		4C76911B2BECEA1300C66FDC /* Build configuration list for PBXProject "BibleGarden" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4C76912C2BECEA1800C66FDC /* Debug */,
@@ -598,7 +598,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4C76912E2BECEA1800C66FDC /* Build configuration list for PBXNativeTarget "BiblePause" */ = {
+		4C76912E2BECEA1800C66FDC /* Build configuration list for PBXNativeTarget "BibleGarden" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4C76912F2BECEA1800C66FDC /* Debug */,
