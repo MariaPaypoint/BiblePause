@@ -304,8 +304,9 @@ struct PageMultilingualView: View {
                     Text(step.translationName.isEmpty ? "multilingual.select_translation".localized : step.translationName)
                         .font(.headline)
                         .foregroundColor(.white)
-                    
-                    Text("\(step.languageName.isEmpty ? step.languageCode : step.languageName) \(step.voiceName.isEmpty ? "" : "• " + step.voiceName)")
+
+                    let languageTitle = step.languageNameNationalOnly.isEmpty ? step.languageCode : step.languageNameNationalOnly
+                    Text("\(languageTitle) \(step.voiceName.isEmpty ? "" : "• " + step.voiceName)")
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.6))
                         .lineLimit(1)

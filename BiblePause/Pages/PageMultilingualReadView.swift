@@ -241,32 +241,36 @@ struct PageMultilingualReadView: View {
             VStack(spacing: 0) {
                 // Reader info row
                 HStack(spacing: 12) {
-                    // Current translation badge
+                    // Current translation badge (match Classic Reading style)
                     if let currentReadStep = getCurrentReadStep() {
-                        Text(currentReadStep.translationName)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color("DarkGreen"))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .stroke(Color("localAccentColor"), lineWidth: 1)
-                                    )
-                            )
+                        HStack(spacing: 4) {
+                            Image(systemName: "globe")
+                                .font(.caption)
+                                .foregroundColor(Color("localAccentColor"))
+                            Text(currentReadStep.translationName)
+                                .foregroundColor(Color("localAccentColor"))
+                                .font(.footnote)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                        .padding(4)
+                        .background {
+                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                .fill(Color("localAccentColor").opacity(0.16))
+                        }
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                .stroke(Color("localAccentColor").opacity(0.25), lineWidth: 1)
+                        }
                         
                         // Reader name
                         VStack(alignment: .leading, spacing: 0) {
                             Text("page.read.reader".localized())
-                                .font(.system(size: 10))
-                                .foregroundColor(.white.opacity(0.6))
+                                .foregroundStyle(Color("localAccentColor").opacity(0.5))
+                                .font(.caption2)
                             Text(currentReadStep.voiceName)
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color("localAccentColor"))
+                                .font(.footnote)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }

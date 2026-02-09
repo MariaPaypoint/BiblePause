@@ -46,13 +46,24 @@ struct MultilingualStep: Identifiable, Codable, Equatable {
 
     static func == (lhs: MultilingualStep, rhs: MultilingualStep) -> Bool {
         return lhs.id == rhs.id &&
-        lhs.type == rhs.type &&
-        lhs.languageCode == rhs.languageCode &&
-        lhs.translationCode == rhs.translationCode &&
-        lhs.voiceCode == rhs.voiceCode &&
-        lhs.pauseDuration == rhs.pauseDuration &&
-        lhs.fontIncreasePercent == rhs.fontIncreasePercent &&
-        lhs.playbackSpeed == rhs.playbackSpeed
+            lhs.type == rhs.type &&
+            lhs.languageCode == rhs.languageCode &&
+            lhs.translationCode == rhs.translationCode &&
+            lhs.voiceCode == rhs.voiceCode &&
+            lhs.pauseDuration == rhs.pauseDuration &&
+            lhs.fontIncreasePercent == rhs.fontIncreasePercent &&
+            lhs.playbackSpeed == rhs.playbackSpeed
+    }
+
+    var languageNameNationalOnly: String {
+        let value = languageName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else { return "" }
+
+        // Stored as "National (En)" in config; show only national part in compact UI.
+        if let range = value.range(of: " (") {
+            return String(value[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return value
     }
 }
 
@@ -70,7 +81,7 @@ extension Array where Element == MultilingualStep {
                 let name = step.translationName.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !name.isEmpty { return name }
 
-                let language = step.languageName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let language = step.languageNameNationalOnly
                 if !language.isEmpty { return language }
 
                 return "—"
