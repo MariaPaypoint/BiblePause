@@ -288,6 +288,7 @@ struct PageMultilingualReadView: View {
                             .font(.callout)
                             .fontWeight(.bold)
                             .foregroundColor(Color("localAccentColor"))
+                            .offset(y: -2)
                     }
                 }
                 .padding(.horizontal, globalBasePadding)
