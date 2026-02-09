@@ -440,8 +440,13 @@ class PlayerModel: ObservableObject {
             setCurrentVerseIndex(currentVerseIndex - 1)
             
             let begin = audioVerses[currentVerseIndex].begin
-            player.seek(to: CMTimeMake(value: Int64(begin*100), timescale: 100))
+            // Pause periodic updates during the seek to avoid UI "jumping back".
+            timeObserver.pause(true)
             currentTime = begin
+            let targetTime = CMTime(seconds: begin, preferredTimescale: 600)
+            player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
+                self?.timeObserver.pause(false)
+            }
         }
     }
     
@@ -451,8 +456,15 @@ class PlayerModel: ObservableObject {
             let begin = audioVerses[currentVerseIndex].begin
             // Step slightly back to make the transition smoother
             let minus = currentVerseIndex >= 1 ? min(abs((audioVerses[currentVerseIndex-1].end - begin) / 2), 0.1) : 0
-            player.seek(to: CMTimeMake(value: Int64((begin-minus)*100), timescale: 100))
-            currentTime = begin
+            let target = max(0, begin - minus)
+            // Pause periodic updates during the seek to avoid UI "jumping back".
+            timeObserver.pause(true)
+            // Keep UI in sync with the actual seek target to avoid a visible "jump back".
+            currentTime = target
+            let targetTime = CMTime(seconds: target, preferredTimescale: 600)
+            player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
+                self?.timeObserver.pause(false)
+            }
         }
     }
     
