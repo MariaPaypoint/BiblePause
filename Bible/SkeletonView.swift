@@ -7,6 +7,56 @@ struct ReadProgress: Codable {
     var startDate: Date = Date()
 }
 
+// MARK: LanguageDefaults
+private enum LanguageDefaults {
+    static let systemLanguage: String = {
+        let lang = Locale.current.language.languageCode?.identifier ?? "en"
+        switch lang {
+        case "ru": return "ru"
+        case "uk": return "uk"
+        default: return "en"
+        }
+    }()
+
+    static var language: String { systemLanguage }
+
+    static var translation: Int {
+        switch systemLanguage {
+        case "ru": return 1
+        case "uk": return 20
+        default: return 16
+        }
+    }
+
+    static var translationName: String {
+        switch systemLanguage {
+        case "ru": return "SYNO"
+        case "uk": return "UBH"
+        default: return "BSB"
+        }
+    }
+
+    static var voice: Int {
+        switch systemLanguage {
+        case "ru": return 1
+        case "uk": return 130
+        default: return 151
+        }
+    }
+
+    static var voiceName: String {
+        switch systemLanguage {
+        case "ru": return "Alexander Bondarenko"
+        case "uk": return "Igor Kozlov"
+        default: return "Bob Souer"
+        }
+    }
+
+    static var voiceMusic: Bool {
+        systemLanguage == "ru"
+    }
+}
+
 // MARK: SettingsManager
 class SettingsManager: ObservableObject {
     
@@ -20,17 +70,17 @@ class SettingsManager: ObservableObject {
     @AppStorage("pauseBlock") var pauseBlock: PauseBlock = .verse
     
     @AppStorage("autoNextChapter") var autoNextChapter: Bool = true
-    @AppStorage("autoProgressAudioEnd") var autoProgressAudioEnd: Bool = true
+    @AppStorage("autoProgressAudioEnd") var autoProgressAudioEnd: Bool = false
     @AppStorage("autoProgressFrom90Percent") var autoProgressFrom90Percent: Bool = true
     @AppStorage("autoProgressConsiderSeeking") var autoProgressConsiderSeeking: Bool = true
     @AppStorage("autoProgressByReading") var autoProgressByReading: Bool = true
     
-    @AppStorage("language") var language: String = "ru"
-    @AppStorage("translation") var translation: Int = 1 // syn
-    @AppStorage("translationName") var translationName: String = "SYNO"
-    @AppStorage("voice") var voice: Int = 1 // prozorovsky
-    @AppStorage("voiceName") var voiceName: String = "Alexander Bondarenko"
-    @AppStorage("voiceMusic") var voiceMusic: Bool = true
+    @AppStorage("language") var language: String = LanguageDefaults.language
+    @AppStorage("translation") var translation: Int = LanguageDefaults.translation
+    @AppStorage("translationName") var translationName: String = LanguageDefaults.translationName
+    @AppStorage("voice") var voice: Int = LanguageDefaults.voice
+    @AppStorage("voiceName") var voiceName: String = LanguageDefaults.voiceName
+    @AppStorage("voiceMusic") var voiceMusic: Bool = LanguageDefaults.voiceMusic
     
     @AppStorage("currentExcerpt") var currentExcerpt: String = "jhn 1"
     

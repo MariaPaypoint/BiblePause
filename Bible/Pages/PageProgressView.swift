@@ -348,14 +348,14 @@ private struct ProgressSettingsSheet: View {
                     VStack(spacing: 0) {
                     viewGroupHeader(text: "progress.settings.auto_counting".localized)
                     settingsToggle(
-                        titleKey: "progress.settings.auto_audio_end",
-                        subtitleKey: "progress.settings.auto_audio_end.description",
-                        isOn: $settingsManager.autoProgressAudioEnd
-                    )
-                    settingsToggle(
                         titleKey: "progress.settings.auto_audio_90",
                         subtitleKey: "progress.settings.auto_audio_90.description",
                         isOn: $settingsManager.autoProgressFrom90Percent
+                    )
+                    settingsToggle(
+                        titleKey: "progress.settings.auto_audio_end",
+                        subtitleKey: "progress.settings.auto_audio_end.description",
+                        isOn: $settingsManager.autoProgressAudioEnd
                     )
                     settingsToggle(
                         titleKey: "progress.settings.auto_by_reading",
