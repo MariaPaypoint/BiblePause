@@ -16,9 +16,6 @@
 		047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC42BEEB626009DEC11 /* SkeletonView.swift */; };
 		047B3BC72BEEBADD009DEC11 /* PageReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC62BEEBADD009DEC11 /* PageReadView.swift */; };
 		047B3BC92BEEC1C0009DEC11 /* PageSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */; };
-		0497A9652C6BFEA6008A5D7F /* FancyToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A95F2C6BFD4B008A5D7F /* FancyToastView.swift */; };
-		0497A9662C6BFEA6008A5D7F /* FancyToastStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A9602C6BFD60008A5D7F /* FancyToastStyle.swift */; };
-		0497A9672C6BFEA6008A5D7F /* FancyToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */; };
 		04BC33092C95DE5E004D8E65 /* advHTMLTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */; };
 		04BC330E2C95F3BB004D8E65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */; };
 		04DB3CA72EC9F5D4004AF6BC /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DB3CA62EC9F5D4004AF6BC /* LocalizationManager.swift */; };
@@ -49,7 +46,7 @@
 		4CFC91F82C59AA7E005AFAA5 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 4CFC91F72C59AA7E005AFAA5 /* OpenAPIRuntime */; };
 		4CFC91FB2C59AAB1005AFAA5 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 4CFC91FA2C59AAB1005AFAA5 /* OpenAPIURLSession */; };
 		4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */ = {isa = PBXBuildFile; fileRef = 4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */; };
-		4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Sources */ = {isa = PBXBuildFile; fileRef = 4CFC91FE2C59AB26005AFAA5 /* openapi-generator-config.yml */; };
+		4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Resources */ = {isa = PBXBuildFile; fileRef = 4CFC91FE2C59AB26005AFAA5 /* openapi-generator-config.yml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,9 +61,6 @@
 		047B3BC62BEEBADD009DEC11 /* PageReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReadView.swift; sourceTree = "<group>"; };
 		047B3BC82BEEC1C0009DEC11 /* PageSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectView.swift; sourceTree = "<group>"; };
 		0497A9592C6AC3EC008A5D7F /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		0497A95F2C6BFD4B008A5D7F /* FancyToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastView.swift; sourceTree = "<group>"; };
-		0497A9602C6BFD60008A5D7F /* FancyToastStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastStyle.swift; sourceTree = "<group>"; };
-		0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FancyToastModifier.swift; sourceTree = "<group>"; };
 		04BC33082C95DE5E004D8E65 /* advHTMLTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advHTMLTextView.swift; sourceTree = "<group>"; };
 		04BC330D2C95F3B6004D8E65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		04DB3CA62EC9F5D4004AF6BC /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
@@ -113,16 +107,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0497A95E2C6BFD40008A5D7F /* FancyToast */ = {
-			isa = PBXGroup;
-			children = (
-				0497A95F2C6BFD4B008A5D7F /* FancyToastView.swift */,
-				0497A9602C6BFD60008A5D7F /* FancyToastStyle.swift */,
-				0497A9612C6BFD66008A5D7F /* FancyToastModifier.swift */,
-			);
-			path = FancyToast;
-			sourceTree = "<group>";
-		};
 		04DB3CB02EC9F70C004AF6BC /* en.lproj */ = {
 			isa = PBXGroup;
 			children = (
@@ -205,7 +189,6 @@
 				4C7691222BECEA1300C66FDC /* BiblePause */,
 				0497A9592C6AC3EC008A5D7F /* .gitignore */,
 				4CFC91F02C59A844005AFAA5 /* readme.md */,
-				0497A95E2C6BFD40008A5D7F /* FancyToast */,
 				4C7691212BECEA1300C66FDC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -324,6 +307,7 @@
 				04DB3CB12EC9F70C004AF6BC /* Localizable.strings in Resources */,
 				04DB3CC72ECB9A60004AF6BC /* Localizable.strings in Resources */,
 				4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */,
+				4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Resources */,
 				04DB3CB72EC9F71B004AF6BC /* Localizable.strings in Resources */,
 				4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */,
 				4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */,
@@ -337,12 +321,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0497A9652C6BFEA6008A5D7F /* FancyToastView.swift in Sources */,
-				0497A9662C6BFEA6008A5D7F /* FancyToastStyle.swift in Sources */,
 				4CA027002EA43D4E004A6FD1 /* PageProgressView.swift in Sources */,
-				0497A9672C6BFEA6008A5D7F /* FancyToastModifier.swift in Sources */,
 				046B5DFC2EF9534600653FA8 /* PageMultilingualReadView.swift in Sources */,
-				4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Sources */,
 				4C7691262BECEA1300C66FDC /* PageMainView.swift in Sources */,
 				047B3BC52BEEB626009DEC11 /* SkeletonView.swift in Sources */,
 				4C749E0B2C1E1FC000CF4234 /* PageContactsView.swift in Sources */,
