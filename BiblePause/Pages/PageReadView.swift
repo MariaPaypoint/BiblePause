@@ -807,25 +807,28 @@ struct PageReadView: View {
     private var chapterMarkProgressLineWidth: CGFloat { 2 }
 
     private struct ChapterProgressArc: Shape {
-		var progress: Double
+        var progress: Double
+        var lineWidth: CGFloat
+        var radiusInset: CGFloat = 0.5
 
-		var animatableData: Double {
-			get { progress }
-			set { progress = newValue }
-		}
+        var animatableData: Double {
+            get { progress }
+            set { progress = newValue }
+        }
 
-		func path(in rect: CGRect) -> Path {
-			let clamped = min(max(progress, 0), 1)
-			let radius = max(min(rect.width, rect.height) / 2 - 1, 0)
-			let center = CGPoint(x: rect.midX, y: rect.midY)
-			let start = Angle.degrees(-90)
-			let end = Angle.degrees(-90 + 360 * clamped)
+        func path(in rect: CGRect) -> Path {
+            let clamped = min(max(progress, 0), 1)
+            let half = min(rect.width, rect.height) / 2
+            let radius = max(half - lineWidth / 2 - radiusInset, 0)
+            let center = CGPoint(x: rect.midX, y: rect.midY)
+            let start = Angle.degrees(-90)
+            let end = Angle.degrees(-90 + 360 * clamped)
 
-			var path = Path()
-			path.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
-			return path
-		}
-	}
+            var path = Path()
+            path.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
+            return path
+        }
+    }
 
     private var ninetyPercentThresholdVerseCount: Int {
         guard audioVerseCount > 0 else { return 0 }
@@ -855,15 +858,18 @@ struct PageReadView: View {
                             .font(.system(size: chapterMarkIndicatorSize * 0.62, weight: .bold))
                             .foregroundColor(Color("DarkGreen"))
                     } else {
-                        Image(systemName: "circle")
-                            .font(.system(size: chapterMarkIndicatorSize))
-                            .foregroundColor(Color("localAccentColor").opacity(0.6))
-                        if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
-                            ChapterProgressArc(progress: ninetyPercentVisualProgress)
-                                .stroke(
-                                    Color("Mustard"),
-                                    style: StrokeStyle(lineWidth: chapterMarkProgressLineWidth, lineCap: .round, lineJoin: .round)
-                                )
+	                        Image(systemName: "circle")
+	                            .font(.system(size: chapterMarkIndicatorSize))
+	                            .foregroundColor(Color("localAccentColor").opacity(0.6))
+	                        if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
+	                            ChapterProgressArc(
+	                                progress: ninetyPercentVisualProgress,
+	                                lineWidth: chapterMarkProgressLineWidth
+	                            )
+	                                .stroke(
+	                                    Color("Mustard"),
+	                                    style: StrokeStyle(lineWidth: chapterMarkProgressLineWidth, lineCap: .round, lineJoin: .round)
+	                                )
                                 .animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
                         }
                     }
