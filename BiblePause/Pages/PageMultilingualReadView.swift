@@ -279,10 +279,16 @@ struct PageMultilingualReadView: View {
                     Spacer()
                     
                     // Progress indicator
-                    Text("\(currentUnitIndex + 1) " + "page.read.of".localized() + " \(unitRanges.count)")
-                        .font(.callout)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("localAccentColor"))
+                    VStack(alignment: .trailing, spacing: 0) {
+                        // Keep the same vertical rhythm as the "Reader" two-line block.
+                        Text("page.read.reader".localized())
+                            .font(.caption2)
+                            .hidden()
+                        Text("\(currentUnitIndex + 1) " + "page.read.of".localized() + " \(unitRanges.count)")
+                            .font(.callout)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color("localAccentColor"))
+                    }
                 }
                 .padding(.horizontal, globalBasePadding)
                 .padding(.vertical, 10)
