@@ -791,7 +791,13 @@ struct PageSetupView: View {
         self.translationNames = []
         for translation in self.translationsResponse {
             self.translationKeys.append("\(translation.code)")
-            self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
+            let shortName = translation.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let longName = (translation.description ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if longName.isEmpty || longName == shortName {
+                self.translationTexts.append(shortName)
+            } else {
+                self.translationTexts.append("\(shortName) (\(longName))")
+            }
             self.translationNames.append(translation.name)
         }
 
