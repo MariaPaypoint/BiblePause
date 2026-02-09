@@ -186,7 +186,7 @@
 			isa = PBXGroup;
 			children = (
 				0458F53C2CCE0AA20016C65F /* LaunchScreen.storyboard */,
-				4C7691222BECEA1300C66FDC /* BiblePause */,
+				4C7691222BECEA1300C66FDC /* Bible */,
 				0497A9592C6AC3EC008A5D7F /* .gitignore */,
 				4CFC91F02C59A844005AFAA5 /* readme.md */,
 				4C7691212BECEA1300C66FDC /* Products */,
@@ -201,7 +201,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4C7691222BECEA1300C66FDC /* BiblePause */ = {
+		4C7691222BECEA1300C66FDC /* Bible */ = {
 			isa = PBXGroup;
 			children = (
 				04DB3CC62ECB9A60004AF6BC /* uk.lproj */,
@@ -224,7 +224,7 @@
 				4C7691272BECEA1800C66FDC /* Assets.xcassets */,
 				4C7691292BECEA1800C66FDC /* Preview Content */,
 			);
-			path = BiblePause;
+			path = Bible;
 			sourceTree = "<group>";
 		};
 		4C7691292BECEA1800C66FDC /* Preview Content */ = {
@@ -523,6 +523,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BiblePause/Preview Content\"";
+				DEVELOPMENT_TEAM = 4SC2JCE37N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BiblePause/Info.plist;
@@ -538,7 +539,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = BiblePause;
+				PRODUCT_BUNDLE_IDENTIFIER = BibleGarden;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -558,6 +559,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BiblePause/Preview Content\"";
+				DEVELOPMENT_TEAM = 4SC2JCE37N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BiblePause/Info.plist;
@@ -573,7 +575,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = BiblePause;
+				PRODUCT_BUNDLE_IDENTIFIER = BibleGarden;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
