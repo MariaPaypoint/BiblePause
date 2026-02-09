@@ -65,7 +65,7 @@
 "progress.settings.consider_seeking" = "Игнорировать перемотанное";
 "progress.settings.consider_seeking.description" = "Если включено, пропущенные и перемотанные стихи не засчитываются";
 "progress.settings.auto_by_reading" = "По дочитыванию текста";
-"progress.settings.auto_by_reading.description" = "Если текст проскролен до конца, и на главе проведено не менее минуты, зачитывать ее как прочитанную";
+"progress.settings.auto_by_reading.description" = "Если текст проскролен до конца и на главе проведено достаточно времени (от 10 до 60 секунд, зависит от длины главы), зачитывать ее как прочитанную";
 "progress.settings.interface" = "Интерфейс чтения";
 "progress.settings.actions" = "Действия";
 "progress.settings.reset_all_progress" = "Сбросить весь прогресс";

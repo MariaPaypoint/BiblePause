@@ -65,7 +65,7 @@
 "progress.settings.consider_seeking" = "Ignore skipped content";
 "progress.settings.consider_seeking.description" = "If enabled, skipped and rewound verses are not counted";
 "progress.settings.auto_by_reading" = "Text read to end";
-"progress.settings.auto_by_reading.description" = "If text is scrolled to the end and at least one minute is spent in the chapter, mark it as read";
+"progress.settings.auto_by_reading.description" = "If text is scrolled to the end and enough time is spent in the chapter (10 to 60 seconds, depending on chapter length), mark it as read";
 "progress.settings.interface" = "Reading Interface";
 "progress.settings.actions" = "Actions";
 "progress.settings.reset_all_progress" = "Reset all progress";

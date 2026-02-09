@@ -546,6 +546,12 @@ struct PageReadView: View {
         evaluateTextReadingAutoProgress()
     }
 
+    private var textReadingAutoProgressRequiredSeconds: Double {
+        let verseCount = textVerses.count
+        guard verseCount > 0 else { return 60 }
+        return min(60, max(10, Double(verseCount) * 2))
+    }
+
     private func evaluateTextReadingAutoProgress() {
         guard settingsManager.autoProgressByReading else {
             pendingReadingAutoMarkWorkItem?.cancel()
@@ -556,8 +562,9 @@ struct PageReadView: View {
         guard chapterReachedTextBottom else { return }
         guard chapterReadingStartTime != .distantPast else { return }
 
+        let requiredSeconds = textReadingAutoProgressRequiredSeconds
         let elapsed = Date().timeIntervalSince(chapterReadingStartTime)
-        if elapsed >= 60 {
+        if elapsed >= requiredSeconds {
             readingAutoProgressHandledForSession = true
             pendingReadingAutoMarkWorkItem?.cancel()
             pendingReadingAutoMarkWorkItem = nil
@@ -565,7 +572,7 @@ struct PageReadView: View {
             return
         }
 
-        let remaining = max(0.1, 60 - elapsed)
+        let remaining = max(0.1, requiredSeconds - elapsed)
         let sessionID = readingSessionID
         pendingReadingAutoMarkWorkItem?.cancel()
         let workItem = DispatchWorkItem {
@@ -620,9 +627,7 @@ struct PageReadView: View {
             VStack {
                 viewAudioInfo()
 
-                if hasText {
-                    viewChapterMarkToggle()
-                }
+                viewChapterMarkToggle()
                 
                 // Warning when audio is missing
                 if !hasAudio && hasText && self.errorDescription != "" {
@@ -794,9 +799,33 @@ struct PageReadView: View {
 
     private var audioPanelHeight: CGFloat {
         let baseHeight: CGFloat = (!hasAudio && hasText ? 260 : 220)
-        let withManualToggle = hasText
-        return baseHeight + (withManualToggle ? 24 : 0)
+        return baseHeight + chapterMarkRowHeight
     }
+
+    private var chapterMarkRowHeight: CGFloat { 24 }
+    private var chapterMarkIndicatorSize: CGFloat { 14 }
+    private var chapterMarkProgressLineWidth: CGFloat { 2 }
+
+    private struct ChapterProgressArc: Shape {
+		var progress: Double
+
+		var animatableData: Double {
+			get { progress }
+			set { progress = newValue }
+		}
+
+		func path(in rect: CGRect) -> Path {
+			let clamped = min(max(progress, 0), 1)
+			let radius = max(min(rect.width, rect.height) / 2 - 1, 0)
+			let center = CGPoint(x: rect.midX, y: rect.midY)
+			let start = Angle.degrees(-90)
+			let end = Angle.degrees(-90 + 360 * clamped)
+
+			var path = Path()
+			path.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
+			return path
+		}
+	}
 
     private var ninetyPercentThresholdVerseCount: Int {
         guard audioVerseCount > 0 else { return 0 }
@@ -812,40 +841,44 @@ struct PageReadView: View {
 
     @ViewBuilder private func viewChapterMarkToggle() -> some View {
         let isRead = isCurrentChapterRead
+        let canMark = currentChapterProgressTarget != nil
         Button {
             toggleCurrentChapterReadState()
         } label: {
             HStack(spacing: 6) {
-                if isRead {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Color("Mustard"))
-                        .font(.caption)
-                } else if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
-                    ZStack {
-                        Circle()
-                            .stroke(Color("localAccentColor").opacity(0.35), lineWidth: 1.4)
-                        Circle()
-                            .trim(from: 0, to: ninetyPercentVisualProgress)
-                            .stroke(
-                                Color("Mustard"),
-                                style: StrokeStyle(lineWidth: 1.8, lineCap: .round)
-                            )
-                            .rotationEffect(.degrees(-90))
+                ZStack {
+                    if isRead {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: chapterMarkIndicatorSize))
+                            .foregroundColor(Color("Mustard"))
+                        Image(systemName: "checkmark")
+                            .font(.system(size: chapterMarkIndicatorSize * 0.62, weight: .bold))
+                            .foregroundColor(Color("DarkGreen"))
+                    } else {
+                        Image(systemName: "circle")
+                            .font(.system(size: chapterMarkIndicatorSize))
+                            .foregroundColor(Color("localAccentColor").opacity(0.6))
+                        if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
+                            ChapterProgressArc(progress: ninetyPercentVisualProgress)
+                                .stroke(
+                                    Color("Mustard"),
+                                    style: StrokeStyle(lineWidth: chapterMarkProgressLineWidth, lineCap: .round, lineJoin: .round)
+                                )
+                                .animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
+                        }
                     }
-                    .frame(width: 13, height: 13)
-                    .animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
-                } else {
-                    Image(systemName: "circle")
-                        .foregroundColor(Color("localAccentColor").opacity(0.6))
-                        .font(.caption)
                 }
+                .frame(width: chapterMarkIndicatorSize, height: chapterMarkIndicatorSize)
                 Text("chapter.read_status".localized)
                     .font(.caption2)
                     .foregroundColor(Color("localAccentColor").opacity(0.85))
                 Spacer()
             }
+            .frame(height: chapterMarkRowHeight)
         }
         .buttonStyle(.plain)
+        .disabled(!canMark)
+        .opacity(canMark ? 1 : 0) // Reserve space to avoid panel jumping while chapter loads.
         .padding(.top, 2)
     }
 

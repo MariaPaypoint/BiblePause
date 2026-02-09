@@ -65,7 +65,7 @@
 "progress.settings.consider_seeking" = "Ігнорувати перемотане";
 "progress.settings.consider_seeking.description" = "Якщо увімкнено, пропущені й перемотані вірші не зараховуються";
 "progress.settings.auto_by_reading" = "За дочитуванням тексту";
-"progress.settings.auto_by_reading.description" = "Якщо текст проскролено до кінця і на розділі проведено не менше хвилини, зараховувати його як прочитаний";
+"progress.settings.auto_by_reading.description" = "Якщо текст проскролено до кінця і на розділі проведено достатньо часу (від 10 до 60 секунд, залежить від довжини розділу), зараховувати його як прочитаний";
 "progress.settings.interface" = "Інтерфейс читання";
 "progress.settings.actions" = "Дії";
 "progress.settings.reset_all_progress" = "Скинути весь прогрес";

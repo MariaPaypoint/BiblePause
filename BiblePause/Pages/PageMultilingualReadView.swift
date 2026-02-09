@@ -450,6 +450,30 @@ struct PageMultilingualReadView: View {
         return Int(ceil(Double(audioVerseCount) * 0.9))
     }
 
+	private var chapterMarkIndicatorSize: CGFloat { 14 }
+	private var chapterMarkProgressLineWidth: CGFloat { 2 }
+
+	private struct ChapterProgressArc: Shape {
+		var progress: Double
+
+		var animatableData: Double {
+			get { progress }
+			set { progress = newValue }
+		}
+
+		func path(in rect: CGRect) -> Path {
+			let clamped = min(max(progress, 0), 1)
+			let radius = max(min(rect.width, rect.height) / 2 - 1, 0)
+			let center = CGPoint(x: rect.midX, y: rect.midY)
+			let start = Angle.degrees(-90)
+			let end = Angle.degrees(-90 + 360 * clamped)
+
+			var path = Path()
+			path.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
+			return path
+		}
+	}
+
     private var ninetyPercentVisualProgress: Double {
         guard settingsManager.autoProgressFrom90Percent else { return 0 }
         let required = ninetyPercentThresholdVerseCount
@@ -457,43 +481,47 @@ struct PageMultilingualReadView: View {
         return min(Double(listenedVerseNumbers.count) / Double(required), 1)
     }
 
-    @ViewBuilder private func viewChapterMarkToggle() -> some View {
-        let isRead = isCurrentChapterRead
-        Button {
-            toggleCurrentChapterReadState()
-        } label: {
-            HStack(spacing: 6) {
-                if isRead {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Color("Mustard"))
-                        .font(.caption)
-                } else if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
-                    ZStack {
-                        Circle()
-                            .stroke(Color("localAccentColor").opacity(0.35), lineWidth: 1.4)
-                        Circle()
-                            .trim(from: 0, to: ninetyPercentVisualProgress)
-                            .stroke(
-                                Color("Mustard"),
-                                style: StrokeStyle(lineWidth: 1.8, lineCap: .round)
-                            )
-                            .rotationEffect(.degrees(-90))
-                    }
-                    .frame(width: 13, height: 13)
-                    .animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
-                } else {
-                    Image(systemName: "circle")
-                        .foregroundColor(Color("localAccentColor").opacity(0.6))
-                        .font(.caption)
-                }
-                Text("chapter.read_status".localized)
-                    .font(.caption2)
-                    .foregroundColor(Color("localAccentColor").opacity(0.85))
+	@ViewBuilder private func viewChapterMarkToggle() -> some View {
+		let isRead = isCurrentChapterRead
+		let canMark = currentChapterProgressTarget != nil
+		Button {
+			toggleCurrentChapterReadState()
+		} label: {
+			HStack(spacing: 6) {
+				ZStack {
+					if isRead {
+						Image(systemName: "circle.fill")
+							.font(.system(size: chapterMarkIndicatorSize))
+							.foregroundColor(Color("Mustard"))
+						Image(systemName: "checkmark")
+							.font(.system(size: chapterMarkIndicatorSize * 0.62, weight: .bold))
+							.foregroundColor(Color("DarkGreen"))
+					} else {
+						Image(systemName: "circle")
+							.font(.system(size: chapterMarkIndicatorSize))
+							.foregroundColor(Color("localAccentColor").opacity(0.6))
+						if settingsManager.autoProgressFrom90Percent && audioVerseCount > 0 {
+							ChapterProgressArc(progress: ninetyPercentVisualProgress)
+								.stroke(
+									Color("Mustard"),
+									style: StrokeStyle(lineWidth: chapterMarkProgressLineWidth, lineCap: .round, lineJoin: .round)
+								)
+								.animation(.easeOut(duration: 0.2), value: ninetyPercentVisualProgress)
+						}
+					}
+				}
+				.frame(width: chapterMarkIndicatorSize, height: chapterMarkIndicatorSize)
+				Text("chapter.read_status".localized)
+					.font(.caption2)
+					.foregroundColor(Color("localAccentColor").opacity(0.85))
                 Spacer()
             }
             .padding(.horizontal, globalBasePadding)
+            .frame(height: 24)
         }
         .buttonStyle(.plain)
+        .disabled(!canMark)
+        .opacity(canMark ? 1 : 0)
         .padding(.top, 2)
     }
     
@@ -1056,6 +1084,12 @@ struct PageMultilingualReadView: View {
         evaluateTextReadingAutoProgress()
     }
 
+    private var textReadingAutoProgressRequiredSeconds: Double {
+        let verseCount = max(chapterVerseNumbers.count, stepTextVerses[0]?.count ?? 0)
+        guard verseCount > 0 else { return 60 }
+        return min(60, max(10, Double(verseCount) * 2))
+    }
+
     private func evaluateTextReadingAutoProgress() {
         guard settingsManager.autoProgressByReading else {
             pendingReadingAutoMarkWorkItem?.cancel()
@@ -1066,8 +1100,9 @@ struct PageMultilingualReadView: View {
         guard chapterReachedTextBottom else { return }
         guard chapterReadingStartTime != .distantPast else { return }
 
+        let requiredSeconds = textReadingAutoProgressRequiredSeconds
         let elapsed = Date().timeIntervalSince(chapterReadingStartTime)
-        if elapsed >= 60 {
+        if elapsed >= requiredSeconds {
             readingAutoProgressHandledForSession = true
             pendingReadingAutoMarkWorkItem?.cancel()
             pendingReadingAutoMarkWorkItem = nil
@@ -1075,7 +1110,7 @@ struct PageMultilingualReadView: View {
             return
         }
 
-        let remaining = max(0.1, 60 - elapsed)
+        let remaining = max(0.1, requiredSeconds - elapsed)
         let sessionID = readingSessionID
         pendingReadingAutoMarkWorkItem?.cancel()
         let workItem = DispatchWorkItem {
