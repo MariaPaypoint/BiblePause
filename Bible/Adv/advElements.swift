@@ -79,6 +79,7 @@ func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String
                 }
             }
             .background(Color("DarkGreen"))
+            .contentShape(Rectangle())
             .onTapGesture {
                 selectedKey.wrappedValue = key
                 onSelect(index)
@@ -138,6 +139,7 @@ func viewSelectListWithPreview(texts: [String], keys: [String], selectedKey: Bin
                 }
             }
             .background(Color("DarkGreen"))
+            .contentShape(Rectangle())
             .onTapGesture {
                 selectedKey.wrappedValue = key
                 onSelect(index)

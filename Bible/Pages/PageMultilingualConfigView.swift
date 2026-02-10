@@ -629,6 +629,7 @@ struct PageMultilingualConfigView: View {
                         }
                     }
                     .padding(.vertical, 12)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 if index < texts.count - 1 {
