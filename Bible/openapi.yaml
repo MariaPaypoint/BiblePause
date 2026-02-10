@@ -742,15 +742,11 @@ components:
         status:
           $ref: '#/components/schemas/AnomalyStatus'
         begin:
-          anyOf:
-          - type: number
-          - type: 'null'
           title: Begin
+          type: number
         end:
-          anyOf:
-          - type: number
-          - type: 'null'
           title: End
+          type: number
       type: object
       required:
       - status
@@ -930,8 +926,8 @@ components:
           type: string
           title: Text
         before_verse_code:
-          type: integer
           title: Before Verse Code
+          type: integer
         metadata:
           title: Metadata
           type: string
@@ -952,7 +948,6 @@ components:
       required:
       - code
       - text
-      - before_verse_code
       title: TitleModel
     Token:
       properties:
@@ -1092,10 +1087,8 @@ components:
           title: Language
           type: string
         active:
-          anyOf:
-          - type: boolean
-          - type: 'null'
           title: Active
+          type: boolean
       type: object
       title: TranslationUpdateModel
     ValidationError:
@@ -1198,15 +1191,11 @@ components:
           title: Position From End
           type: integer
         duration:
-          anyOf:
-          - type: number
-          - type: 'null'
           title: Duration
+          type: number
         speed:
-          anyOf:
-          - type: number
-          - type: 'null'
           title: Speed
+          type: number
         ratio:
           type: number
           title: Ratio
@@ -1257,15 +1246,11 @@ components:
           title: Position From End
           type: integer
         duration:
-          anyOf:
-          - type: number
-          - type: 'null'
           title: Duration
+          type: number
         speed:
-          anyOf:
-          - type: number
-          - type: 'null'
           title: Speed
+          type: number
         ratio:
           type: number
           title: Ratio
@@ -1409,15 +1394,11 @@ components:
           title: Description
           type: string
         is_music:
-          anyOf:
-          - type: boolean
-          - type: 'null'
           title: Is Music
+          type: boolean
         active:
-          anyOf:
-          - type: boolean
-          - type: 'null'
           title: Active
+          type: boolean
       type: object
       title: VoiceUpdateModel
   securitySchemes:
