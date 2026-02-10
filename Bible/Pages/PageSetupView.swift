@@ -23,6 +23,7 @@ struct PageSetupView: View {
     // Separate state values so we don't persist invalid data
     @State private var isLanguagesLoading: Bool = true
     @State private var languageTexts: [String] = []
+    @State private var languageDescriptions: [String] = []
     @State private var languageKeys: [String]  = []
     @State private var language: String = "" // initialized in onAppear
     
@@ -31,6 +32,7 @@ struct PageSetupView: View {
     @State private var isTranslationsLoading: Bool = true
     @State private var translationKeys: [String]  = []
     @State private var translationTexts: [String] = []
+    @State private var translationDescriptions: [String] = []
     @State private var translationNames: [String] = []
     @State private var translation: String = "" // initialized in onAppear
     @State private var translationName: String = ""
@@ -363,6 +365,7 @@ struct PageSetupView: View {
                         texts: languageTexts,
                         keys: languageKeys,
                         selectedKey: $language,
+                        descriptions: languageDescriptions,
                         onSelect: { selectedLanguageIndex in
                             stopVoicePreview()
                             let selectedLanguage = languageKeys[selectedLanguageIndex]
@@ -392,6 +395,7 @@ struct PageSetupView: View {
                         texts: translationTexts,
                         keys: translationKeys,
                         selectedKey: $translation,
+                        descriptions: translationDescriptions,
                         onSelect: { selectedTranslateIndex in
                             stopVoicePreview()
                             let selectedTranslation = translationKeys[selectedTranslateIndex]
@@ -499,11 +503,11 @@ struct PageSetupView: View {
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 8)
                 .fill(Color("DarkGreen-light").opacity(isExpanded ? 0.9 : 0.65))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 8)
                 .stroke(
                     isExpanded ? Color("Mustard").opacity(0.5) : Color.white.opacity(0.2),
                     lineWidth: isExpanded ? 1.1 : 1
@@ -515,21 +519,31 @@ struct PageSetupView: View {
         texts: [String],
         keys: [String],
         selectedKey: Binding<String>,
+        descriptions: [String] = [],
         onSelect: @escaping (Int) -> Void = { _ in }
     ) -> some View {
         VStack(spacing: 0) {
             ForEach(texts.indices, id: \.self) { index in
                 let text = texts[index]
                 let key = keys[index]
+                let description = index < descriptions.count ? descriptions[index] : ""
                 Button {
                     selectedKey.wrappedValue = key
                     onSelect(index)
                 } label: {
                     HStack {
-                        Text(text)
-                            .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(text)
+                                .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .lineLimit(1)
+                            if !description.isEmpty {
+                                Text(description)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.6))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
                         if selectedKey.wrappedValue == key {
                             Image(systemName: "checkmark")
                                 .foregroundColor(Color("Mustard"))
@@ -752,12 +766,14 @@ struct PageSetupView: View {
     func updateLanguagesList() {
         self.languageKeys = []
         self.languageTexts = []
-        
+        self.languageDescriptions = []
+
         let languages = settingsManager.cachedLanguages
-        
+
         for language in languages {
             self.languageKeys.append(language.alias)
-            self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+            self.languageTexts.append(language.name_national)
+            self.languageDescriptions.append(language.name_en)
         }
 
         if !language.isEmpty && !languageKeys.contains(language) {
@@ -789,16 +805,14 @@ struct PageSetupView: View {
         
         self.translationKeys = []
         self.translationTexts = []
+        self.translationDescriptions = []
         self.translationNames = []
         for translation in self.translationsResponse {
             self.translationKeys.append("\(translation.code)")
             let shortName = translation.name.trimmingCharacters(in: .whitespacesAndNewlines)
             let longName = (translation.description ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            if longName.isEmpty || longName == shortName {
-                self.translationTexts.append(shortName)
-            } else {
-                self.translationTexts.append("\(shortName) (\(longName))")
-            }
+            self.translationTexts.append(shortName)
+            self.translationDescriptions.append(longName == shortName ? "" : longName)
             self.translationNames.append(translation.name)
         }
 

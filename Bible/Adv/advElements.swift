@@ -52,16 +52,26 @@ func viewGroupHeader(text: String) -> some View {
 // List selection
 @ViewBuilder
 func viewSelectList(texts: [String], keys: [String], selectedKey: Binding<String>,
+                    descriptions: [String] = [],
                     onSelect: @escaping (Int) -> Void = { _ in }) -> some View {
     LazyVStack(alignment: .leading, spacing: 0) {
         ForEach(texts.indices, id: \.self) { index in
             let text = texts[index]
             let key = keys[index]
+            let description = index < descriptions.count ? descriptions[index] : ""
             HStack {
-                Text(text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
-                    .padding(.vertical, 10)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(text)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+                    if !description.isEmpty {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.6))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding(.vertical, 10)
                 Spacer()
                 if selectedKey.wrappedValue == key {
                     Image(systemName: "checkmark")

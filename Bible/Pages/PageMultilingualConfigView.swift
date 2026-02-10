@@ -22,12 +22,14 @@ struct PageMultilingualConfigView: View {
     // MARK: Languages and translations state
     @State private var isLanguagesLoading: Bool = true
     @State private var languageTexts: [String] = []
+    @State private var languageDescriptions: [String] = []
     @State private var languageKeys: [String]  = []
-    
+
     @State private var translationsResponse: [Components.Schemas.TranslationModel] = []
     @State private var isTranslationsLoading: Bool = true
     @State private var translationKeys: [String]  = []
     @State private var translationTexts: [String] = []
+    @State private var translationDescriptions: [String] = []
     @State private var translationNames: [String] = []
     
     @State private var voiceTexts: [String] = []
@@ -131,6 +133,7 @@ struct PageMultilingualConfigView: View {
                                         texts: languageTexts,
                                         keys: languageKeys,
                                         selectedKey: $selectedLanguage,
+                                        descriptions: languageDescriptions,
                                         onSelect: { index in
                                             stopVoicePreview()
                                             let selected = languageKeys[index]
@@ -162,6 +165,7 @@ struct PageMultilingualConfigView: View {
                                         texts: translationTexts,
                                         keys: translationKeys,
                                         selectedKey: $selectedTranslation,
+                                        descriptions: translationDescriptions,
                                         onSelect: { index in
                                             stopVoicePreview()
                                             let selected = translationKeys[index]
@@ -428,12 +432,14 @@ struct PageMultilingualConfigView: View {
     func updateLanguagesList() {
         self.languageKeys = []
         self.languageTexts = []
-        
+        self.languageDescriptions = []
+
         let languages = settingsManager.cachedLanguages
-        
+
         for language in languages {
             self.languageKeys.append(language.alias)
-            self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+            self.languageTexts.append(language.name_national)
+            self.languageDescriptions.append(language.name_en)
         }
 
         if !selectedLanguage.isEmpty && !languageKeys.contains(selectedLanguage) {
@@ -474,10 +480,14 @@ struct PageMultilingualConfigView: View {
         
         self.translationKeys = []
         self.translationTexts = []
+        self.translationDescriptions = []
         self.translationNames = []
         for translation in self.translationsResponse {
             self.translationKeys.append("\(translation.code)")
-            self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
+            let shortName = translation.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let longName = (translation.description ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            self.translationTexts.append(shortName)
+            self.translationDescriptions.append(longName == shortName ? "" : longName)
             self.translationNames.append(translation.name)
         }
 
@@ -588,21 +598,31 @@ struct PageMultilingualConfigView: View {
         texts: [String],
         keys: [String],
         selectedKey: Binding<String>,
+        descriptions: [String] = [],
         onSelect: @escaping (Int) -> Void = { _ in }
     ) -> some View {
         VStack(spacing: 0) {
             ForEach(texts.indices, id: \.self) { index in
                 let text = texts[index]
                 let key = keys[index]
+                let description = index < descriptions.count ? descriptions[index] : ""
                 Button {
                     selectedKey.wrappedValue = key
                     onSelect(index)
                 } label: {
                     HStack {
-                        Text(text)
-                            .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(text)
+                                .foregroundColor(selectedKey.wrappedValue == key ? Color("Mustard") : .white)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .lineLimit(1)
+                            if !description.isEmpty {
+                                Text(description)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.6))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
                         if selectedKey.wrappedValue == key {
                             Image(systemName: "checkmark")
                                 .foregroundColor(Color("Mustard"))

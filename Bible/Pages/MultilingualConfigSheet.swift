@@ -13,12 +13,14 @@ struct MultilingualConfigSheet: View {
     // MARK: Languages and translations state
     @State private var isLanguagesLoading: Bool = true
     @State private var languageTexts: [String] = []
+    @State private var languageDescriptions: [String] = []
     @State private var languageKeys: [String]  = []
-    
+
     @State private var translationsResponse: [Components.Schemas.TranslationModel] = []
     @State private var isTranslationsLoading: Bool = true
     @State private var translationKeys: [String]  = []
     @State private var translationTexts: [String] = []
+    @State private var translationDescriptions: [String] = []
     @State private var translationNames: [String] = []
     
     @State private var voiceTexts: [String] = []
@@ -99,6 +101,7 @@ struct MultilingualConfigSheet: View {
                             viewSelectList(texts: languageTexts,
                                            keys: languageKeys,
                                            selectedKey: $selectedLanguage,
+                                           descriptions: languageDescriptions,
                                            onSelect: { index in
                                 stopVoicePreview()
                                 selectedLanguage = languageKeys[index]
@@ -117,6 +120,7 @@ struct MultilingualConfigSheet: View {
                                 viewSelectList(texts: translationTexts,
                                                keys: translationKeys,
                                                selectedKey: $selectedTranslation,
+                                               descriptions: translationDescriptions,
                                                onSelect: { index in
                                     stopVoicePreview()
                                     selectedTranslation = translationKeys[index]
@@ -317,13 +321,15 @@ struct MultilingualConfigSheet: View {
                 inlineErrorMessage = ""
                 self.languageKeys = []
                 self.languageTexts = []
-                
+                self.languageDescriptions = []
+
                 let response = try await settingsManager.client.get_languages()
                 let languages = try response.ok.body.json
-                
+
                 for language in languages {
                     self.languageKeys.append(language.alias)
-                    self.languageTexts.append("\(language.name_national) (\(language.name_en))")
+                    self.languageTexts.append(language.name_national)
+                    self.languageDescriptions.append(language.name_en)
                 }
                 
                 // If selected language not in list, fallback
@@ -351,10 +357,14 @@ struct MultilingualConfigSheet: View {
                 
                 self.translationKeys = []
                 self.translationTexts = []
+                self.translationDescriptions = []
                 self.translationNames = []
                 for translation in self.translationsResponse {
                     self.translationKeys.append("\(translation.code)")
-                    self.translationTexts.append("\(translation.description ?? translation.name) (\(translation.name))")
+                    let shortName = translation.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let longName = (translation.description ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                    self.translationTexts.append(shortName)
+                    self.translationDescriptions.append(longName == shortName ? "" : longName)
                     self.translationNames.append(translation.name)
                 }
                 
