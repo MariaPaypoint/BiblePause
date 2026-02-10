@@ -101,6 +101,9 @@ struct PageReadView: View {
                     // MARK: Text content
                     if isTextLoading {
                         Spacer()
+                        ProgressView()
+                            .tint(.white)
+                        Spacer()
                     }
                     else if textVerses.isEmpty && self.errorDescription != "" {
                         // Show only the error if text failed to load
