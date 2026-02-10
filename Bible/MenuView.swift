@@ -180,7 +180,22 @@ struct MenuView: View {
             .padding(.bottom, getSafeArea().bottom)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: min(UIScreen.main.bounds.width, 500))
         .clipShape(MenuShape(value: 0))
+        .contentShape(MenuShape(value: 0))
+        .background(
+            MenuShape(value: 0)
+                .stroke(
+                    .linearGradient(.init(colors: [
+                        Color("ForestGreen"),
+                        Color("Mustard").opacity(0.7),
+                        Color("Mustard").opacity(0.7),
+                    ]), startPoint: .top, endPoint: .bottom),
+                    lineWidth: 1
+                )
+                .padding(.leading, -50)
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             refreshReadSubtitleSnapshot()
         }
@@ -199,18 +214,6 @@ struct MenuView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        .background(
-            MenuShape(value: 0)
-                .stroke(
-                    .linearGradient(.init(colors: [
-                        Color("ForestGreen"),
-                        Color("Mustard").opacity(0.7),
-                        Color("Mustard").opacity(0.7),
-                    ]), startPoint: .top, endPoint: .bottom),
-                    lineWidth: 1
-                )
-                .padding(.leading, -50)
-        )
         .ignoresSafeArea()
     }
 

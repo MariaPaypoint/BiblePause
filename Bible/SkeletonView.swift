@@ -452,6 +452,17 @@ struct SkeletonView: View {
                 .environmentObject(settingsManager)
             }
             
+            /// menu overlay: tap outside to close
+            if settingsManager.showMenu {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.spring()) {
+                            settingsManager.showMenu = false
+                        }
+                    }
+            }
+
             /// menu layer
             MenuView()
                 .environmentObject(settingsManager)
