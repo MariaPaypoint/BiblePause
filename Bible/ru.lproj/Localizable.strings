@@ -9,7 +9,7 @@
 "menu.settings" = "Настройки";
 "menu.contacts" = "О проекте";
 "menu.contacts.subtitle" = "Ищем единомышленников";
-"menu.version" = "Версия 0.1.0";
+"menu.version" = "Версия";
 
 /* Page Titles */
 "page.select.title" = "Выберите";

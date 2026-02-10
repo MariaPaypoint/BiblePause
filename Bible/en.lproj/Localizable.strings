@@ -9,7 +9,7 @@
 "menu.settings" = "Settings";
 "menu.contacts" = "About the Project";
 "menu.contacts.subtitle" = "Looking for like-minded people";
-"menu.version" = "Version 0.1.0";
+"menu.version" = "Version";
 
 /* Page Titles */
 "page.select.title" = "Select";

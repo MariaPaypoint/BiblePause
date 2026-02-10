@@ -165,7 +165,7 @@ struct MenuView: View {
                                 .font(.system(.headline))
                                 .fontWeight(.bold)
                                 .foregroundColor(colorFor(.contacts))
-                            Text("menu.version".localized)
+                            Text("\("menu.version".localized) \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
                                 .font(.system(size: 13))
                                 .foregroundColor(colorFor(.contacts).opacity(0.5))
                         }
