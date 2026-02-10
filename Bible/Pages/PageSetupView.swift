@@ -128,11 +128,11 @@ struct PageSetupView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             }
                             
-                            ViewFont()
-                            
-                            ViewPause()
-                            
                             ViewLangTranslateAudio(proxy: proxy)
+
+                            ViewFont()
+
+                            ViewPause()
                         }
                         .padding(.horizontal, globalBasePadding)
                         .padding(.top, 10)
