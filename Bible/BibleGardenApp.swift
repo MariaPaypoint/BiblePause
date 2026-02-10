@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct BiblePauseApp: App {
+struct BibleGardenApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
