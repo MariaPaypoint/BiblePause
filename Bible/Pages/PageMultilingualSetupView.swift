@@ -260,12 +260,13 @@ struct PageMultilingualSetupView: View {
             }
         }
         .sheet(item: $stepToEdit) { step in
-            PageMultilingualConfigView(step: step, isAddingStep: editingStepIndex == nil) { newStep in
-                if let index = editingStepIndex {
+            let isAdding = !settingsManager.multilingualSteps.contains(where: { $0.id == step.id })
+            PageMultilingualConfigView(step: step, isAddingStep: isAdding) { newStep in
+                if let index = settingsManager.multilingualSteps.firstIndex(where: { $0.id == newStep.id }) {
                     settingsManager.multilingualSteps[index] = newStep
                 } else {
                     settingsManager.multilingualSteps.append(newStep)
-                    
+
                     // Hint Logic: If we just added the first step, prompt for Pause
                     if settingsManager.multilingualSteps.count == 1 {
                         withAnimation { self.showPauseHint = true }
