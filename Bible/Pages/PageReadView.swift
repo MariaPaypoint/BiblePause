@@ -340,7 +340,11 @@ struct PageReadView: View {
             return "error.loading.chapter.with_code".localized(statusCode)
         }
 
+        #if DEBUG
+        return "\("error.loading.chapter".localized)\n\n\(compactErrorText(rawErrorText, maxLength: 300))"
+        #else
         return "error.loading.chapter".localized
+        #endif
     }
 
     private func extractHTTPStatusCode(from text: String) -> Int? {

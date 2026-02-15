@@ -994,7 +994,11 @@ struct PageSetupView: View {
             return
         }
 
+        #if DEBUG
+        inlineErrorMessage = "\("error.loading.setup".localized)\n\(rawErrorText.prefix(300))"
+        #else
         inlineErrorMessage = "error.loading.setup".localized
+        #endif
     }
 
     private func extractHTTPStatusCode(from text: String) -> Int? {

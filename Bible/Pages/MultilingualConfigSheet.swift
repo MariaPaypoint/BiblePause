@@ -491,7 +491,11 @@ struct MultilingualConfigSheet: View {
             }
         }
 
+        #if DEBUG
+        inlineErrorMessage = "\("error.loading.setup".localized)\n\(compactErrorText(rawErrorText, maxLength: 300))"
+        #else
         inlineErrorMessage = "error.loading.setup".localized
+        #endif
     }
 
     private func extractHTTPStatusCode(from text: String) -> Int? {

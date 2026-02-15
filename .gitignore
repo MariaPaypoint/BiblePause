@@ -84,4 +84,6 @@ playground.xcworkspace
 
 # Configuration files with sensitive data
 Configuration.plist
+Debug.xcconfig
+Release.xcconfig
 

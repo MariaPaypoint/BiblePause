@@ -24,8 +24,6 @@
 		04DB3CC72ECB9A60004AF6BC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04DB3CC52ECB9A60004AF6BC /* Localizable.strings */; };
 		4C141A042BED275000412C60 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C141A032BED275000412C60 /* MenuView.swift */; };
 		4C3F9EB52C148DCD00EA807C /* advElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F9EB42C148DCD00EA807C /* advElements.swift */; };
-		4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B6E2E9B0091004BF2CB /* Configuration.plist */; };
-		4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */ = {isa = PBXBuildFile; fileRef = 4C620B722E9B00A3004BF2CB /* Configuration.plist.example */; };
 		4C620B7E2E9B0123004BF2CB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C620B7D2E9B0123004BF2CB /* Config.swift */; };
 		4C749DFD2C149EF800CF4234 /* advCornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */; };
 		4C749E012C14ABE700CF4234 /* typeBible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C749E002C14ABE700CF4234 /* typeBible.swift */; };
@@ -72,6 +70,10 @@
 		4C620B6E2E9B0091004BF2CB /* Configuration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Configuration.plist; sourceTree = "<group>"; };
 		4C620B722E9B00A3004BF2CB /* Configuration.plist.example */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Configuration.plist.example; sourceTree = "<group>"; };
 		4C620B7D2E9B0123004BF2CB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		4C620B802E9B0200004BF2CB /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		4C620B812E9B0201004BF2CB /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		4C620B822E9B0202004BF2CB /* Debug.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Debug.xcconfig.example; sourceTree = "<group>"; };
+		4C620B832E9B0203004BF2CB /* Release.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Release.xcconfig.example; sourceTree = "<group>"; };
 		4C749DFC2C149EF800CF4234 /* advCornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advCornerRadius.swift; sourceTree = "<group>"; };
 		4C749E002C14ABE700CF4234 /* typeBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = typeBible.swift; sourceTree = "<group>"; };
 		4C749E042C14AC1500CF4234 /* advBible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = advBible.swift; sourceTree = "<group>"; };
@@ -211,6 +213,10 @@
 				0458F54B2CCE111F0016C65F /* Info.plist */,
 				047B3BC42BEEB626009DEC11 /* SkeletonView.swift */,
 				4C620B7D2E9B0123004BF2CB /* Config.swift */,
+				4C620B802E9B0200004BF2CB /* Debug.xcconfig */,
+				4C620B812E9B0201004BF2CB /* Release.xcconfig */,
+				4C620B822E9B0202004BF2CB /* Debug.xcconfig.example */,
+				4C620B832E9B0203004BF2CB /* Release.xcconfig.example */,
 				4C620B6E2E9B0091004BF2CB /* Configuration.plist */,
 				4C620B722E9B00A3004BF2CB /* Configuration.plist.example */,
 				4CFC91FF2C59AB75005AFAA5 /* openapi.yaml */,
@@ -303,13 +309,11 @@
 			files = (
 				0458F5472CCE0FE20016C65F /* LaunchScreen.storyboard in Resources */,
 				4C76912B2BECEA1800C66FDC /* Preview Assets.xcassets in Resources */,
-				4C620B6F2E9B0091004BF2CB /* Configuration.plist in Resources */,
 				04DB3CB12EC9F70C004AF6BC /* Localizable.strings in Resources */,
 				04DB3CC72ECB9A60004AF6BC /* Localizable.strings in Resources */,
 				4CFC92002C59AB7B005AFAA5 /* openapi.yaml in Resources */,
 				4CFC921B2C5E9ED0005AFAA5 /* openapi-generator-config.yml in Resources */,
 				04DB3CB72EC9F71B004AF6BC /* Localizable.strings in Resources */,
-				4C620B732E9B00A3004BF2CB /* Configuration.plist.example in Resources */,
 				4C7691282BECEA1800C66FDC /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -516,6 +520,7 @@
 		};
 		4C76912F2BECEA1800C66FDC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C620B802E9B0200004BF2CB /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
@@ -552,6 +557,7 @@
 		};
 		4C7691302BECEA1800C66FDC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C620B812E9B0201004BF2CB /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;

@@ -1,0 +1,5 @@
+// Release configuration — production API
+// Copy this file to Release.xcconfig and fill in your values
+
+API_BASE_URL = https:/$()/bibleapi.space
+API_KEY = your-api-key-here
