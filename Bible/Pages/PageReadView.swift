@@ -274,6 +274,9 @@ struct PageReadView: View {
         invalidateTextReadingTracking()
         defer { isUpdatingExcerpt = false }
 
+        // Stop current audio immediately before loading new chapter
+        audiopleer.stop()
+
         do {
                 self.isTextLoading = true
                 self.errorDescription = ""

@@ -18,7 +18,8 @@ class PlayerTimeObserver {
             guard let self = self else { return }
             // If we've not been told to pause our updates
             guard !self.paused else { return }
-            // Publish the new player time
+            // Only publish time when player is actually playing (not stalled/buffering)
+            guard self.player?.timeControlStatus == .playing else { return }
             self.publisher.send(time.seconds)
         }
     }
@@ -391,6 +392,18 @@ class PlayerModel: ObservableObject {
         }
     }
     
+    /// Immediately stop playback (used before chapter switch to prevent old audio leaking)
+    func stop() {
+        player.pause()
+        if state == .playing || state == .buffering || state == .autopausing {
+            state = .pausing
+        }
+        isStalled = false
+        isBufferingLong = false
+        bufferingTimeoutWork?.cancel()
+        bufferingIndicatorWork?.cancel()
+    }
+
     // MARK: Play/Pause handling
     func doPlayOrPause() {
         if self.state == .playing {
