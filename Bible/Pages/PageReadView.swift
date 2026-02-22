@@ -276,6 +276,7 @@ struct PageReadView: View {
 
         // Stop current audio immediately before loading new chapter
         audiopleer.stop()
+        self.hasAudio = false
 
         do {
                 self.isTextLoading = true
