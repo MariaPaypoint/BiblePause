@@ -107,7 +107,6 @@ class PlayerModel: ObservableObject {
     private var bufferingTimeoutWork: DispatchWorkItem?
     private var bufferingIndicatorWork: DispatchWorkItem?
     private var stalledSetWork: DispatchWorkItem?
-    private var stalledObserver: Any?
     private var currentItemURL: URL?
 
     private var itemTitle: String = ""
@@ -192,21 +191,7 @@ class PlayerModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // Observe playback stalls (buffer underrun on slow networks)
-        stalledObserver = NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemPlaybackStalled,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let self = self else { return }
-            guard let item = notification.object as? AVPlayerItem, item == self.player.currentItem else {
-                return
-            }
-            self.isStalled = true
-        }
-
         // Observe timeControlStatus to detect real buffering after playback started
-        // (playbackStalledNotification may not fire on slow-but-stable 3G)
         player.publisher(for: \.timeControlStatus)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
@@ -236,9 +221,6 @@ class PlayerModel: ObservableObject {
         // Important: remove observers to avoid leaks
         if let endPlayingObserver = endPlayingObserver {
             NotificationCenter.default.removeObserver(endPlayingObserver)
-        }
-        if let stalledObserver = stalledObserver {
-            NotificationCenter.default.removeObserver(stalledObserver)
         }
         bufferingTimeoutWork?.cancel()
     }
