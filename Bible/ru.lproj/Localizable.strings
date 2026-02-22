@@ -133,6 +133,8 @@
 "error.loading.example" = "Ошибка загрузки примера";
 "error.loading.audio" = "Не удалось загрузить аудио";
 "error.audio.unavailable" = "Аудио недоступно для этого голоса";
+"error.audio.stalled" = "Загрузка аудио...";
+"error.audio.timeout" = "Таймаут подключения. Проверьте интернет.";
 "page.read.chapter_subtitle" = "Глава %@";
 
 "settings.pause.block.short.verse" = "стих";

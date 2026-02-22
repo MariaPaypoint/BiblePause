@@ -133,6 +133,8 @@
 "error.loading.example" = "Помилка завантаження прикладу";
 "error.loading.audio" = "Не вдалося завантажити аудіо";
 "error.audio.unavailable" = "Аудіо недоступне для цього голосу";
+"error.audio.stalled" = "Завантаження аудіо...";
+"error.audio.timeout" = "Таймаут підключення. Перевірте інтернет.";
 "page.read.chapter_subtitle" = "Розділ %@";
 
 "settings.pause.block.short.verse" = "вірш";

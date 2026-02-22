@@ -72,6 +72,7 @@ class PlayerModel: ObservableObject {
         case autopausing
         case finished
         case segmentFinished
+        case error
     }
     
     private let player: AVPlayer
@@ -88,6 +89,9 @@ class PlayerModel: ObservableObject {
     @Published var currentDuration: TimeInterval = 0
     @Published var currentTime: TimeInterval = 0
     @Published private(set) var currentSpeed: Float = 1.0
+    @Published var errorMessage: String? = nil
+    @Published var isStalled: Bool = false
+    @Published var isBufferingLong: Bool = false
     
     private var oldState = PlaybackState.waitingForSelection
     private var audioVerses: [BibleAcousticalVerseFull] = []
@@ -99,7 +103,11 @@ class PlayerModel: ObservableObject {
     var smoothPauseLength = 0.3
     
     private var pauseTimer: Timer?
-    
+    private var bufferingTimeoutWork: DispatchWorkItem?
+    private var bufferingIndicatorWork: DispatchWorkItem?
+    private var stalledObserver: Any?
+    private var currentItemURL: URL?
+
     private var itemTitle: String = ""
     private var itemSubtitle: String = ""
     
@@ -123,6 +131,10 @@ class PlayerModel: ObservableObject {
                 self?.currentDuration = duration
                 
                 if self?.state == .buffering {
+                    self?.bufferingTimeoutWork?.cancel()
+                    self?.bufferingIndicatorWork?.cancel()
+                    self?.isStalled = false
+                    self?.isBufferingLong = false
                     self?.state = .waitingForPlay
                     self?.player.seek(to: CMTimeMake(value: Int64(self!.periodFrom*100), timescale: 100))
                     self?.currentTime = self?.periodFrom ?? 0
@@ -159,17 +171,48 @@ class PlayerModel: ObservableObject {
             guard let item = notification.object as? AVPlayerItem, item == self.player.currentItem else {
                  return
             }
-            
+
             // Update state and perform cleanup when track reaches the end
             self.state = .finished
+        }
+
+        // Observe AVPlayerItem status to detect loading failures (network errors, invalid URLs)
+        player.publisher(for: \.currentItem?.status)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] status in
+                guard let self = self else { return }
+                if status == .failed {
+                    self.bufferingTimeoutWork?.cancel()
+                    self.state = .error
+                    self.errorMessage = self.player.currentItem?.error?.localizedDescription
+                        ?? "error.loading.audio".localized
+                }
+            }
+            .store(in: &cancellables)
+
+        // Observe playback stalls (buffer underrun on slow networks)
+        stalledObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemPlaybackStalled,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self else { return }
+            guard let item = notification.object as? AVPlayerItem, item == self.player.currentItem else {
+                return
+            }
+            self.isStalled = true
         }
     }
     
     deinit {
-        // Important: remove observer to avoid leaks
+        // Important: remove observers to avoid leaks
         if let endPlayingObserver = endPlayingObserver {
             NotificationCenter.default.removeObserver(endPlayingObserver)
         }
+        if let stalledObserver = stalledObserver {
+            NotificationCenter.default.removeObserver(stalledObserver)
+        }
+        bufferingTimeoutWork?.cancel()
     }
     
     @objc private func handleInterruption(notification: Notification) {
@@ -220,35 +263,69 @@ class PlayerModel: ObservableObject {
 
     // MARK: Set up new track parameters
     func setItem(playerItem: AVPlayerItem, periodFrom: Double, periodTo: Double, audioVerses: [BibleAcousticalVerseFull], itemTitle: String, itemSubtitle: String) {
-        
+
         self.oldState = self.state
         if self.state == .playing {
             self.pauseSimple()
         }
-        
+
+        // Store URL for retry capability
+        self.currentItemURL = (playerItem.asset as? AVURLAsset)?.url
+
         self.periodFrom = periodFrom
         self.periodTo = periodTo
         
         self.audioVerses = audioVerses
         self.currentVerseIndex = -1
         
+        // Clear previous error/buffering state
+        self.errorMessage = nil
+        self.isStalled = false
+        self.isBufferingLong = false
+        self.bufferingTimeoutWork?.cancel()
+        self.bufferingIndicatorWork?.cancel()
+
         // Force state change to ensure observers are notified (even if already buffering)
         self.state = .waitingForSelection
         self.state = .buffering
         self.currentTime = 0
         self.currentDuration = 0
-        
+
         self.deleteObservation()
         self.setObservation()
-        
+
         self.itemTitle = itemTitle
         self.itemSubtitle = itemSubtitle
         self.setupNowPlaying()
-        
+
         self.player.replaceCurrentItem(with: playerItem)
-        
+
+        // Start buffering timeout — if duration doesn't arrive within 15s, report error
+        let timeoutWork = DispatchWorkItem { [weak self] in
+            guard let self = self, self.state == .buffering else { return }
+            self.state = .error
+            self.errorMessage = "error.audio.timeout".localized
+        }
+        self.bufferingTimeoutWork = timeoutWork
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: timeoutWork)
+
+        // Show buffering indicator only after 1 second (avoid brief flashes on quick transitions)
+        let indicatorWork = DispatchWorkItem { [weak self] in
+            guard let self = self, self.state == .buffering else { return }
+            self.isBufferingLong = true
+        }
+        self.bufferingIndicatorWork = indicatorWork
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: indicatorWork)
     }
-    
+
+    /// Retry loading audio from the same URL (after a network error)
+    func retry() {
+        guard state == .error, let url = currentItemURL else { return }
+        let newItem = AVPlayerItem(url: url)
+        setItem(playerItem: newItem, periodFrom: periodFrom, periodTo: periodTo,
+                audioVerses: audioVerses, itemTitle: itemTitle, itemSubtitle: itemSubtitle)
+    }
+
     // Remove previous observers if needed
     private func deleteObservation() {
         if let observerBegin = boundaryObserverBegin {
@@ -323,6 +400,9 @@ class PlayerModel: ObservableObject {
         else if state == .buffering {
             // Do nothing while buffering
         }
+        else if state == .error {
+            retry()
+        }
         else if state == .finished {
             self.restart()
             self.playSimple()
@@ -339,6 +419,8 @@ class PlayerModel: ObservableObject {
     private func playSimple() {
         self.player.play()
         self.state = .playing
+        self.isStalled = false
+        self.isBufferingLong = false
     }
     
     private func pauseSimple() {
@@ -436,7 +518,8 @@ class PlayerModel: ObservableObject {
     }
     
     func previousVerse() {
-        if state == .playing && currentVerseIndex > 0 {
+        let navigableStates: [PlaybackState] = [.playing, .pausing, .autopausing, .buffering, .error]
+        if navigableStates.contains(state) && currentVerseIndex > 0 {
             setCurrentVerseIndex(currentVerseIndex - 1)
             
             let begin = audioVerses[currentVerseIndex].begin
@@ -451,7 +534,8 @@ class PlayerModel: ObservableObject {
     }
     
     func nextVerse() {
-        if state == .playing && currentVerseIndex+1 < audioVerses.count {
+        let navigableStates: [PlaybackState] = [.playing, .pausing, .autopausing, .buffering, .error]
+        if navigableStates.contains(state) && currentVerseIndex+1 < audioVerses.count {
             setCurrentVerseIndex(currentVerseIndex + 1)
             let begin = audioVerses[currentVerseIndex].begin
             // Step slightly back to make the transition smoother

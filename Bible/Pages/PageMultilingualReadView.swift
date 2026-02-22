@@ -45,6 +45,9 @@ struct PageMultilingualReadView: View {
     @State private var ninetyPercentHandledForSession: Bool = true
     @State private var verseTrackingSessionID: UUID = UUID()
     @State private var currentAudioVerseNumber: Int = -1
+    @State private var retryCount: Int = 0
+    @State private var prefetchedAsset: AVURLAsset?
+    @State private var prefetchedURL: URL?
     @State private var readingSessionID: UUID = UUID()
     @State private var chapterReadingAccumulatedSeconds: Double = 0
     @State private var chapterReadingActiveStartTime: Date? = nil
@@ -296,7 +299,7 @@ struct PageMultilingualReadView: View {
                 .padding(.vertical, 10)
 
                 viewChapterMarkToggle()
-                
+
                 // Control buttons row - matching PageReadView style
                 HStack {
                     // Previous chapter
@@ -534,9 +537,30 @@ struct PageMultilingualReadView: View {
 					.font(.caption2)
 					.foregroundColor(Color("localAccentColor").opacity(0.85))
                 Spacer()
+                // Inline buffering/error indicator
+                if audiopleer.isStalled || audiopleer.isBufferingLong {
+                    HStack(spacing: 4) {
+                        ProgressView()
+                            .tint(Color("Mustard"))
+                            .scaleEffect(0.6)
+                        Text("error.audio.stalled".localized)
+                            .foregroundColor(Color("Mustard"))
+                            .font(.caption2)
+                    }
+                } else if let errorMsg = audiopleer.errorMessage {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(Color("Mustard"))
+                            .font(.caption2)
+                        Text(errorMsg)
+                            .foregroundColor(Color("Mustard"))
+                            .font(.caption2)
+                            .lineLimit(1)
+                    }
+                }
             }
             .padding(.horizontal, globalBasePadding)
-            .frame(height: 24)
+            .frame(minHeight: 24)
         }
         .buttonStyle(.plain)
         .disabled(!canMark)
@@ -582,6 +606,8 @@ struct PageMultilingualReadView: View {
         stepTextVerses = [:]
         stepAudioVerses = [:]
         stepAudioUrls = [:]
+        prefetchedAsset = nil
+        prefetchedURL = nil
         
         // Load data for each read step
         for (index, step) in readSteps.enumerated() {
@@ -761,7 +787,9 @@ struct PageMultilingualReadView: View {
             moveToNextUnit()
             return
         }
-        
+
+        retryCount = 0
+
         let step = allSteps[currentStepIndex]
         print("[MultiRead] Playing step \(currentStepIndex): \(step.type == .read ? step.translationName : "pause")")
         
@@ -840,8 +868,16 @@ struct PageMultilingualReadView: View {
                 return
             }
             
-            // Set up audio player
-            let playerItem = AVPlayerItem(url: url)
+            // Set up audio player — use prefetched asset if available
+            let playerItem: AVPlayerItem
+            if let prefetched = prefetchedAsset, prefetchedURL == url {
+                playerItem = AVPlayerItem(asset: prefetched)
+                prefetchedAsset = nil
+                prefetchedURL = nil
+                print("[MultiRead] Using prefetched asset for \(url.lastPathComponent)")
+            } else {
+                playerItem = AVPlayerItem(url: url)
+            }
             let from = unitAudioVerses.first!.begin
             let to = unitAudioVerses.last!.end
             let trackingSessionID = UUID()
@@ -880,9 +916,50 @@ struct PageMultilingualReadView: View {
             
             // Start monitoring for this new session
             startAudioMonitoring()
+
+            // Pre-fetch next step's audio while current step plays
+            prefetchNextStepAudio()
         }
     }
-    
+
+    /// Pre-load the next read step's audio asset while current step is playing
+    private func prefetchNextStepAudio() {
+        // Find next read step in the sequence
+        var nextStepIndex = currentStepIndex + 1
+        var nextUnitIndex = currentUnitIndex
+
+        // Skip pause steps to find next read step
+        while nextStepIndex < allSteps.count && allSteps[nextStepIndex].type != .read {
+            nextStepIndex += 1
+        }
+
+        // If no more read steps in current unit — look at next unit's first read step
+        if nextStepIndex >= allSteps.count {
+            nextUnitIndex += 1
+            guard nextUnitIndex < unitRanges.count else { return }
+            nextStepIndex = allSteps.firstIndex(where: { $0.type == .read }) ?? 0
+        }
+
+        guard nextStepIndex < allSteps.count else { return }
+        let nextStep = allSteps[nextStepIndex]
+        guard nextStep.type == .read else { return }
+        guard let readIndex = readSteps.firstIndex(where: { $0.id == nextStep.id }) else { return }
+        guard let audioUrl = stepAudioUrls[readIndex], let url = URL(string: audioUrl) else { return }
+
+        // Don't re-fetch if already prefetching this URL
+        if prefetchedURL == url { return }
+
+        print("[MultiRead] Prefetching next step audio: \(url.lastPathComponent)")
+        let asset = AVURLAsset(url: url)
+        asset.loadValuesAsynchronously(forKeys: ["playable"]) {
+            DispatchQueue.main.async {
+                self.prefetchedAsset = asset
+                self.prefetchedURL = url
+                print("[MultiRead] Prefetch complete: \(url.lastPathComponent)")
+            }
+        }
+    }
+
     private func moveToNextStep() {
         let isLastStepInUnit = !allSteps.isEmpty && currentStepIndex == allSteps.count - 1
         let isLastUnit = !unitRanges.isEmpty && currentUnitIndex == unitRanges.count - 1
@@ -1011,6 +1088,24 @@ struct PageMultilingualReadView: View {
                     self.isPlaying = true
                 }
                 
+                // Handle audio loading error — auto-retry once, then skip
+                if newState == .error {
+                    if self.retryCount < 1 {
+                        self.retryCount += 1
+                        print("[MultiRead] Audio error, retrying in 3s (attempt \(self.retryCount))")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            guard self.playbackSessionID == sessionID else { return }
+                            self.audiopleer.retry()
+                        }
+                    } else {
+                        print("[MultiRead] Audio error after retry: \(self.audiopleer.errorMessage ?? "unknown"), skipping step")
+                        self.retryCount = 0
+                        self.isPlaying = false
+                        self.moveToNextStep()
+                    }
+                    return
+                }
+
                 // Move to next step when audio finishes naturally (logic end or file end)
                 if newState == .finished || newState == .segmentFinished {
                     // SAFETY WINDOW: Ignore completion events immediately after start (1.0s)
@@ -1018,7 +1113,7 @@ struct PageMultilingualReadView: View {
                         print("[MultiRead] Ignoring early completion event (safety window)")
                         return
                     }
-                    
+
                     // Only advance if we are supposed to be playing
                     if self.isPlaying {
                         // PlayerModel does not emit `onEndVerse` for the last verse; count it here.
@@ -1099,7 +1194,7 @@ struct PageMultilingualReadView: View {
         switch state {
         case .playing, .buffering, .autopausing, .waitingForPause, .pausing:
             return true
-        case .waitingForSelection, .waitingForPlay, .finished, .segmentFinished:
+        case .waitingForSelection, .waitingForPlay, .finished, .segmentFinished, .error:
             return false
         }
     }
