@@ -301,6 +301,12 @@ struct PageMultilingualReadView: View {
 
                 // Control buttons row - matching PageReadView style
                 HStack {
+                    let hasAudio = !stepPlayerItems.isEmpty
+                    let buttonsColor = hasAudio ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4)
+                    let prevColor = prevExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+                    let nextColor = nextExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor")
+                    let verseGoColor = (hasAudio && isPlaying) ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4)
+
                     // Previous chapter
                     Button {
                         if !prevExcerpt.isEmpty {
@@ -311,29 +317,32 @@ struct PageMultilingualReadView: View {
                         }
                     } label: {
                         Image(systemName: "chevron.backward.2")
-                            .foregroundColor(prevExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                            .foregroundColor(prevColor)
                     }
+                    .disabled(prevExcerpt.isEmpty)
                     Spacer()
-                    
+
                     // Previous Unit (Block)
                     Button {
                         moveToPreviousUnit()
                     } label: {
                         Image(systemName: "arrow.up.square")
                             .font(.system(size: 22))
-                            .foregroundColor(currentUnitIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                            .foregroundColor(currentUnitIndex > 0 ? buttonsColor : Color("localAccentColor").opacity(0.4))
                     }
+                    .disabled(!hasAudio || currentUnitIndex <= 0)
                     Spacer()
-                    
+
                     // Previous content (step or unit)
                     Button {
                         moveToPreviousSection()
                     } label: {
                         Image(systemName: "arrow.turn.left.up")
-                            .foregroundColor(currentUnitIndex > 0 || currentStepIndex > 0 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                            .foregroundColor(verseGoColor)
                     }
+                    .disabled(!hasAudio)
                     Spacer()
-                    
+
                     // Play/Pause
                     Button {
                         togglePlayPause()
@@ -348,29 +357,32 @@ struct PageMultilingualReadView: View {
                             }
                         }
                         .font(.system(size: 55))
-                        .foregroundColor(Color("localAccentColor"))
+                        .foregroundColor(buttonsColor)
                     }
+                    .disabled(!hasAudio)
                     Spacer()
-                    
+
                     // Next content (step or unit)
                     Button {
                         moveToNextSection()
                     } label: {
                         Image(systemName: "arrow.turn.right.down")
-                            .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                            .foregroundColor(verseGoColor)
                     }
+                    .disabled(!hasAudio)
                     Spacer()
-                    
+
                     // Next Unit (Block)
                     Button {
                         moveToNextUnit()
                     } label: {
                         Image(systemName: "arrow.down.square")
                             .font(.system(size: 22))
-                            .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? Color("localAccentColor") : Color("localAccentColor").opacity(0.4))
+                            .foregroundColor(currentUnitIndex < unitRanges.count - 1 ? buttonsColor : Color("localAccentColor").opacity(0.4))
                     }
+                    .disabled(!hasAudio || currentUnitIndex >= unitRanges.count - 1)
                     Spacer()
-                    
+
                     // Next chapter
                     Button {
                         if !nextExcerpt.isEmpty {
@@ -381,8 +393,9 @@ struct PageMultilingualReadView: View {
                         }
                     } label: {
                         Image(systemName: "chevron.forward.2")
-                            .foregroundColor(nextExcerpt.isEmpty ? Color("localAccentColor").opacity(0.4) : Color("localAccentColor"))
+                            .foregroundColor(nextColor)
                     }
+                    .disabled(nextExcerpt.isEmpty)
                 }
                 .foregroundColor(Color("localAccentColor"))
                 .padding(.horizontal, globalBasePadding)
@@ -594,6 +607,7 @@ struct PageMultilingualReadView: View {
         // Avoid reloading if data exists (preserves state on return from Settings)
         if !force && !stepTextVerses.isEmpty { return }
         isUpdatingExcerpt = true
+        audiopleer.stop()
         stopAudioMonitoring()
         isPlaying = false
         invalidateAudioProgressTracking()
