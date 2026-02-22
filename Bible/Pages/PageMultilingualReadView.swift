@@ -11,6 +11,7 @@ struct PageMultilingualReadView: View {
     @State private var stepTextVerses: [Int: [BibleTextualVerseFull]] = [:]
     @State private var stepAudioVerses: [Int: [BibleAcousticalVerseFull]] = [:]
     @State private var stepAudioUrls: [Int: String] = [:]
+    @State private var stepPlayerItems: [Int: AVPlayerItem] = [:]  // one per translation, reused across units
     
     // Navigation
     @State private var prevExcerpt: String = ""
@@ -46,8 +47,6 @@ struct PageMultilingualReadView: View {
     @State private var verseTrackingSessionID: UUID = UUID()
     @State private var currentAudioVerseNumber: Int = -1
     @State private var retryCount: Int = 0
-    @State private var prefetchedAsset: AVURLAsset?
-    @State private var prefetchedURL: URL?
     @State private var readingSessionID: UUID = UUID()
     @State private var chapterReadingAccumulatedSeconds: Double = 0
     @State private var chapterReadingActiveStartTime: Date? = nil
@@ -606,8 +605,7 @@ struct PageMultilingualReadView: View {
         stepTextVerses = [:]
         stepAudioVerses = [:]
         stepAudioUrls = [:]
-        prefetchedAsset = nil
-        prefetchedURL = nil
+        stepPlayerItems = [:]
         
         // Load data for each read step
         for (index, step) in readSteps.enumerated() {
@@ -622,6 +620,9 @@ struct PageMultilingualReadView: View {
                 stepTextVerses[index] = textVerses
                 stepAudioVerses[index] = audioVerses
                 stepAudioUrls[index] = audioUrl
+                if let url = URL(string: audioUrl) {
+                    stepPlayerItems[index] = AVPlayerItem(url: url)
+                }
                 
                 // Use first step's data for navigation info
                 if index == 0, let part = part {
@@ -868,16 +869,8 @@ struct PageMultilingualReadView: View {
                 return
             }
             
-            // Set up audio player — use prefetched asset if available
-            let playerItem: AVPlayerItem
-            if let prefetched = prefetchedAsset, prefetchedURL == url {
-                playerItem = AVPlayerItem(asset: prefetched)
-                prefetchedAsset = nil
-                prefetchedURL = nil
-                print("[MultiRead] Using prefetched asset for \(url.lastPathComponent)")
-            } else {
-                playerItem = AVPlayerItem(url: url)
-            }
+            // Reuse pre-created player item for this translation (loaded once, seeked for each unit)
+            let playerItem = stepPlayerItems[readIndex] ?? AVPlayerItem(url: url)
             let from = unitAudioVerses.first!.begin
             let to = unitAudioVerses.last!.end
             let trackingSessionID = UUID()
@@ -885,23 +878,11 @@ struct PageMultilingualReadView: View {
             currentAudioVerseNumber = -1
             
             print("[MultiRead] Setting up audio from \(from) to \(to) with \(unitAudioVerses.count) verses")
-            
-            audiopleer.setItem(
-                playerItem: playerItem,
-                periodFrom: from,
-                periodTo: to,
-                audioVerses: unitAudioVerses,
-                itemTitle: excerptTitle,
-                itemSubtitle: step.translationName
-            )
-            
-            // Set speed for this step
-            audiopleer.setSpeed(speed: Float(step.playbackSpeed))
-            
+
+            // Set callbacks BEFORE setItem — seekToSegment() may trigger playback immediately
             audiopleer.onStartVerse = { verseIdx in
                 guard self.verseTrackingSessionID == trackingSessionID else { return }
                 if verseIdx >= 0 && verseIdx < unitAudioVerses.count {
-                    // Encode step index into highlight ID: stepIdx * 10000 + verseNumber
                     let verseNumber = unitAudioVerses[verseIdx].number
                     self.highlightVerseNumber = self.currentStepIndex * 10000 + verseNumber
                     self.currentAudioVerseNumber = verseNumber
@@ -911,52 +892,22 @@ struct PageMultilingualReadView: View {
                 guard self.verseTrackingSessionID == trackingSessionID else { return }
                 self.recordListenedVerse(self.currentAudioVerseNumber)
             }
-            
 
-            
+            audiopleer.setItem(
+                playerItem: playerItem,
+                periodFrom: from,
+                periodTo: to,
+                audioVerses: unitAudioVerses,
+                itemTitle: excerptTitle,
+                itemSubtitle: step.translationName
+            )
+
+            // Set speed for this step
+            audiopleer.setSpeed(speed: Float(step.playbackSpeed))
+
             // Start monitoring for this new session
             startAudioMonitoring()
 
-            // Pre-fetch next step's audio while current step plays
-            prefetchNextStepAudio()
-        }
-    }
-
-    /// Pre-load the next read step's audio asset while current step is playing
-    private func prefetchNextStepAudio() {
-        // Find next read step in the sequence
-        var nextStepIndex = currentStepIndex + 1
-        var nextUnitIndex = currentUnitIndex
-
-        // Skip pause steps to find next read step
-        while nextStepIndex < allSteps.count && allSteps[nextStepIndex].type != .read {
-            nextStepIndex += 1
-        }
-
-        // If no more read steps in current unit — look at next unit's first read step
-        if nextStepIndex >= allSteps.count {
-            nextUnitIndex += 1
-            guard nextUnitIndex < unitRanges.count else { return }
-            nextStepIndex = allSteps.firstIndex(where: { $0.type == .read }) ?? 0
-        }
-
-        guard nextStepIndex < allSteps.count else { return }
-        let nextStep = allSteps[nextStepIndex]
-        guard nextStep.type == .read else { return }
-        guard let readIndex = readSteps.firstIndex(where: { $0.id == nextStep.id }) else { return }
-        guard let audioUrl = stepAudioUrls[readIndex], let url = URL(string: audioUrl) else { return }
-
-        // Don't re-fetch if already prefetching this URL
-        if prefetchedURL == url { return }
-
-        print("[MultiRead] Prefetching next step audio: \(url.lastPathComponent)")
-        let asset = AVURLAsset(url: url)
-        asset.loadValuesAsynchronously(forKeys: ["playable"]) {
-            DispatchQueue.main.async {
-                self.prefetchedAsset = asset
-                self.prefetchedURL = url
-                print("[MultiRead] Prefetch complete: \(url.lastPathComponent)")
-            }
         }
     }
 
@@ -1108,8 +1059,8 @@ struct PageMultilingualReadView: View {
 
                 // Move to next step when audio finishes naturally (logic end or file end)
                 if newState == .finished || newState == .segmentFinished {
-                    // SAFETY WINDOW: Ignore completion events immediately after start (1.0s)
-                    if Date().timeIntervalSince(sessionStartTime) < 1.0 {
+                    // SAFETY WINDOW: Ignore completion events immediately after start (0.1s)
+                    if Date().timeIntervalSince(sessionStartTime) < 0.1 {
                         print("[MultiRead] Ignoring early completion event (safety window)")
                         return
                     }
